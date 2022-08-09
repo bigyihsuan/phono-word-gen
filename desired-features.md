@@ -5,7 +5,7 @@
 - Arbitrary-length phonemes
 - Phoneme categories
 - Both phoneme-based and category-based output filtration, substitution, modification
-- Optional, "Pick One", repeated syllable components (regex `a*`, `[ab]`, and `a{N,M}`)
+- Optional, "Pick One" (regex `a*`, `[ab]`)
 - Syllable-based word generator
 - Can specify minimum and maximum number of syllables per word.
 

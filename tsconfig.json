@@ -18,8 +18,7 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "sourceMap": true,
-    // "outDir": "./dist/tsc/",
-    "outDir": "./out-html/",
+    "outDir": "./dist/tsc/",
     "types": [
       "node",
       "jest"

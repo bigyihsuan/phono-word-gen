@@ -2,7 +2,7 @@
 /build/
 /lib/
 /dist/
-/docs/
+# /docs/
 .idea/*
 
 .DS_Store

@@ -1,7 +1,8 @@
-const stuff = document.getElementById("stuff")
+const phonology = document.getElementById("phonology") as HTMLInputElement
+const syllable = document.getElementById("syllable") as HTMLInputElement
+const submit = document.getElementById("submit") as HTMLButtonElement
 
-const p = document.createElement("p")
-
-p.textContent = "hello world!"
-
-stuff?.appendChild(p)
+submit?.addEventListener("click", function () {
+    console.log(phonology?.value)
+    console.log(syllable?.value)
+})
