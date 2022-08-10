@@ -4,13 +4,16 @@
 
 - Arbitrary-length phonemes
 - Phoneme categories
-- Both phoneme-based and category-based output filtration, substitution, modification
-- Optional, "Pick One" (regex `a*`, `[ab]`)
+- Optional, "Pick One" (`(a)`, `[a,b,]`)
 - Syllable-based word generator
 - Can specify minimum and maximum number of syllables per word.
+- Randomness Control: Manual weighting (per-phoneme, per-syllable component)
+
+## After Minimum
+
+- Both phoneme-based and category-based output filtration, substitution, modification (Lexurgy-style rewrite rules?)
+- Cluster tables
 
 ## Nice to Haves
 
-- Randomness control:
-  - Manual specification (per-phoneme, per-syllable component)
-  - Based on worldwide phoneme frequency (via [PHOIBLE data](https://phoible.org/))
+- Randomness control: Based on worldwide phoneme frequency (via [PHOIBLE data](https://phoible.org/))

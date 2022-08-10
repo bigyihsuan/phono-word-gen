@@ -8,5 +8,4 @@ fricative = ɸ s x xʷ
 affricate = p͡ɸ t͡s k͡x k͡xʷ
 approximant = ʋ ɹ ɰ w
 
-syllable: ($C)$V([$approximant,$nasal,$fricative])($C)
-
+syllable: ($C)$V([$approximant*0.5,$nasal*0.2,$fricative*0.1,iabc,])($C)
