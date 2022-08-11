@@ -6,6 +6,9 @@ import { ParseError, parseSyllable, Syllable } from "./modules/syllable/parser.j
 const phonology = document.getElementById("phonology") as HTMLInputElement;
 const submit = document.getElementById("submit") as HTMLButtonElement;
 const wordOutput = document.getElementById("output");
+const minSylCountElement = document.getElementById("minSylCount") as HTMLInputElement;
+const maxSylCountElement = document.getElementById("maxSylCount") as HTMLInputElement;
+const wordCountElement = document.getElementById("wordCount") as HTMLInputElement;
 
 const categories: CategoryListing = new Map<string, Category>();
 let tokens: Token[];
@@ -13,6 +16,13 @@ let syllable: Syllable | ParseError;
 
 submit?.addEventListener("click", () => {
     const lines = phonology?.value.replaceAll(/\n+/g, "\n").split("\n").filter((s) => s.length > 0);
+    let minSylCount = Number.parseInt(minSylCountElement.value);
+    let maxSylCount = Number.parseInt(maxSylCountElement.value);
+    if (minSylCount > maxSylCount) {
+        minSylCountElement.value = maxSylCount.toString()
+        minSylCount = maxSylCount
+    }
+    let wordCount = Number.parseInt(wordCountElement.value)
 
     lines.forEach((l) => {
         const line = l.trim();
@@ -46,11 +56,15 @@ submit?.addEventListener("click", () => {
         const p: HTMLParagraphElement = document.createElement("p");
         p.innerHTML = syllable.reason
         wordOutput?.append(p);
-    } else {
-        // console.log(syllable)
-        for (let i = 0; i < 10; i += 1) {
+    } else if (syllable !== undefined) {
+        for (let _ = 0; _ < wordCount; _ += 1) {
             const p: HTMLParagraphElement = document.createElement("p");
-            p.innerHTML = syllable.evaluate()
+            let outWord = ""
+            let numSyllables = Math.max(minSylCount, Math.floor(maxSylCount - Math.random() * maxSylCount) + 1)
+            for (let i = 0; i < numSyllables; i++) {
+                outWord += syllable.evaluate()
+            }
+            p.innerHTML = outWord
             wordOutput?.append(p);
         }
     }

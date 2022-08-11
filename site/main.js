@@ -4,11 +4,21 @@ import { ParseError, parseSyllable } from "./modules/syllable/parser.js";
 const phonology = document.getElementById("phonology");
 const submit = document.getElementById("submit");
 const wordOutput = document.getElementById("output");
+const minSylCountElement = document.getElementById("minSylCount");
+const maxSylCountElement = document.getElementById("maxSylCount");
+const wordCountElement = document.getElementById("wordCount");
 const categories = new Map();
 let tokens;
 let syllable;
 submit === null || submit === void 0 ? void 0 : submit.addEventListener("click", () => {
     const lines = phonology === null || phonology === void 0 ? void 0 : phonology.value.replaceAll(/\n+/g, "\n").split("\n").filter((s) => s.length > 0);
+    let minSylCount = Number.parseInt(minSylCountElement.value);
+    let maxSylCount = Number.parseInt(maxSylCountElement.value);
+    if (minSylCount > maxSylCount) {
+        minSylCountElement.value = maxSylCount.toString();
+        minSylCount = maxSylCount;
+    }
+    let wordCount = Number.parseInt(wordCountElement.value);
     lines.forEach((l) => {
         const line = l.trim();
         if (line.match(/=/)) {
@@ -39,11 +49,15 @@ submit === null || submit === void 0 ? void 0 : submit.addEventListener("click",
         p.innerHTML = syllable.reason;
         wordOutput === null || wordOutput === void 0 ? void 0 : wordOutput.append(p);
     }
-    else {
-        // console.log(syllable)
-        for (let i = 0; i < 10; i += 1) {
+    else if (syllable !== undefined) {
+        for (let _ = 0; _ < wordCount; _ += 1) {
             const p = document.createElement("p");
-            p.innerHTML = syllable.evaluate();
+            let outWord = "";
+            let numSyllables = Math.max(minSylCount, Math.floor(maxSylCount - Math.random() * maxSylCount) + 1);
+            for (let i = 0; i < numSyllables; i++) {
+                outWord += syllable.evaluate();
+            }
+            p.innerHTML = outWord;
             wordOutput === null || wordOutput === void 0 ? void 0 : wordOutput.append(p);
         }
     }

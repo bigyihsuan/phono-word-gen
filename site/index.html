@@ -10,8 +10,15 @@
 
 <body>
     <div id="form">
-        <textarea id="phonology" rows="20" cols="60"></textarea>
+        <textarea id="phonology" rows="20" cols="80"></textarea>
         <br>
+        <label for="minSylCount">Minimum Syllable Count</label>
+        <input type="number" min="1" value="1" id="minSylCount">
+        <label for="maxSylCount">Maximum Syllable Count</label>
+        <input type="number" min="1" value="1" id="maxSylCount">
+        <br>
+        <label for="wordCount">Number of Words</label>
+        <input type="number" min="1" value="1" id="wordCount">
         <button type="button" id="submit">Submit</button>
     </div>
     <hr>
