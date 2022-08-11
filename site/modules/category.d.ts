@@ -1,9 +1,10 @@
 declare type Phoneme = string;
-export declare class Category {
+declare class Category {
     name: string;
     phonemes: Phoneme[];
     constructor(name: string, phonemes: Phoneme[]);
     toString(): string;
 }
-export declare function parseCategory(cat: string): Category;
-export {};
+declare type CategoryListing = Map<string, Category>;
+declare function parseCategory(cat: string): Category;
+export { CategoryListing, Category, parseCategory, };

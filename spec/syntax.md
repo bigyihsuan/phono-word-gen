@@ -29,7 +29,7 @@ categories are used with preceding `$`
 anything that's not a special character, space, or a category is a literal character
 
 ```php
-($consonant)$vowel[$N x $P]
+($consonant)$vowel[$N,x,$P,]
 ```
 
 #### Syllable Component Modifiers
@@ -40,13 +40,15 @@ exactly 1 just has the component name, like `$V`
 
 optional is wrapped in parens: `($V)`
 
-"select 1" is surrounded by square brackets, and each element is separated by commas: `[$V, $C]`
+"select 1" is surrounded by square brackets, and each element is separated by commas: `[$V,$C,]`
+
+trailing commas are required
 
 #### Random Weights
 
 random weight is range from 0 (never) and 1 (always)
 
-random weight can only be applied to optional and selection
+random weight can only be applied to ~~optional and~~ selection
 
 if sum of random weight in selection < 1, rest of the chance is filled with "nothing"
 

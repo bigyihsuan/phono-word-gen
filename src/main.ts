@@ -1,39 +1,58 @@
-import { Category, parseCategory } from "./modules/category.js"
-import { tokenizeSyllable, Token } from "./modules/syllable.js"
+import { Category, CategoryListing, parseCategory } from "./modules/category.js";
+import { tokenizeSyllable } from "./modules/syllable/lexer.js";
+import { Token } from "./modules/syllable/token.js";
+import { ParseError, parseSyllable, Syllable } from "./modules/syllable/parser.js";
 
-const phonology = document.getElementById("phonology") as HTMLInputElement
-const submit = document.getElementById("submit") as HTMLButtonElement
-const wordOutput = document.getElementById("output")
+const phonology = document.getElementById("phonology") as HTMLInputElement;
+const submit = document.getElementById("submit") as HTMLButtonElement;
+const wordOutput = document.getElementById("output");
 
-let categories: Map<string, Category> = new Map<string, Category>();
-let tokens: Token[]
+const categories: CategoryListing = new Map<string, Category>();
+let tokens: Token[];
+let syllable: Syllable | ParseError;
 
-submit?.addEventListener("click", function () {
-    let lines = phonology?.value.replaceAll(/\n+/g, "\n").split("\n").filter((s) => s.length > 0);
+submit?.addEventListener("click", () => {
+    const lines = phonology?.value.replaceAll(/\n+/g, "\n").split("\n").filter((s) => s.length > 0);
 
     lines.forEach((l) => {
-        let line = l.trim()
+        const line = l.trim();
         if (line.match(/=/)) {
-            let cat = parseCategory(line);
+            const cat = parseCategory(line);
             categories.set(cat.name, cat);
         } else if (line.match(/syllable:/)) {
             // TODO: parse syllable structure
-            tokens = tokenizeSyllable(line)
+            tokens = tokenizeSyllable(line);
+            syllable = parseSyllable(tokens.slice(), categories);
         }
-    })
+    });
 
     wordOutput?.replaceChildren(); // clear the output for each run
 
-    categories.forEach((c) => {
-        let p: HTMLParagraphElement = document.createElement("p")
-        p.innerHTML = c.toString()
-        wordOutput?.append(p)
-    })
-    wordOutput?.append(document.createElement("hr"))
-    tokens.forEach((t) => {
-        let p: HTMLParagraphElement = document.createElement("p")
-        p.innerHTML = t.toString()
-        wordOutput?.append(p)
-    })
-})
+    // categories.forEach((c) => {
+    //     const p: HTMLParagraphElement = document.createElement("p");
+    //     p.innerHTML = c.toString();
+    //     wordOutput?.append(p);
+    // });
 
+    // wordOutput?.append(document.createElement("hr"));
+    // tokens.slice().forEach((t) => {
+    //     const p: HTMLParagraphElement = document.createElement("p");
+    //     p.innerHTML = t.toString();
+    //     wordOutput?.append(p);
+    // });
+
+    // wordOutput?.append(document.createElement("hr"));
+    if (syllable instanceof ParseError) {
+        const p: HTMLParagraphElement = document.createElement("p");
+        p.innerHTML = syllable.reason
+        wordOutput?.append(p);
+    } else {
+        // console.log(syllable)
+        for (let i = 0; i < 10; i += 1) {
+            const p: HTMLParagraphElement = document.createElement("p");
+            p.innerHTML = syllable.evaluate()
+            wordOutput?.append(p);
+        }
+    }
+
+});

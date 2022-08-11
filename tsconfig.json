@@ -26,10 +26,12 @@
     "lib": [
       "ES2022",
       "DOM"
-    ]
+    ],
+    "incremental": true,
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "src/*.ts"
   ],
   "exclude": [
     "node_modules",

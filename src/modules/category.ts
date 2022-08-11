@@ -1,7 +1,8 @@
 type Phoneme = string;
 
-export class Category {
+class Category {
     name: string;
+
     phonemes: Phoneme[];
 
     constructor(name: string, phonemes: Phoneme[]) {
@@ -10,17 +11,24 @@ export class Category {
     }
 
     toString(): string {
-        return `{${this.name}: [${this.phonemes.toString()}]}`
+        return `{${this.name}: [${this.phonemes.toString()}]}`;
     }
 }
 
-export function parseCategory(cat: string): Category {
+type CategoryListing = Map<string, Category>;
+
+function parseCategory(cat: string): Category {
     let name: string = "";
     let phonemes: Phoneme[] = [];
-    let split = cat.trim().split("=").map((s) => s.trim()); // split on the equals and trim both sides
+    const split = cat.trim().split("=").map((s) => s.trim()); // split on the equals and trim both sides
 
-    name = split[0];
-    phonemes = split[1].split(" ")
+    [name, phonemes] = [split[0], split[1].split(" ")];
 
     return new Category(name, phonemes);
 }
+
+export {
+    CategoryListing,
+    Category,
+    parseCategory,
+};
