@@ -79,6 +79,9 @@ function tokenizeSyllable(line: string): Token[] {
                             lexeme += char;
                             idx += 1;
                             break;
+                        } else if (char.match(/[\s]/)) {
+                            // ignore whitespace
+                            idx += 1;
                         } else {
                             state = SLS.InRaw;
                             lexeme += char;

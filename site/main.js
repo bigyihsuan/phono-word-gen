@@ -11,7 +11,7 @@ const categories = new Map();
 let tokens;
 let syllable;
 submit === null || submit === void 0 ? void 0 : submit.addEventListener("click", () => {
-    const lines = phonology === null || phonology === void 0 ? void 0 : phonology.value.replaceAll(/\n+/g, "\n").split("\n").filter((s) => s.length > 0);
+    const lines = phonology === null || phonology === void 0 ? void 0 : phonology.value.replaceAll(/\n+/g, "\n").replaceAll(/#.*/g, "").split("\n").filter((s) => s.length > 0);
     let minSylCount = Number.parseInt(minSylCountElement.value);
     let maxSylCount = Number.parseInt(maxSylCountElement.value);
     if (minSylCount > maxSylCount) {

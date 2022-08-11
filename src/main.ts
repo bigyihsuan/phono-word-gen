@@ -15,7 +15,11 @@ let tokens: Token[];
 let syllable: Syllable | ParseError;
 
 submit?.addEventListener("click", () => {
-    const lines = phonology?.value.replaceAll(/\n+/g, "\n").split("\n").filter((s) => s.length > 0);
+    const lines = phonology?.value
+        .replaceAll(/\n+/g, "\n") // remove extraneous newlines
+        .replaceAll(/#.*/g, "") // remove comments
+        .split("\n")
+        .filter((s) => s.length > 0);
     let minSylCount = Number.parseInt(minSylCountElement.value);
     let maxSylCount = Number.parseInt(maxSylCountElement.value);
     if (minSylCount > maxSylCount) {

@@ -1,5 +1,15 @@
 # syntax
 
+## Comments
+
+comments start with `#` and go up to the end of the line
+
+```py
+# this is a comment
+c = a b c # comment here
+syllable: $c # another comment
+```
+
 ## phonology definition
 
 ### Phonemes
