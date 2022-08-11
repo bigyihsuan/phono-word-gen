@@ -1,7 +1,13 @@
 import { CategoryToken, CommaToken, LbracketToken, LparenToken, RawComponentToken, RbracketToken, RparenToken, StarToken, WeightToken } from "./token.js";
 class ParseError {
-    constructor(reason) {
+    constructor(reason, token, sylStr) {
         this.reason = reason;
+        this.token = token;
+        this.sylStr = sylStr;
+    }
+    toString() {
+        let locationstr = "^".padStart(this.token.startingIndex + 1, ' ') + '^'.padStart(this.token.endingIndex - this.token.startingIndex - 1, '-');
+        return [this.reason, this.sylStr, locationstr].join('\n');
     }
 }
 class Syllable {
@@ -98,10 +104,14 @@ class RawComponent {
         return this.component;
     }
 }
-function parseSyllable(tokens, categories) {
+function parseSyllable(tokens, categories, sylStr) {
     let components = [];
     while (tokens.length > 0) {
-        let comp = parseSyllableExpr(tokens, categories);
+        // break out when ending a selection or option
+        if (tokens.at(0) instanceof CommaToken || tokens.at(0) instanceof RparenToken) {
+            break;
+        }
+        let comp = parseSyllableExpr(tokens, categories, sylStr);
         if (comp instanceof ParseError) {
             return comp;
         }
@@ -109,43 +119,43 @@ function parseSyllable(tokens, categories) {
     }
     return new Syllable(components);
 }
-function parseSyllableExpr(tokens, categories) {
+function parseSyllableExpr(tokens, categories, sylStr) {
     let component;
     let tok = tokens.shift();
     if (tok instanceof RawComponentToken) {
-        component = parseRawComponent(tok);
+        component = parseRawComponent(tok, sylStr);
     }
     else if (tok instanceof CategoryToken) {
-        let cat = parseCategory(tok, categories);
+        let cat = parseCategory(tok, categories, sylStr);
         if (cat instanceof ParseError) {
             return cat;
         }
         component = cat;
     }
     else if (tok instanceof LparenToken) {
-        let opt = parseOptionalComponent(tokens, categories);
+        let opt = parseOptionalComponent(tokens, categories, sylStr);
         if (opt instanceof ParseError) {
             return opt;
         }
         component = opt;
     }
     else if (tok instanceof LbracketToken) {
-        let sel = parseSelection(tokens, categories);
+        let sel = parseSelection(tokens, categories, sylStr);
         if (sel instanceof ParseError) {
             return sel;
         }
         component = sel;
     }
     else {
-        return new ParseError(`SyllableExpr got some invalid token '${tok}'`);
+        return new ParseError(`SyllableExpr got some invalid token '${tok}'`, tok, sylStr);
     }
     return new SyllableExpr(component);
 }
-function parseSelection(tokens, categories) {
+function parseSelection(tokens, categories, sylStr) {
     let components = [];
-    // lbracket component star weight comma
+    // lbracket component star weight comma syllable comma
     while (true) {
-        let component = parseSyllableExpr(tokens, categories);
+        let component = parseSyllable(tokens, categories, sylStr);
         if (component instanceof ParseError) {
             return component;
         }
@@ -153,14 +163,14 @@ function parseSelection(tokens, categories) {
         // for weight
         let starOrComma = tokens.at(0);
         if (starOrComma instanceof StarToken) {
-            option = parseSelectionOptionWithWeight(tokens, component);
+            option = parseSelectionOptionWithWeight(tokens, component, sylStr);
             if (option instanceof ParseError) {
                 return option;
             }
             components.push(option);
         }
         else if (!(starOrComma instanceof CommaToken)) {
-            return new ParseError(`Selection expected comma after component, got '${starOrComma}' instead`);
+            return new ParseError(`Selection expected comma after component, got '${starOrComma}' instead`, starOrComma, sylStr);
         }
         else {
             // end of no-weight selection option, temporarily set weight to -1
@@ -171,7 +181,7 @@ function parseSelection(tokens, categories) {
         // check for end of selection
         let rbracket = tokens.at(0);
         if (rbracket === undefined) {
-            return new ParseError(`Selection expected ']' to end, ran out of tokens instead`);
+            return new ParseError(`Selection expected ']' to end, ran out of tokens instead`, rbracket, sylStr);
         }
         else if (!(rbracket instanceof RbracketToken)) {
             continue;
@@ -185,30 +195,30 @@ function parseSelection(tokens, categories) {
     }
     return new Selection(components);
 }
-function parseSelectionOptionWithWeight(tokens, component) {
+function parseSelectionOptionWithWeight(tokens, component, sylStr) {
     let star = tokens.shift();
     if (!(star instanceof StarToken)) {
-        return new ParseError(`SelectionOption expected '*' after component, got '${star}' instead`);
+        return new ParseError(`SelectionOption expected '*' after component, got '${star}' instead`, star, sylStr);
     }
     let weightTok = tokens.shift();
     if (!(weightTok instanceof WeightToken)) {
-        return new ParseError(`SelectionOption expected a weight after '*', got '${weightTok}' instead`);
+        return new ParseError(`SelectionOption expected a weight after '*', got '${weightTok}' instead`, weightTok, sylStr);
     }
     let weight = Number.parseFloat(weightTok.lexeme);
     if (weight === NaN) {
-        return new ParseError(`SelectionOption weight is not valid, got '${weightTok}' instead`);
+        return new ParseError(`SelectionOption weight is not valid, got '${weightTok}' instead`, weightTok, sylStr);
     }
     return new SelectionOption(component, weight);
 }
 // TODO: optional component with weight
-function parseOptionalComponent(tokens, categories) {
-    let component = parseSyllableExpr(tokens, categories);
+function parseOptionalComponent(tokens, categories, sylStr) {
+    let component = parseSyllableExpr(tokens, categories, sylStr);
     if (component instanceof ParseError) {
         return component;
     }
     let rparen = tokens.shift();
     if (!(rparen instanceof RparenToken)) {
-        return new ParseError(`OptionalComponent expected right paren, got '${rparen}' instead`);
+        return new ParseError(`OptionalComponent expected right paren, got '${rparen}' instead`, rparen, sylStr);
     }
     // optional weight: star weight
     let star = tokens.at(0);
@@ -217,25 +227,25 @@ function parseOptionalComponent(tokens, categories) {
         // expect weight
         let weightTok = tokens.shift();
         if (!(weightTok instanceof WeightToken)) {
-            return new ParseError(`OptionalComponent expected weight after star, got '${weightTok}' instead`);
+            return new ParseError(`OptionalComponent expected weight after star, got '${weightTok}' instead`, weightTok, sylStr);
         }
         let weight = Number.parseFloat(weightTok.lexeme);
         if (weight === NaN) {
-            return new ParseError(`OptionalComponent weight is not valid, got '${weightTok}' instead`);
+            return new ParseError(`OptionalComponent weight is not valid, got '${weightTok}' instead`, weightTok, sylStr);
         }
         return new OptionalComponent(component, weight);
     }
     return new OptionalComponent(component);
 }
-function parseCategory(token, categories) {
+function parseCategory(token, categories, sylStr) {
     const name = token.lexeme.replace("$", "");
     const category = categories.get(name);
     if (category === undefined) {
-        return new ParseError(`Category ${name} not found`);
+        return new ParseError(`Category ${name} not found`, token, sylStr);
     }
     return new CategoryNode(category);
 }
-function parseRawComponent(token) {
+function parseRawComponent(token, _) {
     return new RawComponent(token.lexeme);
 }
 export { Syllable, parseSyllable, ParseError, };

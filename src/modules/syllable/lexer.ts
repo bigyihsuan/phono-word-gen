@@ -23,7 +23,7 @@ enum SLS {
 
 function tokenizeSyllable(line: string): Token[] {
     // tokenize syllable string
-    const sylLine = line.replaceAll("syllable:", "").trim() + "\n"; // delete the `syllable:` directive
+    const sylLine = line.trim() + "\n"; // delete the `syllable:` directive
     let state = SLS.Start;
 
     const tokens: Token[] = [];

@@ -7,6 +7,7 @@ const wordOutput = document.getElementById("output");
 const minSylCountElement = document.getElementById("minSylCount");
 const maxSylCountElement = document.getElementById("maxSylCount");
 const wordCountElement = document.getElementById("wordCount");
+const wordOutputTextArea = document.getElementById("outputText");
 const categories = new Map();
 let tokens;
 let syllable;
@@ -20,18 +21,20 @@ submit === null || submit === void 0 ? void 0 : submit.addEventListener("click",
     }
     let wordCount = Number.parseInt(wordCountElement.value);
     lines.forEach((l) => {
-        const line = l.trim();
+        let line = l.trim();
         if (line.match(/=/)) {
             const cat = parseCategory(line);
             categories.set(cat.name, cat);
         }
         else if (line.match(/syllable:/)) {
             // TODO: parse syllable structure
+            line = line.replaceAll("syllable:", "").trim();
             tokens = tokenizeSyllable(line);
-            syllable = parseSyllable(tokens.slice(), categories);
+            syllable = parseSyllable(tokens.slice(), categories, line);
         }
     });
     wordOutput === null || wordOutput === void 0 ? void 0 : wordOutput.replaceChildren(); // clear the output for each run
+    wordOutputTextArea.value = "";
     // categories.forEach((c) => {
     //     const p: HTMLParagraphElement = document.createElement("p");
     //     p.innerHTML = c.toString();
@@ -45,9 +48,7 @@ submit === null || submit === void 0 ? void 0 : submit.addEventListener("click",
     // });
     // wordOutput?.append(document.createElement("hr"));
     if (syllable instanceof ParseError) {
-        const p = document.createElement("p");
-        p.innerHTML = syllable.reason;
-        wordOutput === null || wordOutput === void 0 ? void 0 : wordOutput.append(p);
+        wordOutputTextArea.value += syllable.toString();
     }
     else if (syllable !== undefined) {
         for (let _ = 0; _ < wordCount; _ += 1) {

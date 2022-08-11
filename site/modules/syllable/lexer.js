@@ -10,7 +10,7 @@ var SLS;
 })(SLS || (SLS = {}));
 function tokenizeSyllable(line) {
     // tokenize syllable string
-    const sylLine = line.replaceAll("syllable:", "").trim() + "\n"; // delete the `syllable:` directive
+    const sylLine = line.trim() + "\n"; // delete the `syllable:` directive
     let state = SLS.Start;
     const tokens = [];
     let idx = 0;

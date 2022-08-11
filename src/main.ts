@@ -9,6 +9,7 @@ const wordOutput = document.getElementById("output");
 const minSylCountElement = document.getElementById("minSylCount") as HTMLInputElement;
 const maxSylCountElement = document.getElementById("maxSylCount") as HTMLInputElement;
 const wordCountElement = document.getElementById("wordCount") as HTMLInputElement;
+const wordOutputTextArea = document.getElementById("outputText") as HTMLInputElement;
 
 const categories: CategoryListing = new Map<string, Category>();
 let tokens: Token[];
@@ -29,18 +30,20 @@ submit?.addEventListener("click", () => {
     let wordCount = Number.parseInt(wordCountElement.value)
 
     lines.forEach((l) => {
-        const line = l.trim();
+        let line = l.trim();
         if (line.match(/=/)) {
             const cat = parseCategory(line);
             categories.set(cat.name, cat);
         } else if (line.match(/syllable:/)) {
             // TODO: parse syllable structure
+            line = line.replaceAll("syllable:", "").trim();
             tokens = tokenizeSyllable(line);
-            syllable = parseSyllable(tokens.slice(), categories);
+            syllable = parseSyllable(tokens.slice(), categories, line);
         }
     });
 
     wordOutput?.replaceChildren(); // clear the output for each run
+    wordOutputTextArea.value = "";
 
     // categories.forEach((c) => {
     //     const p: HTMLParagraphElement = document.createElement("p");
@@ -57,9 +60,7 @@ submit?.addEventListener("click", () => {
 
     // wordOutput?.append(document.createElement("hr"));
     if (syllable instanceof ParseError) {
-        const p: HTMLParagraphElement = document.createElement("p");
-        p.innerHTML = syllable.reason
-        wordOutput?.append(p);
+        wordOutputTextArea.value += syllable.toString();
     } else if (syllable !== undefined) {
         for (let _ = 0; _ < wordCount; _ += 1) {
             const p: HTMLParagraphElement = document.createElement("p");

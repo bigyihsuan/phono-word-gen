@@ -5,7 +5,10 @@ interface EvaluableComponent {
 }
 declare class ParseError {
     reason: string;
-    constructor(reason: string);
+    token: Token;
+    sylStr: string;
+    constructor(reason: string, token: Token, sylStr: string);
+    toString(): string;
 }
 declare class Syllable implements EvaluableComponent {
     components: SyllableExpr[];
@@ -17,5 +20,5 @@ declare class SyllableExpr implements EvaluableComponent {
     constructor(component: EvaluableComponent);
     evaluate(): string;
 }
-declare function parseSyllable(tokens: Token[], categories: CategoryListing): Syllable | ParseError;
+declare function parseSyllable(tokens: Token[], categories: CategoryListing, sylStr: string): Syllable | ParseError;
 export { Syllable, parseSyllable, ParseError, };
