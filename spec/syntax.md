@@ -48,7 +48,7 @@ trailing commas are required
 
 random weight is range from 0 (never) and 1 (always)
 
-random weight can only be applied to ~~optional and~~ selection
+random weight can only be applied to optional and selection
 
 if sum of random weight in selection < 1, rest of the chance is filled with "nothing"
 

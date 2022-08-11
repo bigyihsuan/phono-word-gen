@@ -103,13 +103,15 @@ class SelectionOption {
 
 class OptionalComponent implements EvaluableComponent, RandomlyChoosable {
     component: EvaluableComponent;
-
-    constructor(component: EvaluableComponent) {
+    weight: number;
+    // default weight is 50/50
+    constructor(component: EvaluableComponent, weight: number = 0.5) {
         this.component = component;
+        this.weight = weight;
     }
 
     getRandomChoice(): string {
-        return Math.random() < 0.5 ? this.component.evaluate() : "";
+        return Math.random() < this.weight ? this.component.evaluate() : "";
     }
 
     evaluate(): string {
@@ -254,6 +256,21 @@ function parseOptionalComponent(tokens: Token[], categories: CategoryListing): O
     let rparen = tokens.shift()
     if (!(rparen instanceof RparenToken)) {
         return new ParseError(`OptionalComponent expected right paren, got '${rparen}' instead`)
+    }
+    // optional weight: star weight
+    let star = tokens.at(0)
+    if (star instanceof StarToken) {
+        tokens.shift()
+        // expect weight
+        let weightTok = tokens.shift();
+        if (!(weightTok instanceof WeightToken)) {
+            return new ParseError(`OptionalComponent expected weight after star, got '${weightTok}' instead`)
+        }
+        let weight = Number.parseFloat(weightTok.lexeme)
+        if (weight === NaN) {
+            return new ParseError(`OptionalComponent weight is not valid, got '${weightTok}' instead`)
+        }
+        return new OptionalComponent(component, weight)
     }
     return new OptionalComponent(component)
 }

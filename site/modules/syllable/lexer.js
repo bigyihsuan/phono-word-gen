@@ -58,17 +58,19 @@ function tokenizeSyllable(line) {
                         idx += 1;
                         break;
                     }
-                    case "0": {
-                        state = SLS.InWeight;
-                        lexeme += char;
-                        idx += 1;
-                        break;
-                    }
                     default: {
-                        state = SLS.InRaw;
-                        lexeme += char;
-                        idx += 1;
-                        break;
+                        if (char.match(/[0-9]/)) {
+                            state = SLS.InWeight;
+                            lexeme += char;
+                            idx += 1;
+                            break;
+                        }
+                        else {
+                            state = SLS.InRaw;
+                            lexeme += char;
+                            idx += 1;
+                            break;
+                        }
                     }
                 }
                 break;

@@ -65,11 +65,13 @@ class SelectionOption {
     }
 }
 class OptionalComponent {
-    constructor(component) {
+    // default weight is 50/50
+    constructor(component, weight = 0.5) {
         this.component = component;
+        this.weight = weight;
     }
     getRandomChoice() {
-        return Math.random() < 0.5 ? this.component.evaluate() : "";
+        return Math.random() < this.weight ? this.component.evaluate() : "";
     }
     evaluate() {
         return this.getRandomChoice();
@@ -207,6 +209,21 @@ function parseOptionalComponent(tokens, categories) {
     let rparen = tokens.shift();
     if (!(rparen instanceof RparenToken)) {
         return new ParseError(`OptionalComponent expected right paren, got '${rparen}' instead`);
+    }
+    // optional weight: star weight
+    let star = tokens.at(0);
+    if (star instanceof StarToken) {
+        tokens.shift();
+        // expect weight
+        let weightTok = tokens.shift();
+        if (!(weightTok instanceof WeightToken)) {
+            return new ParseError(`OptionalComponent expected weight after star, got '${weightTok}' instead`);
+        }
+        let weight = Number.parseFloat(weightTok.lexeme);
+        if (weight === NaN) {
+            return new ParseError(`OptionalComponent weight is not valid, got '${weightTok}' instead`);
+        }
+        return new OptionalComponent(component, weight);
     }
     return new OptionalComponent(component);
 }
