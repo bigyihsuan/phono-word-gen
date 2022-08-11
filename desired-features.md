@@ -5,13 +5,13 @@
 - `DONE` Arbitrary-length phonemes
 - `DONE` Phoneme categories
 - `DONE` Optional, Selection (`(a)`, `[a,b,]`)
-- `DONE` Randomness Control: Manual weighting of Selection
-- `TODO` Syllable-based word generator
-- `TODO` Can specify minimum and maximum number of syllables per word.
+- `DONE` Randomness Control: Manual weighting of components in selections
+- `DONE` Syllable-based word generator
+- `DONE` Can specify minimum and maximum number of syllables per word.
 
 ## After Minimum
 
-- Randomness Control: Manual weighting per-phoneme
+- Randomness Control: Manual weighting per-phoneme in categories
 - Both phoneme-based and category-based output filtration, substitution, modification (Lexurgy-style rewrite rules?)
 - Cluster tables
 
