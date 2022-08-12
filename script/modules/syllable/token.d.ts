@@ -17,10 +17,14 @@ declare class LbracketToken extends Token {
 }
 declare class RbracketToken extends Token {
 }
+declare class LcurlyToken extends Token {
+}
+declare class RcurlyToken extends Token {
+}
 declare class CommaToken extends Token {
 }
 declare class StarToken extends Token {
 }
 declare class WeightToken extends Token {
 }
-export { Token, RawComponentToken, CategoryToken, LparenToken, RparenToken, LbracketToken, RbracketToken, CommaToken, StarToken, WeightToken, };
+export { Token, RawComponentToken, CategoryToken, LparenToken, RparenToken, LbracketToken, RbracketToken, CommaToken, StarToken, WeightToken, LcurlyToken, RcurlyToken, };

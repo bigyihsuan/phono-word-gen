@@ -23,6 +23,8 @@ class LparenToken extends Token { }
 class RparenToken extends Token { }
 class LbracketToken extends Token { }
 class RbracketToken extends Token { }
+class LcurlyToken extends Token { }
+class RcurlyToken extends Token { }
 class CommaToken extends Token { }
 class StarToken extends Token { }
 class WeightToken extends Token { }
@@ -38,4 +40,6 @@ export {
     CommaToken,
     StarToken,
     WeightToken,
+    LcurlyToken,
+    RcurlyToken,
 };

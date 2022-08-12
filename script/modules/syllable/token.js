@@ -24,11 +24,15 @@ class LbracketToken extends Token {
 }
 class RbracketToken extends Token {
 }
+class LcurlyToken extends Token {
+}
+class RcurlyToken extends Token {
+}
 class CommaToken extends Token {
 }
 class StarToken extends Token {
 }
 class WeightToken extends Token {
 }
-export { Token, RawComponentToken, CategoryToken, LparenToken, RparenToken, LbracketToken, RbracketToken, CommaToken, StarToken, WeightToken, };
+export { Token, RawComponentToken, CategoryToken, LparenToken, RparenToken, LbracketToken, RbracketToken, CommaToken, StarToken, WeightToken, LcurlyToken, RcurlyToken, };
 //# sourceMappingURL=token.js.map

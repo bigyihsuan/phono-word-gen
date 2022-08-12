@@ -1,5 +1,5 @@
-import { LparenToken, RparenToken, LbracketToken, RbracketToken, StarToken, CommaToken, RawComponentToken, CategoryToken, WeightToken, } from "./token.js";
-const NAME_END = "$*,[]() \n";
+import { LparenToken, RparenToken, LbracketToken, RbracketToken, StarToken, CommaToken, RawComponentToken, CategoryToken, WeightToken, LcurlyToken, RcurlyToken, } from "./token.js";
+const NAME_END = "$*,[](){} \n";
 // syllable lexer state
 var SLS;
 (function (SLS) {
@@ -40,6 +40,16 @@ export default function tokenizeSyllable(line) {
                     case "]": {
                         idx += 1;
                         tokens.push(new RbracketToken(char, startingIndex, idx));
+                        break;
+                    }
+                    case "{": {
+                        idx += 1;
+                        tokens.push(new LcurlyToken(char, startingIndex, idx));
+                        break;
+                    }
+                    case "}": {
+                        idx += 1;
+                        tokens.push(new RcurlyToken(char, startingIndex, idx));
                         break;
                     }
                     case "*": {

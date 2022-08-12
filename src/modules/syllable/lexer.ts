@@ -9,9 +9,11 @@ import {
     RawComponentToken,
     CategoryToken,
     WeightToken,
+    LcurlyToken,
+    RcurlyToken,
 } from "./token.js";
 
-const NAME_END = "$*,[]() \n";
+const NAME_END = "$*,[](){} \n";
 
 // syllable lexer state
 enum SLS {
@@ -55,6 +57,16 @@ export default function tokenizeSyllable(line: string): Token[] {
                     case "]": {
                         idx += 1;
                         tokens.push(new RbracketToken(char, startingIndex, idx));
+                        break;
+                    }
+                    case "{": {
+                        idx += 1;
+                        tokens.push(new LcurlyToken(char, startingIndex, idx));
+                        break;
+                    }
+                    case "}": {
+                        idx += 1;
+                        tokens.push(new RcurlyToken(char, startingIndex, idx));
                         break;
                     }
                     case "*": {

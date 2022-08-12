@@ -10,6 +10,7 @@ const maxSylCountElement = document.getElementById("maxSylCount");
 const wordCountElement = document.getElementById("wordCount");
 const wordOutputTextArea = document.getElementById("outputText");
 const allowDuplicatesElement = document.getElementById("allowDuplicates");
+const sortOutputElement = document.getElementById("sortOutput");
 let categories = new Map();
 let tokens;
 let syllable;
@@ -19,11 +20,15 @@ submit?.addEventListener("click", () => {
         .replaceAll(/#.*/g, "") // remove comments
         .split("\n")
         .filter((s) => s.length > 0);
-    const minSylCount = Number.parseInt(minSylCountElement.value, 10);
+    let minSylCount = Number.parseInt(minSylCountElement.value, 10);
     let maxSylCount = Number.parseInt(maxSylCountElement.value, 10);
     if (minSylCount > maxSylCount) {
         maxSylCountElement.value = minSylCount.toString();
         maxSylCount = minSylCount;
+    }
+    else if (maxSylCount < minSylCount) {
+        minSylCountElement.value = maxSylCount.toString();
+        minSylCount = maxSylCount;
     }
     const wordCount = Number.parseInt(wordCountElement.value, 10);
     lines.forEach((l) => {
@@ -34,7 +39,6 @@ submit?.addEventListener("click", () => {
         }
     });
     categories = fillCategories(categories);
-    console.log(categories);
     const sylLine = lines.find((l) => l.trim().match(/syllable:/))?.replaceAll("syllable:", "").trim();
     if (sylLine !== undefined) {
         tokens = tokenizeSyllable(sylLine);
@@ -58,6 +62,9 @@ submit?.addEventListener("click", () => {
         }
         if (!allowDuplicatesElement.checked) {
             words = [...new Set(words)];
+        }
+        if (sortOutputElement.checked) {
+            words = words.sort();
         }
         wordOutputTextArea.value = words.join("\n");
     }
