@@ -1,0 +1,14 @@
+N = m n N
+P = p b t d k g
+A = ts dz ch
+F = f s z sh zh h
+L = r
+S = y w
+M = Q
+V = a i u e o
+Q = N Q
+
+yoonC = $P $L $N j h
+yoonV = a u o
+
+syllable: ([$C, $yoonC$yoonV])$V($Q)

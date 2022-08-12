@@ -12,6 +12,7 @@
 ## After Minimum
 
 - Randomness Control: Manual weighting per-phoneme in categories
+- Treating categories like sets, and allowing addition/subtraction of categories
 - Both phoneme-based and category-based output filtration, substitution, modification (Lexurgy-style rewrite rules?)
 - Cluster tables
 

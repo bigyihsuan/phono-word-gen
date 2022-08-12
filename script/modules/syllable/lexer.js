@@ -1,33 +1,18 @@
-import {
-    Token,
-    LparenToken,
-    RparenToken,
-    LbracketToken,
-    RbracketToken,
-    StarToken,
-    CommaToken,
-    RawComponentToken,
-    CategoryToken,
-    WeightToken,
-} from "./token.js";
-
+import { LparenToken, RparenToken, LbracketToken, RbracketToken, StarToken, CommaToken, RawComponentToken, CategoryToken, WeightToken, } from "./token.js";
 const NAME_END = "$*,[]() \n";
-
 // syllable lexer state
-enum SLS {
-    Start = "Start",
-    InCategory = "InCategory", // `$name`
-    InRaw = "InRaw", // `name`
-    InWeight = "InWeight", // `*0.1234`
-}
-
-export default function tokenizeSyllable(line: string): Token[] {
+var SLS;
+(function (SLS) {
+    SLS["Start"] = "Start";
+    SLS["InCategory"] = "InCategory";
+    SLS["InRaw"] = "InRaw";
+    SLS["InWeight"] = "InWeight";
+})(SLS || (SLS = {}));
+export default function tokenizeSyllable(line) {
     // tokenize syllable string
     const sylLine = `${line.trim()}\n`; // delete the `syllable:` directive
     let state = SLS.Start;
-
-    const tokens: Token[] = [];
-
+    const tokens = [];
     let idx = 0;
     let lexeme = "";
     let startingIndex = 0;
@@ -79,10 +64,12 @@ export default function tokenizeSyllable(line: string): Token[] {
                             lexeme += char;
                             idx += 1;
                             break;
-                        } else if (char.match(/\s/)) {
+                        }
+                        else if (char.match(/\s/)) {
                             // ignore whitespace
                             idx += 1;
-                        } else {
+                        }
+                        else {
                             state = SLS.InRaw;
                             lexeme += char;
                             idx += 1;
@@ -97,7 +84,8 @@ export default function tokenizeSyllable(line: string): Token[] {
                     tokens.push(new RawComponentToken(lexeme, startingIndex, idx));
                     state = SLS.Start;
                     lexeme = "";
-                } else {
+                }
+                else {
                     lexeme += char;
                     idx += 1;
                 }
@@ -108,7 +96,8 @@ export default function tokenizeSyllable(line: string): Token[] {
                     tokens.push(new CategoryToken(lexeme, startingIndex, idx));
                     state = SLS.Start;
                     lexeme = "";
-                } else {
+                }
+                else {
                     lexeme += char;
                     idx += 1;
                 }
@@ -119,7 +108,8 @@ export default function tokenizeSyllable(line: string): Token[] {
                     tokens.push(new WeightToken(lexeme, startingIndex, idx));
                     state = SLS.Start;
                     lexeme = "";
-                } else {
+                }
+                else {
                     lexeme += char;
                     idx += 1;
                 }
@@ -132,7 +122,5 @@ export default function tokenizeSyllable(line: string): Token[] {
     }
     return tokens;
 }
-
-export {
-    tokenizeSyllable,
-};
+export { tokenizeSyllable, };
+//# sourceMappingURL=lexer.js.map
