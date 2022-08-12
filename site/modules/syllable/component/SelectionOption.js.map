@@ -1,0 +1,1 @@
+{"version":3,"file":"SelectionOption.js","sourceRoot":"","sources":["../../../../src/modules/syllable/component/SelectionOption.ts"],"names":[],"mappings":"AAEA,MAAM,CAAC,OAAO,OAAO,eAAe;IAKhC,YAAY,SAA6B,EAAE,MAAc;QACrD,IAAI,CAAC,SAAS,GAAG,SAAS,CAAC;QAC3B,IAAI,CAAC,MAAM,GAAG,MAAM,CAAC;IACzB,CAAC;CACJ;AAED,OAAO,EAAE,eAAe,EAAE,CAAC"}

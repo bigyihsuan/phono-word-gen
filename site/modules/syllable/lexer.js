@@ -8,9 +8,9 @@ var SLS;
     SLS["InRaw"] = "InRaw";
     SLS["InWeight"] = "InWeight";
 })(SLS || (SLS = {}));
-function tokenizeSyllable(line) {
+export default function tokenizeSyllable(line) {
     // tokenize syllable string
-    const sylLine = line.trim() + "\n"; // delete the `syllable:` directive
+    const sylLine = `${line.trim()}\n`; // delete the `syllable:` directive
     let state = SLS.Start;
     const tokens = [];
     let idx = 0;
@@ -114,6 +114,9 @@ function tokenizeSyllable(line) {
                     idx += 1;
                 }
                 break;
+            }
+            default: {
+                // nop, state is always SLS
             }
         }
     }

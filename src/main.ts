@@ -1,7 +1,8 @@
 import { Category, CategoryListing, parseCategory } from "./modules/category.js";
-import { tokenizeSyllable } from "./modules/syllable/lexer.js";
+import tokenizeSyllable from "./modules/syllable/lexer.js";
+import { ParseError } from "./modules/syllable/ParseError.js";
+import { Syllable, parseSyllable } from "./modules/syllable/parser.js";
 import { Token } from "./modules/syllable/token.js";
-import { ParseError, parseSyllable, Syllable } from "./modules/syllable/parser.js";
 
 const phonology = document.getElementById("phonology") as HTMLInputElement;
 const submit = document.getElementById("submit") as HTMLButtonElement;
@@ -10,6 +11,7 @@ const minSylCountElement = document.getElementById("minSylCount") as HTMLInputEl
 const maxSylCountElement = document.getElementById("maxSylCount") as HTMLInputElement;
 const wordCountElement = document.getElementById("wordCount") as HTMLInputElement;
 const wordOutputTextArea = document.getElementById("outputText") as HTMLInputElement;
+const allowDuplicatesElement = document.getElementById("allowDuplicates") as HTMLInputElement;
 
 const categories: CategoryListing = new Map<string, Category>();
 let tokens: Token[];
@@ -21,13 +23,13 @@ submit?.addEventListener("click", () => {
         .replaceAll(/#.*/g, "") // remove comments
         .split("\n")
         .filter((s) => s.length > 0);
-    let minSylCount = Number.parseInt(minSylCountElement.value);
-    let maxSylCount = Number.parseInt(maxSylCountElement.value);
+    const minSylCount = Number.parseInt(minSylCountElement.value, 10);
+    let maxSylCount = Number.parseInt(maxSylCountElement.value, 10);
     if (minSylCount > maxSylCount) {
-        minSylCountElement.value = maxSylCount.toString()
-        minSylCount = maxSylCount
+        maxSylCountElement.value = minSylCount.toString();
+        maxSylCount = minSylCount;
     }
-    let wordCount = Number.parseInt(wordCountElement.value)
+    const wordCount = Number.parseInt(wordCountElement.value, 10);
 
     lines.forEach((l) => {
         let line = l.trim();
@@ -45,33 +47,25 @@ submit?.addEventListener("click", () => {
     wordOutput?.replaceChildren(); // clear the output for each run
     wordOutputTextArea.value = "";
 
-    // categories.forEach((c) => {
-    //     const p: HTMLParagraphElement = document.createElement("p");
-    //     p.innerHTML = c.toString();
-    //     wordOutput?.append(p);
-    // });
-
-    // wordOutput?.append(document.createElement("hr"));
-    // tokens.slice().forEach((t) => {
-    //     const p: HTMLParagraphElement = document.createElement("p");
-    //     p.innerHTML = t.toString();
-    //     wordOutput?.append(p);
-    // });
-
-    // wordOutput?.append(document.createElement("hr"));
+    wordOutput?.append(document.createElement("hr"));
     if (syllable instanceof ParseError) {
         wordOutputTextArea.value += syllable.toString();
     } else if (syllable !== undefined) {
+        let words: string[] = [];
         for (let _ = 0; _ < wordCount; _ += 1) {
-            const p: HTMLParagraphElement = document.createElement("p");
-            let outWord = ""
-            let numSyllables = Math.max(minSylCount, Math.floor(maxSylCount - Math.random() * maxSylCount) + 1)
-            for (let i = 0; i < numSyllables; i++) {
-                outWord += syllable.evaluate()
+            let outWord = "";
+            const numSyllables = Math.max(
+                minSylCount,
+                Math.floor(maxSylCount - Math.random() * maxSylCount) + 1,
+            );
+            for (let i = 0; i < numSyllables; i += 1) {
+                outWord += syllable.evaluate();
             }
-            p.innerHTML = outWord
-            wordOutput?.append(p);
+            words.push(outWord);
         }
+        if (!allowDuplicatesElement.checked) {
+            words = [...new Set(words)];
+        }
+        wordOutputTextArea.value = words.join("\n");
     }
-
 });

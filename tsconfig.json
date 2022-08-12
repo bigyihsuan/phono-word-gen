@@ -27,7 +27,7 @@
       "ES2022",
       "DOM"
     ],
-    "incremental": true,
+    // "incremental": true,
   },
   "include": [
     "src/**/*.ts",

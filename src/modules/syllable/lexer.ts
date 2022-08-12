@@ -21,9 +21,9 @@ enum SLS {
     InWeight = "InWeight", // `*0.1234`
 }
 
-function tokenizeSyllable(line: string): Token[] {
+export default function tokenizeSyllable(line: string): Token[] {
     // tokenize syllable string
-    const sylLine = line.trim() + "\n"; // delete the `syllable:` directive
+    const sylLine = `${line.trim()}\n`; // delete the `syllable:` directive
     let state = SLS.Start;
 
     const tokens: Token[] = [];
@@ -124,6 +124,9 @@ function tokenizeSyllable(line: string): Token[] {
                     idx += 1;
                 }
                 break;
+            }
+            default: {
+                // nop, state is always SLS
             }
         }
     }

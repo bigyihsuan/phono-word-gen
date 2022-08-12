@@ -1,0 +1,1 @@
+{"version":3,"file":"SyllableExpr.js","sourceRoot":"","sources":["../../../../src/modules/syllable/component/SyllableExpr.ts"],"names":[],"mappings":"AAEA,MAAM,CAAC,OAAO,OAAO,YAAY;IAG7B,YAAY,SAA6B;QACrC,IAAI,CAAC,SAAS,GAAG,SAAS,CAAC;IAC/B,CAAC;IAED,QAAQ;QACJ,OAAO,IAAI,CAAC,SAAS,CAAC,QAAQ,EAAE,CAAC;IACrC,CAAC;CACJ;AAED,OAAO,EAAE,YAAY,EAAE,CAAC"}
