@@ -8,7 +8,6 @@ import { Token } from "./modules/syllable/token.js";
 
 const phonology = document.getElementById("phonology") as HTMLInputElement;
 const submit = document.getElementById("submit") as HTMLButtonElement;
-const wordOutput = document.getElementById("output");
 const minSylCountElement = document.getElementById("minSylCount") as HTMLInputElement;
 const maxSylCountElement = document.getElementById("maxSylCount") as HTMLInputElement;
 const wordCountElement = document.getElementById("wordCount") as HTMLInputElement;
@@ -45,7 +44,12 @@ submit?.addEventListener("click", () => {
         }
     });
 
-    categories = fillCategories(categories);
+    const maybeCats = fillCategories(categories);
+    if (maybeCats instanceof Error) {
+        wordOutputTextArea.value = maybeCats.message;
+        return;
+    }
+    categories = maybeCats;
 
     const sylLine = lines.find((l) => l.trim().match(/syllable:/))?.replaceAll("syllable:", "").trim();
     if (sylLine !== undefined) {
@@ -53,10 +57,8 @@ submit?.addEventListener("click", () => {
         syllable = parseSyllable(tokens.slice(), categories, sylLine);
     }
 
-    wordOutput?.replaceChildren(); // clear the output for each run
     wordOutputTextArea.value = "";
 
-    wordOutput?.append(document.createElement("hr"));
     if (syllable instanceof ParseError) {
         wordOutputTextArea.value += syllable.toString();
     } else if (syllable !== undefined) {
