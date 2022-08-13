@@ -9,5 +9,3 @@
 coverage
 *.log
 
-# ignore generated tsc files
-/script/*
