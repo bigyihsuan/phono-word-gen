@@ -14,8 +14,6 @@ export default class Selection implements RandomlyChoosable, EvaluableComponent 
 
     // see https://stackoverflow.com/a/55671924/8143168
     generateWeights() {
-        let i: number;
-
         const unassignedSos = this.options.filter((so) => so.weight < 0);
         const unassignedCount = unassignedSos.length;
         const totalWeight = this.options
@@ -28,7 +26,7 @@ export default class Selection implements RandomlyChoosable, EvaluableComponent 
             s.weight = so.weight < 0 ? unassignedWeight : so.weight;
             return s;
         });
-        for (i = 0; i < this.options.length; i += 1) {
+        for (let i = 0; i < this.options.length; i += 1) {
             this.weights[i] = this.options[i].weight + (this.weights[i - 1] || 0);
         }
     }

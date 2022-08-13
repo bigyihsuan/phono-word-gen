@@ -63,7 +63,7 @@
                 <h3>Phonology</h3>
                 <ul>
                     <li>Category: <code>name = phoneme phoneme phoneme ...</code></li>
-                    <li>Using a category in a category: <code>C = $A $B raw $D ...</code> (Note: recursive/curcular usage, i.e. A in B in A, not allowed)</li>
+                    <li>Using a category in a category: <code>C = $A $B raw $D ...</code> (Note: recursive/circular usage, i.e. A in B in A, not allowed)</li>
                 </ul>
                 <h3>Syllable</h3>
                 <ul>
@@ -77,10 +77,12 @@
                 </ul>
                 <h3>Weighting Rules</h3>
                 <ul>
-                    <li>Weights mark how often a component can appear (typically a decimal number from 0 to 1)</li>
-                    <li>Weights can be applied to optionals, or elements in a selection</li>
+                    <li>Weights mark how often a component or phoneme can appear (typically a decimal number from 0 to 1, values > 1 are not recommended)</li>
+                    <li>Weights can be applied to phonemes, optionals, or elements in a selection</li>
+                    <li>Phoneme weights are placed after the phoneme: <code>C = p*0.1 t*0.3 k</code></li>
+                    <li>Weighted optionals define what chance for that optional to appear (i.e. a weight of 0.33 means that it will appear ~33% of the time)</li>
                     <li>Weighted selection elements with multiple components must use grouping <code>{group}*0.3</code></li>
-                    <li>Selection elements without weights have their weights automatically assigned to <code>(1 - sum(marked weights)) / (# unmarked components)</code></li>
+                    <li>Selection elements and phonemes without weights have their weights automatically assigned to <code>(1 - sum(marked weights)) / (# unmarked components)</code></li>
                 </ul>
             </div>
         </div>

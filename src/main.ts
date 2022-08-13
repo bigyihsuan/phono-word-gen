@@ -1,6 +1,6 @@
 import {
     Category, CategoryListing, fillCategories, parseCategory,
-} from "./modules/category.js";
+} from "./modules/Category.js";
 import tokenizeSyllable from "./modules/syllable/lexer.js";
 import { ParseError } from "./modules/syllable/ParseError.js";
 import { Syllable, parseSyllable } from "./modules/syllable/parser.js";

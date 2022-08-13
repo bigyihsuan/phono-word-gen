@@ -1,17 +1,48 @@
-type Phoneme = string;
+import { Phoneme } from "./Phoneme.js";
+import RandomlyChoosable from "./syllable/component/RandomlyChoosable.js";
 
-function isCategoryName(p: Phoneme): boolean {
-    return p.at(0) === "$";
-}
-
-class Category {
+class Category implements RandomlyChoosable {
     name: string;
 
     phonemes: Phoneme[];
 
+    weights: number[] = [];
+
     constructor(name: string, phonemes: Phoneme[]) {
         this.name = name;
         this.phonemes = phonemes;
+        this.setWeights();
+    }
+
+    // see https://stackoverflow.com/a/55671924/8143168
+    setWeights() {
+        const unassignedSos = this.phonemes.filter((so) => so.weight < 0);
+        const unassignedCount = unassignedSos.length;
+        const totalWeight = this.phonemes
+            .filter((so) => so.weight > 0) // only positive
+            .map((so) => so.weight) // get the weights
+            .reduce((p, w) => p + w, 0.0); // sum them
+        const unassignedWeight = (1 - totalWeight) / unassignedCount;
+        this.phonemes = this.phonemes.map((so) => {
+            const s = so;
+            s.weight = so.weight < 0 ? unassignedWeight : so.weight;
+            return s;
+        });
+        for (let i = 0; i < this.phonemes.length; i += 1) {
+            this.weights[i] = this.phonemes[i].weight + (this.weights[i - 1] || 0);
+        }
+    }
+
+    // see https://stackoverflow.com/a/55671924/8143168
+    getRandomChoice(): string {
+        let i: number;
+        const random = Math.random() * this.weights[this.weights.length - 1];
+        for (i = 0; i < this.weights.length; i += 1) {
+            if (this.weights[i] > random) {
+                break;
+            }
+        }
+        return this.phonemes[i].value;
     }
 
     toString(): string {
@@ -29,11 +60,11 @@ class Category {
 
     // gets the names of the categories contained within this one
     containedCategories(): string[] {
-        return this.phonemes.filter(isCategoryName).map((n) => n.substring(1));
+        return this.phonemes.filter((p) => p.isCategoryName()).map((n) => n.value.substring(1));
     }
 
     containedPhonemes(): Phoneme[] {
-        return this.phonemes.filter((p) => !isCategoryName(p));
+        return this.phonemes.filter((p) => !p.isCategoryName());
     }
 }
 
@@ -44,7 +75,7 @@ function parseCategory(cat: string): Category {
     let phonemes: Phoneme[] = [];
     const split = cat.trim().split("=").map((s) => s.trim()); // split on the equals and trim both sides
 
-    [name, phonemes] = [split[0], split[1].split(" ")];
+    [name, phonemes] = [split[0], split[1].split(" ").map((s) => new Phoneme(s))];
 
     return new Category(name, phonemes);
 }
