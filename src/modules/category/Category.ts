@@ -1,5 +1,5 @@
 import { Phoneme } from "./Phoneme.js";
-import RandomlyChoosable from "./syllable/component/RandomlyChoosable.js";
+import RandomlyChoosable from "../syllable/component/RandomlyChoosable.js";
 
 class Category implements RandomlyChoosable {
     name: string;

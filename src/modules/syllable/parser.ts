@@ -1,4 +1,4 @@
-import { CategoryListing } from "../Category.js";
+import { CategoryListing } from "../category/Category.js";
 import { CategoryNode } from "./component/CategoryNode.js";
 import { EvaluableComponent } from "./component/EvaluableComponent.js";
 import { OptionalComponent } from "./component/OptionalComponent.js";

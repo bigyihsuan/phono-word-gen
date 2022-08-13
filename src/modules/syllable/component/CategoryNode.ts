@@ -1,4 +1,4 @@
-import { Category } from "../../Category.js";
+import { Category } from "../../category/Category.js";
 import { EvaluableComponent } from "./EvaluableComponent.js";
 
 export default class CategoryNode implements EvaluableComponent {
