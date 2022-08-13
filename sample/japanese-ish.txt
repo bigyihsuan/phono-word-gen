@@ -7,8 +7,8 @@ S = y w
 M = Q
 V = a i u e o
 Q = N Q
-
+C = $N $P $A $F $L $S
 yoonC = $P $L $N j h
 yoonV = a u o
 
-syllable: ([$C, $yoonC$yoonV])$V($Q)
+syllable: [($C)$V, {$yoonC y $yoonV},]($Q)*0.01

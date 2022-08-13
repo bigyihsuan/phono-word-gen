@@ -8,3 +8,6 @@
 .DS_Store
 coverage
 *.log
+
+# ignore generated tsc files
+/script/*

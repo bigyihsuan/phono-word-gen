@@ -22,13 +22,13 @@ submit?.addEventListener("click", () => {
         .filter((s) => s.length > 0);
     let minSylCount = Number.parseInt(minSylCountElement.value, 10);
     let maxSylCount = Number.parseInt(maxSylCountElement.value, 10);
-    if (minSylCount > maxSylCount) {
-        maxSylCountElement.value = minSylCount.toString();
-        maxSylCount = minSylCount;
-    }
-    else if (maxSylCount < minSylCount) {
+    if (maxSylCount < minSylCount) {
         minSylCountElement.value = maxSylCount.toString();
         minSylCount = maxSylCount;
+    }
+    else if (minSylCount > maxSylCount) {
+        maxSylCountElement.value = minSylCount.toString();
+        maxSylCount = minSylCount;
     }
     const wordCount = Number.parseInt(wordCountElement.value, 10);
     lines.forEach((l) => {

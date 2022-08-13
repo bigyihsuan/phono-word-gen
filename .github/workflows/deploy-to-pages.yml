@@ -34,8 +34,8 @@ jobs:
       run: yarn install
     - name: tsc
       uses: icrawl/action-tsc@v1
-  # Single deploy job since we're just deploying
   deploy:
+    needs: tsc
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

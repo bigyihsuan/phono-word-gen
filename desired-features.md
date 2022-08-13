@@ -19,3 +19,7 @@
 ## Nice to Haves
 
 - Randomness control: Based on worldwide phoneme frequency (via [PHOIBLE data](https://phoible.org/))
+
+## TODOs
+
+- change parser to allow for weights on selection options when not grouped
