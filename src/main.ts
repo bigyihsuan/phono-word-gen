@@ -14,6 +14,7 @@ const wordCountElement = document.getElementById("wordCount") as HTMLInputElemen
 const wordOutputTextArea = document.getElementById("outputText") as HTMLInputElement;
 const allowDuplicatesElement = document.getElementById("allowDuplicates") as HTMLInputElement;
 const sortOutputElement = document.getElementById("sortOutput") as HTMLInputElement;
+const debugOutputElement = document.getElementById("debugOutput") as HTMLInputElement;
 
 let categories: CategoryListing = new Map<string, Category>();
 let tokens: Token[];
@@ -44,9 +45,11 @@ submit?.addEventListener("click", () => {
         }
     });
 
-    const maybeCats = fillCategories(categories);
-    if (maybeCats instanceof Error) {
-        wordOutputTextArea.value = maybeCats.message;
+    let maybeCats: CategoryListing;
+    try {
+        maybeCats = fillCategories(categories);
+    } catch (e: any) {
+        wordOutputTextArea.value = e;
         return;
     }
     categories = maybeCats;
@@ -81,5 +84,10 @@ submit?.addEventListener("click", () => {
             words = words.sort();
         }
         wordOutputTextArea.value = words.join("\n");
+
+        if (debugOutputElement.checked) {
+            wordOutputTextArea.value += "\n---------------\n";
+            wordOutputTextArea.value += syllable.toString();
+        }
     }
 });

@@ -4,5 +4,6 @@ export default class CategoryNode implements EvaluableComponent {
     category: Category;
     constructor(category: Category);
     evaluate(): string;
+    toString(): string;
 }
 export { CategoryNode };

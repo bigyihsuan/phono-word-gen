@@ -11,6 +11,10 @@ export default class CategoryNode implements EvaluableComponent {
     evaluate(): string {
         return this.category.getRandomChoice();
     }
+
+    toString(): string {
+        return this.category.toString();
+    }
 }
 
 export { CategoryNode };

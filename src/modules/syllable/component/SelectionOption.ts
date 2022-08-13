@@ -9,6 +9,10 @@ export default class SelectionOption {
         this.component = component;
         this.weight = weight;
     }
+
+    toString(): string {
+        return `${this.component.toString()}:${this.weight}`;
+    }
 }
 
 export { SelectionOption };

@@ -4,5 +4,6 @@ export default class Syllable implements EvaluableComponent {
     components: SyllableExpr[];
     constructor(components: SyllableExpr[]);
     evaluate(): string;
+    toString(): string;
 }
 export { Syllable };

@@ -6,6 +6,9 @@ export default class SyllableExpr {
     evaluate() {
         return this.component.evaluate();
     }
+    toString() {
+        return this.component.toString();
+    }
 }
 export { SyllableExpr };
 //# sourceMappingURL=SyllableExpr.js.map

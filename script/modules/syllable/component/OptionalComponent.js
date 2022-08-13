@@ -12,6 +12,9 @@ export default class OptionalComponent {
     evaluate() {
         return this.getRandomChoice();
     }
+    toString() {
+        return `(${this.component.toString()}:${this.weight})`;
+    }
 }
 export { OptionalComponent };
 //# sourceMappingURL=OptionalComponent.js.map

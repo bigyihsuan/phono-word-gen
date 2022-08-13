@@ -37,6 +37,9 @@ export default class Selection {
     evaluate() {
         return this.getRandomChoice();
     }
+    toString() {
+        return `[${this.options.join(",")}]`;
+    }
 }
 export { Selection };
 //# sourceMappingURL=Selection.js.map

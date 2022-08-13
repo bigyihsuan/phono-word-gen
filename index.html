@@ -41,11 +41,13 @@
                     </div>
                     <div class="form-check-inline" id="checkboxes">
                         <input class="form-check-input" type="checkbox" id="allowDuplicates">
-                        <label class="form-check-label" for="allowDuplicates">Allow duplicates?</label>
+                        <label class="form-check-label" for="allowDuplicates">Allow duplicates</label>
                         <input class="form-check-input" type="checkbox" id="sortOutput">
-                        <label class="form-check-label" for="sortOutput">Sort output?</label>
+                        <label class="form-check-label" for="sortOutput">Sort output</label>
+                        <input class="form-check-input" type="checkbox" id="debugOutput">
+                        <label class="form-check-label" for="debugOutput">Include debug output</label>
+                        <button type="button" id="submit" class="btn btn-primary">Submit</button>
                     </div>
-                    <button type="button" id="submit" class="btn btn-primary">Submit</button>
                 </div>
             </div>
             <div class="col">
@@ -63,6 +65,7 @@
                 <h3>Phonology</h3>
                 <ul>
                     <li>Category: <code>name = phoneme phoneme phoneme ...</code></li>
+                    <li>Phonemes can be any non-space, non-newline character</li>
                     <li>Using a category in a category: <code>C = $A $B raw $D ...</code> (Note: recursive/circular usage, i.e. A in B in A, not allowed)</li>
                 </ul>
                 <h3>Syllable</h3>

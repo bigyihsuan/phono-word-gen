@@ -15,5 +15,5 @@ declare class Category implements RandomlyChoosable {
 }
 declare type CategoryListing = Map<string, Category>;
 declare function parseCategory(cat: string): Category;
-declare function fillCategories(categories: CategoryListing): CategoryListing | Error;
+declare function fillCategories(categories: CategoryListing): CategoryListing;
 export { CategoryListing, Category, parseCategory, fillCategories, };

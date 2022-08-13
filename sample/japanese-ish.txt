@@ -1,4 +1,4 @@
-N = m n N
+N = m n
 P = p b t d k g
 A = ts dz ch
 F = f s z sh zh h

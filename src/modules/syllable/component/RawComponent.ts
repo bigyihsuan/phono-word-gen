@@ -10,6 +10,10 @@ export default class RawComponent implements EvaluableComponent {
     evaluate(): string {
         return this.component;
     }
+
+    toString(): string {
+        return this.component;
+    }
 }
 
 export { RawComponent };

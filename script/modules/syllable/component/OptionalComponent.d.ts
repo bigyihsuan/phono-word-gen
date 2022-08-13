@@ -6,5 +6,6 @@ export default class OptionalComponent implements EvaluableComponent, RandomlyCh
     constructor(component: EvaluableComponent, weight?: number);
     getRandomChoice(): string;
     evaluate(): string;
+    toString(): string;
 }
 export { OptionalComponent };

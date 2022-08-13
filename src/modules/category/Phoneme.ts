@@ -6,8 +6,13 @@ export default class Phoneme {
     constructor(phoneme: string) {
         // contains weight
         if (phoneme.match(/\*/)) {
-            const p = phoneme.split("*");
-            this.value = p.at(0)!;
+            const p = phoneme.split(/\*/);
+            const v = p.at(0);
+            if (v !== undefined) {
+                this.value = v;
+            } else {
+                throw new Error(`somehow bad phoneme ${phoneme}`);
+            }
             const w = Number.parseFloat(p.at(-1)!);
             if (Number.isNaN(w)) {
                 throw new Error(`invalid weight ${p.at(-1)!}`);

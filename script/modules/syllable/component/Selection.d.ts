@@ -8,5 +8,6 @@ export default class Selection implements RandomlyChoosable, EvaluableComponent 
     generateWeights(): void;
     getRandomChoice(): string;
     evaluate(): string;
+    toString(): string;
 }
 export { Selection };

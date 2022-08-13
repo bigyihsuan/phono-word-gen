@@ -10,6 +10,7 @@ const wordCountElement = document.getElementById("wordCount");
 const wordOutputTextArea = document.getElementById("outputText");
 const allowDuplicatesElement = document.getElementById("allowDuplicates");
 const sortOutputElement = document.getElementById("sortOutput");
+const debugOutputElement = document.getElementById("debugOutput");
 let categories = new Map();
 let tokens;
 let syllable;
@@ -37,9 +38,12 @@ submit?.addEventListener("click", () => {
             categories.set(cat.name, cat);
         }
     });
-    const maybeCats = fillCategories(categories);
-    if (maybeCats instanceof Error) {
-        wordOutputTextArea.value = maybeCats.message;
+    let maybeCats;
+    try {
+        maybeCats = fillCategories(categories);
+    }
+    catch (e) {
+        wordOutputTextArea.value = e;
         return;
     }
     categories = maybeCats;
@@ -69,6 +73,10 @@ submit?.addEventListener("click", () => {
             words = words.sort();
         }
         wordOutputTextArea.value = words.join("\n");
+        if (debugOutputElement.checked) {
+            wordOutputTextArea.value += "\n---------------\n";
+            wordOutputTextArea.value += syllable.toString();
+        }
     }
 });
 //# sourceMappingURL=main.js.map

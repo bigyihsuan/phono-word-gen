@@ -10,6 +10,10 @@ export default class SyllableExpr implements EvaluableComponent {
     evaluate(): string {
         return this.component.evaluate();
     }
+
+    toString(): string {
+        return this.component.toString();
+    }
 }
 
 export { SyllableExpr };

@@ -46,6 +46,10 @@ export default class Selection implements RandomlyChoosable, EvaluableComponent 
     evaluate(): string {
         return this.getRandomChoice();
     }
+
+    toString(): string {
+        return `[${this.options.join(",")}]`;
+    }
 }
 
 export { Selection };

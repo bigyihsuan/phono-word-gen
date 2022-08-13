@@ -19,6 +19,10 @@ export default class OptionalComponent implements EvaluableComponent, RandomlyCh
     evaluate(): string {
         return this.getRandomChoice();
     }
+
+    toString(): string {
+        return `(${this.component.toString()}:${this.weight})`;
+    }
 }
 
 export { OptionalComponent };

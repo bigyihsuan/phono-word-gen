@@ -11,6 +11,10 @@ export default class Syllable implements EvaluableComponent {
     evaluate(): string {
         return this.components.map((c) => c.evaluate()).join("");
     }
+
+    toString(): string {
+        return `<${this.components.join(",")}>`;
+    }
 }
 
 export { Syllable };

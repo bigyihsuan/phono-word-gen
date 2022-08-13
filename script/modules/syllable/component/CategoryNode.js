@@ -6,6 +6,9 @@ export default class CategoryNode {
     evaluate() {
         return this.category.getRandomChoice();
     }
+    toString() {
+        return this.category.toString();
+    }
 }
 export { CategoryNode };
 //# sourceMappingURL=CategoryNode.js.map

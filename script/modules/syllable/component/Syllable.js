@@ -6,6 +6,9 @@ export default class Syllable {
     evaluate() {
         return this.components.map((c) => c.evaluate()).join("");
     }
+    toString() {
+        return `<${this.components.join(",")}>`;
+    }
 }
 export { Syllable };
 //# sourceMappingURL=Syllable.js.map

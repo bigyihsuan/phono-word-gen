@@ -16,16 +16,16 @@ class Category implements RandomlyChoosable {
 
     // see https://stackoverflow.com/a/55671924/8143168
     setWeights() {
-        const unassignedSos = this.phonemes.filter((so) => so.weight < 0);
+        const unassignedSos = this.phonemes.filter((po) => po.weight < 0);
         const unassignedCount = unassignedSos.length;
         const totalWeight = this.phonemes
-            .filter((so) => so.weight > 0) // only positive
-            .map((so) => so.weight) // get the weights
+            .filter((po) => po.weight > 0) // only positive
+            .map((po) => po.weight) // get the weights
             .reduce((p, w) => p + w, 0.0); // sum them
         const unassignedWeight = (1 - totalWeight) / unassignedCount;
-        this.phonemes = this.phonemes.map((so) => {
-            const s = so;
-            s.weight = so.weight < 0 ? unassignedWeight : so.weight;
+        this.phonemes = this.phonemes.map((po) => {
+            const s = po;
+            s.weight = po.weight < 0 ? unassignedWeight : po.weight;
             return s;
         });
         for (let i = 0; i < this.phonemes.length; i += 1) {
@@ -38,7 +38,7 @@ class Category implements RandomlyChoosable {
         let i: number;
         const random = Math.random() * this.weights[this.weights.length - 1];
         for (i = 0; i < this.weights.length; i += 1) {
-            if (this.weights[i] > random) {
+            if (this.weights[i] >= random) {
                 break;
             }
         }
@@ -81,31 +81,31 @@ function parseCategory(cat: string): Category {
 }
 
 // replaces all references to categories in all categories to their phonemes
-function fillCategories(categories: CategoryListing): CategoryListing | Error {
+function fillCategories(categories: CategoryListing): CategoryListing {
     const filled: CategoryListing = new Map<string, Category>();
 
-    try {
-        categories.forEach((cat, key) => {
-            const newCat = new Category(cat.name, cat.phonemes);
-            const catStack: string[] = [];
-            while (newCat.isUnresolved()) {
-                for (let i = 0; i < newCat.containedCategories().length; i += 1) {
-                    const catName = newCat.containedCategories()[i];
-                    if (catStack.includes(newCat.name)) {
-                        // we've already seen ourselves, this is recursive
-                        // recursion not allowed
-                        throw new Error(`recusion is not allowed in categories:\n    ${newCat.name} and ${catName} contain each other`);
-                    }
-                    newCat.add(categories.get(catName)!);
-                    catStack.push(catName);
+    categories.forEach((cat, key) => {
+        const newCat = new Category(cat.name, cat.phonemes);
+        const catStack: string[] = [];
+        while (newCat.isUnresolved()) {
+            for (let i = 0; i < newCat.containedCategories().length; i += 1) {
+                const catName = newCat.containedCategories()[i];
+                if (catStack.includes(newCat.name)) {
+                    // we've already seen ourselves, this is recursive
+                    // recursion not allowed
+                    throw new Error(`recusion is not allowed in categories:\n    ${newCat.name} and ${catName} contain each other`);
                 }
+                const c = categories.get(catName);
+                if (c === undefined) {
+                    throw new Error(`${catName} doesn't exist`);
+                }
+                newCat.add(c);
+                catStack.push(catName);
             }
-            filled.set(key, newCat);
-        });
-    } catch (e: any) {
-        return e;
-    }
-
+        }
+        newCat.setWeights();
+        filled.set(key, newCat);
+    });
     return filled;
 }
 
