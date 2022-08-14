@@ -16,11 +16,13 @@ const allowDuplicatesElement = document.getElementById("allowDuplicates") as HTM
 const sortOutputElement = document.getElementById("sortOutput") as HTMLInputElement;
 const debugOutputElement = document.getElementById("debugOutput") as HTMLInputElement;
 
-let categories: CategoryListing = new Map<string, Category>();
-let tokens: Token[];
-let syllable: Syllable | ParseError;
-
 submit?.addEventListener("click", () => {
+    wordOutputTextArea.value = "";
+
+    let categories: CategoryListing = new Map<string, Category>();
+    let tokens: Token[];
+    let syllable: Syllable | ParseError;
+
     const lines = phonology?.value
         .replaceAll(/\n+/g, "\n") // remove extraneous newlines
         .replaceAll(/#.*/g, "") // remove comments
@@ -58,36 +60,33 @@ submit?.addEventListener("click", () => {
     if (sylLine !== undefined) {
         tokens = tokenizeSyllable(sylLine);
         syllable = parseSyllable(tokens.slice(), categories, sylLine);
-    }
-
-    wordOutputTextArea.value = "";
-
-    if (syllable instanceof ParseError) {
-        wordOutputTextArea.value += syllable.toString();
-    } else if (syllable !== undefined) {
-        let words: string[] = [];
-        for (let _ = 0; _ < wordCount; _ += 1) {
-            let outWord = "";
-            const numSyllables = Math.max(
-                minSylCount,
-                Math.floor(maxSylCount - Math.random() * maxSylCount) + 1,
-            );
-            for (let i = 0; i < numSyllables; i += 1) {
-                outWord += syllable.evaluate();
-            }
-            words.push(outWord);
-        }
-        if (!allowDuplicatesElement.checked) {
-            words = [...new Set(words)];
-        }
-        if (sortOutputElement.checked) {
-            words = words.sort();
-        }
-        wordOutputTextArea.value = words.join("\n");
-
         if (debugOutputElement.checked) {
-            wordOutputTextArea.value += "\n---------------\n";
             wordOutputTextArea.value += syllable.toString();
+            wordOutputTextArea.value += "\n---------------\n";
+        }
+
+        if (syllable instanceof ParseError) {
+            wordOutputTextArea.value += syllable.toString();
+        } else if (syllable !== undefined) {
+            let words: string[] = [];
+            for (let _ = 0; _ < wordCount; _ += 1) {
+                let outWord = "";
+                const numSyllables = Math.max(
+                    minSylCount,
+                    Math.floor(maxSylCount - Math.random() * maxSylCount) + 1,
+                );
+                for (let i = 0; i < numSyllables; i += 1) {
+                    outWord += syllable.evaluate();
+                }
+                words.push(outWord);
+            }
+            if (!allowDuplicatesElement.checked) {
+                words = [...new Set(words)];
+            }
+            if (sortOutputElement.checked) {
+                words = words.sort();
+            }
+            wordOutputTextArea.value += words.join("\n");
         }
     }
 });

@@ -28,7 +28,7 @@ function parseSyllable(
     categories: CategoryListing,
     sylStr: string,
 ): Syllable | ParseError {
-    const components: SyllableExpr[] = [];
+    const components: EvaluableComponent[] = [];
     while (tokens.length > 0) {
         // break out when ending a selection or option
         if (tokens.at(0) instanceof CommaToken
@@ -41,7 +41,7 @@ function parseSyllable(
             if (syl instanceof ParseError) {
                 return syl.within("SyllableExpr-LcurlyToken");
             }
-            return syl;
+            components.push(...syl.components);
         } else {
             const comp = parseSyllableExpr(tokens, categories, sylStr);
             if (comp instanceof ParseError) {

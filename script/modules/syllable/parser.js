@@ -22,7 +22,7 @@ function parseSyllable(tokens, categories, sylStr) {
             if (syl instanceof ParseError) {
                 return syl.within("SyllableExpr-LcurlyToken");
             }
-            return syl;
+            components.push(...syl.components);
         }
         else {
             const comp = parseSyllableExpr(tokens, categories, sylStr);

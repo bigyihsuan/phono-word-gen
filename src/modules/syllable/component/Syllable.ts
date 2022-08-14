@@ -1,10 +1,9 @@
 import { EvaluableComponent } from "./EvaluableComponent.js";
-import { SyllableExpr } from "./SyllableExpr.js";
 
 export default class Syllable implements EvaluableComponent {
-    components: SyllableExpr[];
+    components: EvaluableComponent[];
 
-    constructor(components: SyllableExpr[]) {
+    constructor(components: EvaluableComponent[]) {
         this.components = components;
     }
 

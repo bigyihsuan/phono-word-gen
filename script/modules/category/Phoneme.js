@@ -26,6 +26,9 @@ export default class Phoneme {
     isCategoryName() {
         return this.value.at(0) === "$";
     }
+    toString() {
+        return `${this.value}:${this.weight}`;
+    }
 }
 export { Phoneme };
 //# sourceMappingURL=Phoneme.js.map

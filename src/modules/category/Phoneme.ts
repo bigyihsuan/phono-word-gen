@@ -27,6 +27,10 @@ export default class Phoneme {
     isCategoryName(): boolean {
         return this.value.at(0) === "$";
     }
+
+    toString(): string {
+        return `${this.value}:${this.weight}`;
+    }
 }
 
 export { Phoneme };
