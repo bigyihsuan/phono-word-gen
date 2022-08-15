@@ -6,6 +6,9 @@ export default class CategoryNode {
     evaluate() {
         return this.category.getRandomChoice();
     }
+    evaluateAll() {
+        return this.category.evaluateAll();
+    }
     toString() {
         return this.category.toString();
     }

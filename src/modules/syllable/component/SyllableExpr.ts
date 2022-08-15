@@ -1,14 +1,18 @@
-import { EvaluableComponent } from "./EvaluableComponent.js";
+import { IEvaluableComponent } from "./IEvaluableComponent.js";
 
-export default class SyllableExpr implements EvaluableComponent {
-    component: EvaluableComponent;
+export default class SyllableExpr implements IEvaluableComponent {
+    component: IEvaluableComponent;
 
-    constructor(component: EvaluableComponent) {
+    constructor(component: IEvaluableComponent) {
         this.component = component;
     }
 
     evaluate(): string {
         return this.component.evaluate();
+    }
+
+    evaluateAll(): string[] {
+        return this.component.evaluateAll();
     }
 
     toString(): string {

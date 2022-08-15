@@ -1,7 +1,7 @@
 import { Category } from "../../category/Category.js";
-import { EvaluableComponent } from "./EvaluableComponent.js";
+import { IEvaluableComponent } from "./IEvaluableComponent.js";
 
-export default class CategoryNode implements EvaluableComponent {
+export default class CategoryNode implements IEvaluableComponent {
     category: Category;
 
     constructor(category: Category) {
@@ -10,6 +10,10 @@ export default class CategoryNode implements EvaluableComponent {
 
     evaluate(): string {
         return this.category.getRandomChoice();
+    }
+
+    evaluateAll(): string[] {
+        return this.category.evaluateAll();
     }
 
     toString(): string {

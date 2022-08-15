@@ -6,7 +6,6 @@ class Category {
     constructor(name, phonemes) {
         this.name = name;
         this.phonemes = phonemes;
-        this.setWeights();
     }
     // see https://stackoverflow.com/a/55671924/8143168
     setWeights() {
@@ -17,11 +16,12 @@ class Category {
             .map((po) => po.weight) // get the weights
             .reduce((p, w) => p + w, 0.0); // sum them
         const unassignedWeight = (1 - totalWeight) / unassignedCount;
-        this.phonemes = this.phonemes.map((po) => {
+        const newWeights = this.phonemes.slice().map((po) => {
             const s = po;
             s.weight = po.weight < 0 ? unassignedWeight : po.weight;
             return s;
         });
+        this.phonemes = newWeights.slice();
         for (let i = 0; i < this.phonemes.length; i += 1) {
             this.weights[i] = this.phonemes[i].weight + (this.weights[i - 1] || 0);
         }
@@ -37,15 +37,13 @@ class Category {
         }
         return this.phonemes[i].value;
     }
-    toString() {
-        return `{${this.name}: [${this.phonemes.toString()}]}`;
-    }
     isUnresolved() {
         return this.containedCategories().length > 0;
     }
     // add another category's phonemes to this one
     add(other) {
         this.phonemes = [...new Set([...this.containedPhonemes(), ...other.phonemes])];
+        this.setWeights();
     }
     // gets the names of the categories contained within this one
     containedCategories() {
@@ -53,6 +51,18 @@ class Category {
     }
     containedPhonemes() {
         return this.phonemes.filter((p) => !p.isCategoryName());
+    }
+    containsPhoneme(phoneme) {
+        return this.phonemes.some((p) => p.value === phoneme);
+    }
+    evaluate() {
+        return this.getRandomChoice();
+    }
+    evaluateAll() {
+        return this.phonemes.flatMap((p) => p.value);
+    }
+    toString() {
+        return `{${this.name}: [${this.phonemes.toString()}]}`;
     }
 }
 function parseCategory(cat) {

@@ -27,7 +27,7 @@ export default class Phoneme {
         return this.value.at(0) === "$";
     }
     toString() {
-        return `${this.value}:${this.weight}`;
+        return `${this.value}:${this.weight.toFixed(3)}`;
     }
 }
 export { Phoneme };

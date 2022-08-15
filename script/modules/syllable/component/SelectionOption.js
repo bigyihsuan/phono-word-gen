@@ -11,6 +11,9 @@ export default class SelectionOption {
     evaluate() {
         return this.component.evaluate();
     }
+    evaluateAll() {
+        return this.component.evaluateAll();
+    }
 }
 export { SelectionOption };
 //# sourceMappingURL=SelectionOption.js.map

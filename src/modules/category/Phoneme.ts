@@ -29,7 +29,7 @@ export default class Phoneme {
     }
 
     toString(): string {
-        return `${this.value}:${this.weight}`;
+        return `${this.value}:${this.weight.toFixed(3)}`;
     }
 }
 

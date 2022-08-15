@@ -6,6 +6,9 @@ export default class RawComponent {
     evaluate() {
         return this.component;
     }
+    evaluateAll() {
+        return [this.component];
+    }
     toString() {
         return this.component;
     }

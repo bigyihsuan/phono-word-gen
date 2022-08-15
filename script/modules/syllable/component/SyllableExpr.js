@@ -6,6 +6,9 @@ export default class SyllableExpr {
     evaluate() {
         return this.component.evaluate();
     }
+    evaluateAll() {
+        return this.component.evaluateAll();
+    }
     toString() {
         return this.component.toString();
     }

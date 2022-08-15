@@ -1,8 +1,8 @@
-import { EvaluableComponent } from "./EvaluableComponent.js";
-import { RandomlyChoosable } from "./RandomlyChoosable.js";
+import { IEvaluableComponent } from "./IEvaluableComponent.js";
+import { IRandomlyChoosable } from "./IRandomlyChoosable.js";
 import { SelectionOption } from "./SelectionOption.js";
 
-export default class Selection implements RandomlyChoosable, EvaluableComponent {
+export default class Selection implements IRandomlyChoosable, IEvaluableComponent {
     options: SelectionOption[];
 
     weights: number[] = [];
@@ -45,6 +45,10 @@ export default class Selection implements RandomlyChoosable, EvaluableComponent 
 
     evaluate(): string {
         return this.getRandomChoice();
+    }
+
+    evaluateAll(): string[] {
+        return this.options.flatMap((o) => o.evaluateAll());
     }
 
     toString(): string {

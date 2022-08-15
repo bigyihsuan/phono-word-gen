@@ -1,6 +1,6 @@
 import { CategoryListing } from "../category/Category.js";
 import { CategoryNode } from "./component/CategoryNode.js";
-import { EvaluableComponent } from "./component/EvaluableComponent.js";
+import { IEvaluableComponent } from "./component/IEvaluableComponent.js";
 import { OptionalComponent } from "./component/OptionalComponent.js";
 import { ParseError } from "./ParseError.js";
 import { RawComponent } from "./component/RawComponent.js";
@@ -28,7 +28,7 @@ function parseSyllable(
     categories: CategoryListing,
     sylStr: string,
 ): Syllable | ParseError {
-    const components: EvaluableComponent[] = [];
+    const components: IEvaluableComponent[] = [];
     while (tokens.length > 0) {
         // break out when ending a selection, option, or weight
         const t = tokens.at(0);
@@ -81,7 +81,7 @@ function parseSyllableExpr(
     categories: CategoryListing,
     sylStr: string,
 ): SyllableExpr | ParseError {
-    let component: EvaluableComponent;
+    let component: IEvaluableComponent;
     const tok = tokens.shift();
     if (tok instanceof RawComponentToken) {
         component = parseRawComponent(tok);

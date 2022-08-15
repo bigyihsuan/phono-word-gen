@@ -1,7 +1,8 @@
 import { Phoneme } from "./Phoneme.js";
-import RandomlyChoosable from "../syllable/component/RandomlyChoosable.js";
+import IRandomlyChoosable from "../syllable/component/IRandomlyChoosable.js";
+import IEvaluableComponent from "../syllable/component/IEvaluableComponent.js";
 
-class Category implements RandomlyChoosable {
+class Category implements IRandomlyChoosable, IEvaluableComponent {
     name: string;
 
     phonemes: Phoneme[];
@@ -11,7 +12,6 @@ class Category implements RandomlyChoosable {
     constructor(name: string, phonemes: Phoneme[]) {
         this.name = name;
         this.phonemes = phonemes;
-        this.setWeights();
     }
 
     // see https://stackoverflow.com/a/55671924/8143168
@@ -23,11 +23,12 @@ class Category implements RandomlyChoosable {
             .map((po) => po.weight) // get the weights
             .reduce((p, w) => p + w, 0.0); // sum them
         const unassignedWeight = (1 - totalWeight) / unassignedCount;
-        this.phonemes = this.phonemes.map((po) => {
+        const newWeights = this.phonemes.slice().map((po) => {
             const s = po;
             s.weight = po.weight < 0 ? unassignedWeight : po.weight;
             return s;
         });
+        this.phonemes = newWeights.slice();
         for (let i = 0; i < this.phonemes.length; i += 1) {
             this.weights[i] = this.phonemes[i].weight + (this.weights[i - 1] || 0);
         }
@@ -45,10 +46,6 @@ class Category implements RandomlyChoosable {
         return this.phonemes[i].value;
     }
 
-    toString(): string {
-        return `{${this.name}: [${this.phonemes.toString()}]}`;
-    }
-
     isUnresolved(): boolean {
         return this.containedCategories().length > 0;
     }
@@ -56,6 +53,7 @@ class Category implements RandomlyChoosable {
     // add another category's phonemes to this one
     add(other: Category) {
         this.phonemes = [...new Set([...this.containedPhonemes(), ...other.phonemes])];
+        this.setWeights();
     }
 
     // gets the names of the categories contained within this one
@@ -65,6 +63,22 @@ class Category implements RandomlyChoosable {
 
     containedPhonemes(): Phoneme[] {
         return this.phonemes.filter((p) => !p.isCategoryName());
+    }
+
+    containsPhoneme(phoneme: string): boolean {
+        return this.phonemes.some((p) => p.value === phoneme);
+    }
+
+    evaluate(): string {
+        return this.getRandomChoice();
+    }
+
+    evaluateAll(): string[] {
+        return this.phonemes.flatMap((p) => p.value);
+    }
+
+    toString(): string {
+        return `{${this.name}: [${this.phonemes.toString()}]}`;
     }
 }
 

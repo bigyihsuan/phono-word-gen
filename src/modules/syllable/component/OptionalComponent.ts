@@ -1,13 +1,13 @@
-import { EvaluableComponent } from "./EvaluableComponent.js";
-import { RandomlyChoosable } from "./RandomlyChoosable.js";
+import { IEvaluableComponent } from "./IEvaluableComponent.js";
+import { IRandomlyChoosable } from "./IRandomlyChoosable.js";
 
-export default class OptionalComponent implements EvaluableComponent, RandomlyChoosable {
-    component: EvaluableComponent;
+export default class OptionalComponent implements IEvaluableComponent, IRandomlyChoosable {
+    component: IEvaluableComponent;
 
     weight: number;
 
     // default weight is 50/50
-    constructor(component: EvaluableComponent, weight: number = 0.5) {
+    constructor(component: IEvaluableComponent, weight: number = 0.5) {
         this.component = component;
         this.weight = weight;
     }
@@ -18,6 +18,10 @@ export default class OptionalComponent implements EvaluableComponent, RandomlyCh
 
     evaluate(): string {
         return this.getRandomChoice();
+    }
+
+    evaluateAll(): string[] {
+        return ["", ...this.component.evaluateAll()];
     }
 
     toString(): string {

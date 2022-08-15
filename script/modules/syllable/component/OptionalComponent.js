@@ -12,6 +12,9 @@ export default class OptionalComponent {
     evaluate() {
         return this.getRandomChoice();
     }
+    evaluateAll() {
+        return ["", ...this.component.evaluateAll()];
+    }
     toString() {
         return `(${this.component.toString()}:${this.weight})`;
     }

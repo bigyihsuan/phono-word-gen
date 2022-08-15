@@ -1,11 +1,11 @@
-import { EvaluableComponent } from "./EvaluableComponent.js";
+import { IEvaluableComponent } from "./IEvaluableComponent.js";
 
-export default class SelectionOption implements EvaluableComponent {
-    component: EvaluableComponent;
+export default class SelectionOption implements IEvaluableComponent {
+    component: IEvaluableComponent;
 
     weight: number;
 
-    constructor(component: EvaluableComponent, weight: number) {
+    constructor(component: IEvaluableComponent, weight: number) {
         this.component = component;
         this.weight = weight;
     }
@@ -16,6 +16,10 @@ export default class SelectionOption implements EvaluableComponent {
 
     evaluate(): string {
         return this.component.evaluate();
+    }
+
+    evaluateAll(): string[] {
+        return this.component.evaluateAll();
     }
 }
 

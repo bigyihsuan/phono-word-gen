@@ -15,6 +15,15 @@
         code {
             font-family: 'Iosevka Web', 'Courier New', Courier, monospace;
         }
+        
+        code {
+            background-color: var(--bs-gray-200);
+            opacity: 1;
+            border-radius: 0.25em;
+            width: auto;
+            height: auto;
+            padding: 0.1em 0.25em 0.1em 0.25em;
+        }
     </style>
 </head>
 
@@ -56,6 +65,8 @@
             <div class="col">
                 <label for="outputText"><h3>Output</h3></label>
                 <textarea id="outputText" disabled class="form-control h-100"></textarea>
+                <div class="alert alert-warning" hidden id="duplicateAlert"></div>
+                <div class="alert alert-info" hidden id="rejectedAlert"></div>
             </div>
         </div>
         <div class="row">
@@ -89,6 +100,13 @@
                     <li>Weighted optionals define what chance for that optional to appear (i.e. a weight of 0.33 means that it will appear ~33% of the time)</li>
                     <li>Weighted selection elements with multiple components must use grouping <code>{group}*0.3</code></li>
                     <li>Selection elements and phonemes without weights have their weights automatically assigned to <code>(1 - sum(marked weights)) / (# unmarked components)</code></li>
+                </ul>
+                <h3>Rejections</h3>
+                <ul>
+                    <li>Can reject a word based on category or phoneme</li>
+                    <li>After <code>reject: </code>, place a valid syllable: <code>reject: $C$V</code></li>
+                    <li>Place <code>reject: </code> on multiple lines for multiple rejects</li>
+                    <li>Alternatively, can surround each rejection filter in <code>&lt;&gt;</code> to separate them: <code>reject: &lt;N$C&gt; &lt;$V$V&gt; &lt;pp&gt;</code></li>
                 </ul>
             </div>
         </div>

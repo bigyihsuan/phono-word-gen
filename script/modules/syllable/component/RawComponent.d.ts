@@ -1,8 +1,9 @@
-import { EvaluableComponent } from "./EvaluableComponent.js";
-export default class RawComponent implements EvaluableComponent {
+import { IEvaluableComponent } from "./IEvaluableComponent.js";
+export default class RawComponent implements IEvaluableComponent {
     component: string;
     constructor(component: string);
     evaluate(): string;
+    evaluateAll(): string[];
     toString(): string;
 }
 export { RawComponent };

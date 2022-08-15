@@ -37,6 +37,9 @@ export default class Selection {
     evaluate() {
         return this.getRandomChoice();
     }
+    evaluateAll() {
+        return this.options.flatMap((o) => o.evaluateAll());
+    }
     toString() {
         return `[${this.options.join(",")}]`;
     }
