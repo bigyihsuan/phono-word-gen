@@ -1,6 +1,6 @@
 import { EvaluableComponent } from "./EvaluableComponent.js";
 
-export default class SelectionOption {
+export default class SelectionOption implements EvaluableComponent {
     component: EvaluableComponent;
 
     weight: number;
@@ -12,6 +12,10 @@ export default class SelectionOption {
 
     toString(): string {
         return `${this.component.toString()}:${this.weight}`;
+    }
+
+    evaluate(): string {
+        return this.component.evaluate();
     }
 }
 

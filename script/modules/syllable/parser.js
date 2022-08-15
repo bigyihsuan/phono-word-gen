@@ -10,10 +10,12 @@ import { CategoryToken, CommaToken, LbracketToken, LcurlyToken, LparenToken, Raw
 function parseSyllable(tokens, categories, sylStr) {
     const components = [];
     while (tokens.length > 0) {
-        // break out when ending a selection or option
-        if (tokens.at(0) instanceof CommaToken
-            || tokens.at(0) instanceof RparenToken
-            || tokens.at(0) instanceof RcurlyToken) {
+        // break out when ending a selection, option, or weight
+        const t = tokens.at(0);
+        if (t instanceof CommaToken
+            || t instanceof RparenToken
+            || t instanceof RcurlyToken
+            || t instanceof StarToken) {
             break;
         }
         else if (tokens.at(0) instanceof LcurlyToken) {
@@ -80,27 +82,11 @@ function parseSyllableExpr(tokens, categories, sylStr) {
 function parseSelection(tokens, categories, sylStr) {
     const components = [];
     while (tokens.length > 0) {
-        const component = parseSyllable(tokens, categories, sylStr);
-        if (component instanceof ParseError) {
-            return component.within("Selection");
+        const option = parseSelectionOption(tokens, categories, sylStr);
+        if (option instanceof ParseError) {
+            return option.within("Selection");
         }
-        let option;
-        // for weight
-        const starOrComma = tokens.at(0);
-        if (starOrComma instanceof StarToken) {
-            option = parseSelectionOptionWithWeight(tokens, component, sylStr);
-            if (option instanceof ParseError) {
-                return option.within("Selection");
-            }
-            components.push(option);
-        }
-        else if (!(starOrComma instanceof CommaToken)) {
-            return new ParseError(`expected comma after component, got '${starOrComma}' instead`, starOrComma, sylStr, "Selection-EndOfItem");
-        }
-        else {
-            // end of no-weight selection option, temporarily set weight to -1
-            components.push(new SelectionOption(component, -1));
-        }
+        components.push(option);
         // consume comma
         tokens.shift();
         // check for end of selection
@@ -120,20 +106,37 @@ function parseSelection(tokens, categories, sylStr) {
     }
     return new Selection(components);
 }
-function parseSelectionOptionWithWeight(tokens, component, sylStr) {
+// parse a selection option
+// if there is a star following this, get the weight as well
+function parseSelectionOption(tokens, categories, sylStr) {
+    const component = parseSyllable(tokens, categories, sylStr);
+    if (component instanceof ParseError) {
+        return component.within("SelectionOption-Component");
+    }
+    let weight = -1;
+    if (tokens.at(0) instanceof StarToken) {
+        const w = parseWeight(tokens, sylStr);
+        if (w instanceof ParseError) {
+            return w.within("SelectionOption-Weight");
+        }
+        weight = w;
+    }
+    return new SelectionOption(component, weight);
+}
+function parseWeight(tokens, sylStr) {
     const star = tokens.shift();
     if (!(star instanceof StarToken)) {
-        return new ParseError(`SelectionOption expected '*' after component, got '${star}' instead`, star, sylStr, "SelectionOption-Star");
+        return new ParseError(`expected '*' after component, got '${star}' instead`, star, sylStr, "SelectionOption-Star");
     }
     const weightTok = tokens.shift();
     if (!(weightTok instanceof WeightToken)) {
-        return new ParseError(`SelectionOption expected a weight after '*', got '${weightTok}' instead`, weightTok, sylStr, "SelectionOption-Weight");
+        return new ParseError(`expected a weight after '*', got '${weightTok}' instead`, weightTok, sylStr, "SelectionOption-Weight");
     }
     const weight = Number.parseFloat(weightTok.lexeme);
     if (Number.isNaN(weight)) {
-        return new ParseError(`SelectionOption weight is not valid, got '${weightTok}' instead`, weightTok, sylStr, "SelectionOption-WeightEval");
+        return new ParseError(`weight is not valid, got '${weightTok}' instead`, weightTok, sylStr, "SelectionOption-WeightEval");
     }
-    return new SelectionOption(component, weight);
+    return weight;
 }
 function parseOptionalComponent(tokens, categories, sylStr) {
     const component = parseSyllable(tokens, categories, sylStr);

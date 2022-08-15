@@ -8,6 +8,9 @@ export default class SelectionOption {
     toString() {
         return `${this.component.toString()}:${this.weight}`;
     }
+    evaluate() {
+        return this.component.evaluate();
+    }
 }
 export { SelectionOption };
 //# sourceMappingURL=SelectionOption.js.map

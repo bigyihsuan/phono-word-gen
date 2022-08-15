@@ -13,14 +13,11 @@ const sortOutputElement = document.getElementById("sortOutput");
 const debugOutputElement = document.getElementById("debugOutput");
 submit?.addEventListener("click", () => {
     wordOutputTextArea.value = "";
+    const wordCount = Number.parseInt(wordCountElement.value, 10);
     let categories = new Map();
-    let tokens;
+    let tokens = [];
     let syllable;
-    const lines = phonology?.value
-        .replaceAll(/\n+/g, "\n") // remove extraneous newlines
-        .replaceAll(/#.*/g, "") // remove comments
-        .split("\n")
-        .filter((s) => s.length > 0);
+    const rejects = [];
     let minSylCount = Number.parseInt(minSylCountElement.value, 10);
     let maxSylCount = Number.parseInt(maxSylCountElement.value, 10);
     if (maxSylCount < minSylCount) {
@@ -31,14 +28,29 @@ submit?.addEventListener("click", () => {
         maxSylCountElement.value = minSylCount.toString();
         maxSylCount = minSylCount;
     }
-    const wordCount = Number.parseInt(wordCountElement.value, 10);
+    const lines = phonology?.value
+        .replaceAll(/\n+/g, "\n") // remove extraneous newlines
+        .replaceAll(/#.*/g, "") // remove comments
+        .split("\n")
+        .filter((s) => s.length > 0);
     lines.forEach((l) => {
         const line = l.trim();
         if (line.match(/=/)) {
             const cat = parseCategory(line);
             categories.set(cat.name, cat);
         }
+        else if (line.match(/reject:/)) {
+            rejects.push(...line.replaceAll("reject:", "")
+                .split(/[{}]/)
+                .map((s) => s
+                .trim()
+                .replace(/{(.+)}/, (_, g1) => g1))
+                .filter((s) => s.length > 0));
+        }
     });
+    if (debugOutputElement.checked) {
+        wordOutputTextArea.value += `${rejects.join(",")}\n`;
+    }
     let maybeCats;
     try {
         maybeCats = fillCategories(categories);
