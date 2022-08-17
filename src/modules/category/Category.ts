@@ -16,21 +16,22 @@ class Category implements IRandomlyChoosable, IEvaluableComponent {
 
     // see https://stackoverflow.com/a/55671924/8143168
     setWeights() {
-        const unassignedSos = this.phonemes.filter((po) => po.weight < 0);
-        const unassignedCount = unassignedSos.length;
+        this.weights = [];
+
+        const unsetCount = this.phonemes.filter((p) => !p.isManuallyWeighted).length;
         const totalWeight = this.phonemes
-            .filter((po) => po.weight > 0) // only positive
-            .map((po) => po.weight) // get the weights
-            .reduce((p, w) => p + w, 0.0); // sum them
-        const unassignedWeight = (1 - totalWeight) / unassignedCount;
-        const newWeights = this.phonemes.slice().map((po) => {
-            const s = po;
-            s.weight = po.weight < 0 ? unassignedWeight : po.weight;
-            return s;
-        });
-        this.phonemes = newWeights.slice();
+            .filter((p) => !Number.isNaN(p.weight))
+            .map((p) => p.weight)
+            .reduce((p, c) => p + c, 0.0);
+        const defaultWeight = Math.max((1 - totalWeight) / unsetCount, 0);
+
         for (let i = 0; i < this.phonemes.length; i += 1) {
-            this.weights[i] = this.phonemes[i].weight + (this.weights[i - 1] || 0);
+            if (Number.isNaN(this.phonemes[i].weight) || !this.phonemes[i].isManuallyWeighted) {
+                // set this phoneme's weight to the default one
+                this.phonemes[i].weight = defaultWeight;
+            }
+            // actually set the weight
+            this.weights[i] = this.phonemes[i].weight + (this.weights[i - 1] || 0.0);
         }
     }
 
@@ -52,17 +53,25 @@ class Category implements IRandomlyChoosable, IEvaluableComponent {
 
     // add another category's phonemes to this one
     add(other: Category) {
-        this.phonemes = [...new Set([...this.containedPhonemes(), ...other.phonemes])];
-        this.setWeights();
+        this.phonemes = [
+            ...new Map(
+                [...this.containedPhonemes(), ...other.containedPhonemes()]
+                    .map((phoneme) => [phoneme.value, phoneme]),
+            ).values()];
     }
 
     // gets the names of the categories contained within this one
     containedCategories(): string[] {
-        return this.phonemes.filter((p) => p.isCategoryName()).map((n) => n.value.substring(1));
+        return this.phonemes
+            .filter((p) => p.isCategoryName())
+            .map((p) => p.copy())
+            .map((n) => n.value.substring(1));
     }
 
     containedPhonemes(): Phoneme[] {
-        return this.phonemes.filter((p) => !p.isCategoryName());
+        return this.phonemes
+            .filter((p) => !p.isCategoryName())
+            .map((p) => p.copy());
     }
 
     containsPhoneme(phoneme: string): boolean {
@@ -95,37 +104,28 @@ function parseCategory(cat: string): Category {
 }
 
 // replaces all references to categories in all categories to their phonemes
-function fillCategories(categories: CategoryListing): CategoryListing {
-    const filled: CategoryListing = new Map<string, Category>();
-
-    categories.forEach((cat, key) => {
-        const newCat = new Category(cat.name, cat.phonemes);
-        const catStack: string[] = [];
-        while (newCat.isUnresolved()) {
-            for (let i = 0; i < newCat.containedCategories().length; i += 1) {
-                const catName = newCat.containedCategories()[i];
-                if (catStack.includes(newCat.name)) {
-                    // we've already seen ourselves, this is recursive
-                    // recursion not allowed
-                    throw new Error(`recusion is not allowed in categories:\n    ${newCat.name} and ${catName} contain each other`);
-                }
-                const c = categories.get(catName);
-                if (c === undefined) {
-                    throw new Error(`${catName} doesn't exist`);
-                }
-                newCat.add(c);
-                catStack.push(catName);
-            }
+function fillCategory(catName: string, categories: CategoryListing): Category {
+    const cat = categories.get(catName);
+    if (cat === undefined) {
+        throw new Error(`name ${catName} doesn't exist`);
+    }
+    const newCat = new Category(catName, cat.containedPhonemes());
+    cat.containedCategories().forEach((n) => {
+        let innerCat = categories.get(n);
+        if (innerCat === undefined) {
+            throw new Error(`name ${n} doesn't exist`);
         }
-        newCat.setWeights();
-        filled.set(key, newCat);
+        if (innerCat.isUnresolved()) {
+            innerCat = fillCategory(innerCat.name, categories);
+        }
+        newCat.add(fillCategory(innerCat.name, categories));
     });
-    return filled;
+    return newCat;
 }
 
 export {
     CategoryListing,
     Category,
     parseCategory,
-    fillCategories,
+    fillCategory,
 };

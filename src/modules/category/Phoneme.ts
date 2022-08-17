@@ -3,6 +3,8 @@ export default class Phoneme {
 
     weight: number;
 
+    isManuallyWeighted: boolean;
+
     constructor(phoneme: string) {
         // contains weight
         if (phoneme.match(/\*/)) {
@@ -18,9 +20,11 @@ export default class Phoneme {
                 throw new Error(`invalid weight ${p.at(-1)!}`);
             }
             this.weight = w;
+            this.isManuallyWeighted = true;
         } else {
             this.value = phoneme;
-            this.weight = -1;
+            this.weight = Number.NaN; // all phonemes without weights are set to NaN initially
+            this.isManuallyWeighted = false;
         }
     }
 
@@ -30,6 +34,13 @@ export default class Phoneme {
 
     toString(): string {
         return `${this.value}:${this.weight.toFixed(3)}`;
+    }
+
+    copy(): Phoneme {
+        const p = new Phoneme(this.value);
+        p.weight = this.weight;
+        p.isManuallyWeighted = this.isManuallyWeighted;
+        return p;
     }
 }
 

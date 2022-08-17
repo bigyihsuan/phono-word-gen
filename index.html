@@ -29,42 +29,55 @@
 
 <body>
     <div class="container">
-        <h1>WIP &mdash; Random Word Generator </h1>
-        <p>see <a href="https://github.com/bigyihsuan/phono-word-gen">the github repo</a> for more information</p>
+        <div class="row">
+            <h1>WIP &mdash; Random Word Generator </h1>
+            <p>see <a href="https://github.com/bigyihsuan/phono-word-gen">the github repo</a> for more information</p>
+        </div>
         <div class="row">
             <div class="col" id="inputs">
                 <label for="inputs"><h3>Input</h3></label>
                 <div class="mb-auto">
-                    <textarea id="phonology" class="form-control" rows="30" cols="80"></textarea>
+                    <textarea id="phonology" class="form-control" rows="30"></textarea>
                 </div>
                 <div class="mb-auto">
-                    <div class="input-group" id="syllableCountInput">
-                        <span class="input-group-text">Min/Max syllables/word</span>
-                        <input type="number" min="1" value="1" id="minSylCount" class="form-control">
-                        <span class="input-group-text">&ndash;</span>
-                        <input type="number" min="1" value="1" id="maxSylCount" class="form-control">
-                    </div>
-                    <div class="input-group" id="wordCountInput">
-                        <span class="input-group-text">Number of Words</span>
-                        <input type="number" min="1" value="10" id="wordCount" class="form-control">
-                    </div>
-                    <div class="form-check-inline" id="checkboxes">
-                        <input class="form-check-input" type="checkbox" id="allowDuplicates">
-                        <label class="form-check-label" for="allowDuplicates">Allow duplicates</label>
-
-                        <input class="form-check-input" type="checkbox" id="sortOutput">
-                        <label class="form-check-label" for="sortOutput">Sort output</label>
-
-                        <input class="form-check-input" type="checkbox" id="debugOutput">
-                        <label class="form-check-label" for="debugOutput">Include debug output</label>
-
+                    <div class="form-control">
+                        <div class="input-group" id="syllableCountInput">
+                            <span class="input-group-text">Min/Max syllables/word</span>
+                            <input type="number" min="1" value="1" id="minSylCount" class="form-control">
+                            <span class="input-group-text">&ndash;</span>
+                            <input type="number" min="1" value="1" id="maxSylCount" class="form-control">
+                        </div>
+                        <div class="input-group" id="wordCountInput">
+                            <span class="input-group-text">Number of Words</span>
+                            <input type="number" min="1" value="30" id="wordCount" class="form-control">
+                        </div>
+                        <div class="input-group">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="allowDuplicates">
+                                <label class="form-check-label" for="allowDuplicates">Allow duplicates</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="sortOutput">
+                                <label class="form-check-label" for="sortOutput">Sort output</label>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="separateSyllables">
+                                <label class="form-check-label" for="separateSyllables">Mark syllables</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="debugOutput">
+                                <label class="form-check-label" for="debugOutput">Include debug output</label>
+                            </div>
+                        </div>
                         <button type="button" id="submit" class="btn btn-primary">Submit</button>
                     </div>
                 </div>
             </div>
             <div class="col">
                 <label for="outputText"><h3>Output</h3></label>
-                <textarea id="outputText" disabled class="form-control h-100"></textarea>
+                <textarea id="outputText" disabled class="form-control" rows="30"></textarea>
                 <div class="alert alert-warning" hidden id="duplicateAlert"></div>
                 <div class="alert alert-info" hidden id="rejectedAlert"></div>
             </div>
@@ -94,19 +107,20 @@
                 </ul>
                 <h3>Weighting Rules</h3>
                 <ul>
-                    <li>Weights mark how often a component or phoneme can appear (typically a decimal number from 0 to 1, values > 1 are not recommended)</li>
+                    <li>Weights mark how often a component or phoneme can appear (typically a decimal number from 0 to 1, inclusive)</li>
                     <li>Weights can be applied to phonemes, optionals, or elements in a selection</li>
                     <li>Phoneme weights are placed after the phoneme: <code>C = p*0.1 t*0.3 k</code></li>
-                    <li>Weighted optionals define what chance for that optional to appear (i.e. a weight of 0.33 means that it will appear ~33% of the time)</li>
-                    <li>Weighted selection elements with multiple components must use grouping <code>{group}*0.3</code></li>
-                    <li>Selection elements and phonemes without weights have their weights automatically assigned to <code>(1 - sum(marked weights)) / (# unmarked components)</code></li>
+                    <li>Manually-marked weights on phonemes are carried over into any categories using that phoneme (i.e. <code>P = p*0.4 k; C = $P t</code> will have phoneme <code>p</code> have weight 0.4 in all categories).</li>
+                    <li>Weighted optionals define what chance for that optional to appear (i.e. a weight of 0.33 means that it will appear ~33% of the time).</li>
+                    <li>Weighted selection elements with multiple components must use grouping <code>{group}*0.3</code>.</li>
+                    <li>Selection elements and phonemes without weights have their weights automatically assigned to <code>max((1 - sum(marked weights)) / (# unmarked components), 0.0)</code>.</li>
                 </ul>
                 <h3>Rejections</h3>
                 <ul>
                     <li>Can reject a word based on category or phoneme</li>
                     <li>After <code>reject: </code>, place a valid syllable: <code>reject: $C$V</code></li>
                     <li>Place <code>reject: </code> on multiple lines for multiple rejects</li>
-                    <li>Alternatively, can surround each rejection filter in <code>&lt;&gt;</code> to separate them: <code>reject: &lt;N$C&gt; &lt;$V$V&gt; &lt;pp&gt;</code></li>
+                    <li>Alternatively, can surround each rejection filter in <code>&lt;&gt;</code> to separate them: <code>reject: &lt;$N$C&gt; &lt;$V$V&gt; &lt;pp&gt;</code></li>
                 </ul>
             </div>
         </div>

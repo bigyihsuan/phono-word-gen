@@ -1,5 +1,5 @@
 import {
-    Category, CategoryListing, fillCategories, parseCategory,
+    Category, CategoryListing, fillCategory, parseCategory,
 } from "./modules/category/Category.js";
 import tokenizeSyllable from "./modules/syllable/lexer.js";
 import { ParseError } from "./modules/syllable/ParseError.js";
@@ -12,9 +12,11 @@ const minSylCountElement = document.getElementById("minSylCount") as HTMLInputEl
 const maxSylCountElement = document.getElementById("maxSylCount") as HTMLInputElement;
 const wordCountElement = document.getElementById("wordCount") as HTMLInputElement;
 const wordOutputTextArea = document.getElementById("outputText") as HTMLInputElement;
+
 const allowDuplicatesElement = document.getElementById("allowDuplicates") as HTMLInputElement;
 const sortOutputElement = document.getElementById("sortOutput") as HTMLInputElement;
 const debugOutputElement = document.getElementById("debugOutput") as HTMLInputElement;
+const separateSyllablesElement = document.getElementById("separateSyllables") as HTMLInputElement;
 
 const duplicateAlertElement = document.getElementById("duplicateAlert") as HTMLElement;
 const rejectedAlertElement = document.getElementById("rejectedAlert") as HTMLElement;
@@ -69,10 +71,13 @@ submit?.addEventListener("click", () => {
         wordOutputTextArea.value += `rejections: ${rejects.join(",")}\n`;
     }
 
-    let maybeCats: CategoryListing;
+    const maybeCats: CategoryListing = new Map<string, Category>();
     try {
-        maybeCats = fillCategories(categories);
-        maybeCats.forEach((cat) => cat.setWeights());
+        Array.from(categories).forEach(((nameCat) => {
+            const cat = fillCategory(nameCat[0], categories);
+            cat.setWeights();
+            maybeCats.set(nameCat[0], cat);
+        }));
     } catch (e: any) {
         wordOutputTextArea.value = e;
         return;
@@ -85,6 +90,10 @@ submit?.addEventListener("click", () => {
 
     if (debugOutputElement.checked) {
         wordOutputTextArea.value += `parsed rejects:\n${rejectComps.join("\n")}\n`;
+    }
+
+    if (debugOutputElement.checked) {
+        wordOutputTextArea.value += `categories: ${Array.from(categories).map((cn) => cn[1]).join("\n")}\n`;
     }
 
     const sylLine = lines.find((l) => l.trim().match(/syllable:/))?.replaceAll("syllable:", "").trim();
@@ -103,15 +112,15 @@ submit?.addEventListener("click", () => {
                 wordOutputTextArea.value += `possibles: ${syllable.possibilities}`;
                 wordOutputTextArea.value += "\n---------------\n";
             }
-            let words: string[] = [];
+            let words: string[][] = [];
             for (let _ = 0; _ < wordCount; _ += 1) {
-                let outWord = "";
+                const outWord: string[] = [];
                 const numSyllables = Math.max(
                     minSylCount,
                     Math.floor(maxSylCount - Math.random() * maxSylCount) + 1,
                 );
                 for (let i = 0; i < numSyllables; i += 1) {
-                    outWord += syllable.evaluate();
+                    outWord.push(syllable.evaluate());
                 }
                 words.push(outWord);
             }
@@ -124,8 +133,8 @@ submit?.addEventListener("click", () => {
                 words = wordset;
             }
             const withoutRejected = words.filter(
-                (w: string) => !rejectComps.some(
-                    (r) => (r instanceof Syllable) && r.matches(w),
+                (w: string[]) => !rejectComps.some(
+                    (r) => (r instanceof Syllable) && r.matches(w.join("")),
                 ),
             );
             if (words.length > withoutRejected.length) {
@@ -134,10 +143,12 @@ submit?.addEventListener("click", () => {
                 words = withoutRejected;
             }
 
+            let outWords = words.map((syls) => syls.join(separateSyllablesElement.checked ? "." : ""));
+
             if (sortOutputElement.checked) {
-                words = words.sort();
+                outWords = outWords.sort();
             }
-            wordOutputTextArea.value += words.join("\n");
+            wordOutputTextArea.value += outWords.join("\n");
         }
     }
 });
