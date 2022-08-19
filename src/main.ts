@@ -68,10 +68,11 @@ submit?.addEventListener("click", () => {
                     .filter((s) => s.length > 0),
             );
         } else if (line.match(/letters:/)) {
-            letters.push(...line.replaceAll("letter:", "").split(" "));
+            letters.push(...line.replaceAll("letters:", "").split(" ").filter((e) => e.length > 0));
         }
     });
     if (debugOutputElement.checked) {
+        wordOutputTextArea.value += `letters: ${letters.join(",")}\n`;
         wordOutputTextArea.value += `rejections: ${rejects.join(",")}\n`;
     }
 
@@ -118,7 +119,7 @@ submit?.addEventListener("click", () => {
             wordOutputTextArea.value += "\n---------------\n";
         }
 
-        const words: string[][] = [];
+        let words: string[][] = [];
         const numSyllables = Math.max(
             minSylCount,
             Math.floor(maxSylCount - Math.random() * maxSylCount) + 1,
@@ -146,12 +147,15 @@ submit?.addEventListener("click", () => {
                 break;
             }
 
-            if (forceWordLimitElement.checked
-                && syllable.possibilities.length * numSyllables <= wordCount
-                && generatedWords === syllable.possibilities.length * numSyllables) {
-                rejectedAlertElement.innerHTML += `not enough possibilities: can only generate ${syllable.possibilities.length * numSyllables}/${wordCount} desired words\n`;
-                rejectedAlertElement.hidden = false;
-                break;
+            if (forceWordLimitElement.checked) {
+                if (syllable.possibilities.length * numSyllables <= wordCount
+                    && generatedWords === syllable.possibilities.length * numSyllables) {
+                    rejectedAlertElement.innerHTML += `not enough possibilities: can only generate ${syllable.possibilities.length * numSyllables}/${wordCount} desired words\n`;
+                    rejectedAlertElement.hidden = false;
+                    break;
+                } else {
+                    // continue
+                }
             }
 
             generatedWords += 1;
@@ -166,6 +170,24 @@ submit?.addEventListener("click", () => {
             duplicateAlertElement.innerHTML += `removed ${duplicateCount} duplicates`;
             duplicateAlertElement.hidden = false;
         }
+        /* if (sortOutputElement.checked && letters.length > 0) {
+            // sort based on letters
+            // letters can be of any length
+            const maxLetterLength = letters.map((l) => l.length).slice().sort().at(-1)!;
+            words = words.slice().sort((a, b) => {
+                const aa = letters.indexOf(a[0].slice(0, -maxLetterLength));
+                const bb = letters.indexOf(b[0].slice(0, -maxLetterLength));
+                if (aa < bb) {
+                    return -1;
+                }
+                if (aa > bb) {
+                    return 1;
+                }
+                return 0;
+            });
+        } else */ if (sortOutputElement.checked) {
+            words = words.slice().sort();
+        }
 
         let outWords = words.map((syls) => syls.join(separateSyllablesElement.checked ? "." : ""));
         if (!allowDuplicatesElement.checked) {
@@ -175,11 +197,6 @@ submit?.addEventListener("click", () => {
                 duplicateAlertElement.hidden = false;
             }
             outWords = wordset;
-        }
-        if (sortOutputElement.checked && letters.length > 0) {
-            outWords = outWords.sort((a, b) => letters.indexOf(a[0]) - letters.indexOf(b[0]));
-        } else if (sortOutputElement.checked) {
-            outWords = outWords.sort();
         }
         wordOutputTextArea.value += outWords.join("\n");
     }
