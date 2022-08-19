@@ -17,6 +17,7 @@ const allowDuplicatesElement = document.getElementById("allowDuplicates") as HTM
 const sortOutputElement = document.getElementById("sortOutput") as HTMLInputElement;
 const debugOutputElement = document.getElementById("debugOutput") as HTMLInputElement;
 const separateSyllablesElement = document.getElementById("separateSyllables") as HTMLInputElement;
+const forceWordLimitElement = document.getElementById("forceWordLimit") as HTMLInputElement;
 
 const duplicateAlertElement = document.getElementById("duplicateAlert") as HTMLElement;
 const rejectedAlertElement = document.getElementById("rejectedAlert") as HTMLElement;
@@ -107,47 +108,75 @@ submit?.addEventListener("click", () => {
 
         if (syllable instanceof ParseError) {
             wordOutputTextArea.value += syllable.toString();
-        } else {
-            if (debugOutputElement.checked) {
-                wordOutputTextArea.value += `possibles: ${syllable.possibilities}`;
-                wordOutputTextArea.value += "\n---------------\n";
-            }
-            let words: string[][] = [];
-            for (let _ = 0; _ < wordCount; _ += 1) {
-                const outWord: string[] = [];
-                const numSyllables = Math.max(
-                    minSylCount,
-                    Math.floor(maxSylCount - Math.random() * maxSylCount) + 1,
-                );
-                for (let i = 0; i < numSyllables; i += 1) {
-                    outWord.push(syllable.evaluate());
-                }
-                words.push(outWord);
-            }
-            const withoutRejected = words.filter(
-                (w: string[]) => !rejectComps.some(
-                    (r) => (r instanceof Syllable) && r.matches(w.join("")),
-                ),
-            );
-            if (words.length > withoutRejected.length) {
-                rejectedAlertElement.innerHTML += `rejected ${words.length - withoutRejected.length} words`;
-                rejectedAlertElement.hidden = false;
-                words = withoutRejected;
+            return;
+        }
+        if (debugOutputElement.checked) {
+            wordOutputTextArea.value += `possibles: ${syllable.possibilities}`;
+            wordOutputTextArea.value += "\n---------------\n";
+        }
+
+        const words: string[][] = [];
+        const numSyllables = Math.max(
+            minSylCount,
+            Math.floor(maxSylCount - Math.random() * maxSylCount) + 1,
+        );
+
+        let rejectedCount = 0;
+        let duplicateCount = 0;
+
+        let generatedWords = 0;
+
+        while (words.length < wordCount) {
+            const syls = generateWord(syllable, numSyllables);
+
+            if (rejectComps.some((r) => (r instanceof Syllable) && r.matches(syls.join("")))) {
+                // rejections
+                rejectedCount += 1;
+            } else if (!allowDuplicatesElement.checked && [...new Set(words.map((s) => s.join("")))].includes(syls.join(""))) {
+                // duplicates
+                duplicateCount += 1;
+            } else {
+                words.push(syls);
             }
 
-            let outWords = words.map((syls) => syls.join(separateSyllablesElement.checked ? "." : ""));
-            if (!allowDuplicatesElement.checked) {
-                const wordset = [...new Set(outWords)];
-                if (wordset.length < outWords.length) {
-                    duplicateAlertElement.innerHTML += `removed ${outWords.length - wordset.length} duplicates`;
-                    duplicateAlertElement.hidden = false;
-                }
-                outWords = wordset;
+            if (!forceWordLimitElement.checked && generatedWords >= wordCount) {
+                break;
             }
-            if (sortOutputElement.checked) {
-                outWords = outWords.sort();
-            }
-            wordOutputTextArea.value += outWords.join("\n");
+
+            generatedWords += 1;
         }
+
+        if (rejectedCount > 0) {
+            rejectedAlertElement.innerHTML += `rejected ${rejectedCount} words`;
+            rejectedAlertElement.hidden = false;
+        }
+
+        if (duplicateCount > 0) {
+            duplicateAlertElement.innerHTML += `removed ${duplicateCount} duplicates`;
+            duplicateAlertElement.hidden = false;
+        }
+
+        let outWords = words.map((syls) => syls.join(separateSyllablesElement.checked ? "." : ""));
+        if (!allowDuplicatesElement.checked) {
+            const wordset = [...new Set(outWords)];
+            if (wordset.length < outWords.length) {
+                duplicateAlertElement.innerHTML += `removed ${outWords.length - wordset.length} duplicates`;
+                duplicateAlertElement.hidden = false;
+            }
+            outWords = wordset;
+        }
+        if (sortOutputElement.checked) {
+            outWords = outWords.sort();
+        }
+        wordOutputTextArea.value += outWords.join("\n");
     }
 });
+
+// generate a word as its syllables
+function generateWord(syllable: Syllable, numSyllables: number): string[] {
+    const outWord: string[] = [];
+    for (let i = 0; i < numSyllables; i += 1) {
+        outWord.push(syllable.evaluate());
+    }
+    return outWord;
+}
