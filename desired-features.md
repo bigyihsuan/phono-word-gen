@@ -14,8 +14,7 @@
 - `DONE` Randomness Control: Manual weighting per-phoneme in categories
 - `DONE` Treating categories like sets, and allowing addition of categories
 - `DONE` Word filtration (`reject:`)
-- Word substitution
-- Word modification (Lexurgy-style rewrite rules?)
+- Word substitution/modification (Lexurgy-style rewrite rules?)
 - Cluster tables
   - phoneme-based only
 

@@ -104,14 +104,6 @@ submit?.addEventListener("click", () => {
                 }
                 words.push(outWord);
             }
-            if (!allowDuplicatesElement.checked) {
-                const wordset = [...new Set(words)];
-                if (wordset.length < words.length) {
-                    duplicateAlertElement.innerHTML += `removed ${words.length - wordset.length} duplicates`;
-                    duplicateAlertElement.hidden = false;
-                }
-                words = wordset;
-            }
             const withoutRejected = words.filter((w) => !rejectComps.some((r) => (r instanceof Syllable) && r.matches(w.join(""))));
             if (words.length > withoutRejected.length) {
                 rejectedAlertElement.innerHTML += `rejected ${words.length - withoutRejected.length} words`;
@@ -119,6 +111,14 @@ submit?.addEventListener("click", () => {
                 words = withoutRejected;
             }
             let outWords = words.map((syls) => syls.join(separateSyllablesElement.checked ? "." : ""));
+            if (!allowDuplicatesElement.checked) {
+                const wordset = [...new Set(outWords)];
+                if (wordset.length < outWords.length) {
+                    duplicateAlertElement.innerHTML += `removed ${outWords.length - wordset.length} duplicates`;
+                    duplicateAlertElement.hidden = false;
+                }
+                outWords = wordset;
+            }
             if (sortOutputElement.checked) {
                 outWords = outWords.sort();
             }

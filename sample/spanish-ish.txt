@@ -1,0 +1,11 @@
+N = m n ñ
+P = p t k b d g
+S = f s x h
+L = l
+R = r rr
+C = $P $S $L $R $N
+V = $Vstrong $Vweak
+Vstrong = a e o
+Vweak = i u
+
+syllable: $C$V
