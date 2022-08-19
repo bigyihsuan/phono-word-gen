@@ -26,6 +26,7 @@ submit?.addEventListener("click", () => {
     let tokens = [];
     let syllable;
     const rejects = [];
+    const letters = [];
     let minSylCount = Number.parseInt(minSylCountElement.value, 10);
     let maxSylCount = Number.parseInt(maxSylCountElement.value, 10);
     if (maxSylCount < minSylCount) {
@@ -55,6 +56,9 @@ submit?.addEventListener("click", () => {
                 .trim()
                 .replace(/{(.+)}/, (_, g1) => g1))
                 .filter((s) => s.length > 0));
+        }
+        else if (line.match(/letters:/)) {
+            letters.push(...line.replaceAll("letter:", "").split(" "));
         }
     });
     if (debugOutputElement.checked) {
@@ -117,6 +121,13 @@ submit?.addEventListener("click", () => {
             if (!forceWordLimitElement.checked && generatedWords >= wordCount) {
                 break;
             }
+            if (forceWordLimitElement.checked
+                && syllable.possibilities.length * numSyllables <= wordCount
+                && generatedWords === syllable.possibilities.length * numSyllables) {
+                rejectedAlertElement.innerHTML += `not enough possibilities: can only generate ${syllable.possibilities.length * numSyllables} out of ${wordCount} desired words\n`;
+                rejectedAlertElement.hidden = false;
+                break;
+            }
             generatedWords += 1;
         }
         if (rejectedCount > 0) {
@@ -136,7 +147,10 @@ submit?.addEventListener("click", () => {
             }
             outWords = wordset;
         }
-        if (sortOutputElement.checked) {
+        if (sortOutputElement.checked && letters.length > 0) {
+            outWords = outWords.sort((a, b) => letters.indexOf(a[0]) - letters.indexOf(b[0]));
+        }
+        else if (sortOutputElement.checked) {
             outWords = outWords.sort();
         }
         wordOutputTextArea.value += outWords.join("\n");
