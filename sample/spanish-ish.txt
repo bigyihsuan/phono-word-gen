@@ -1,15 +1,18 @@
 letters: a b c d e f g h i j k l ll m n ñ o p q r rr s t u v w x y z
 
 N = m n ñ
-P = p t k b d g
+P = p t c b d g
 S = f s j
 L = l
 R = r
 C = $P $S $L $R $N
+Cr = b c d g f p r t
+Cl = b c d g f p l
+
 V = $Vstrong $Vweak
 Vstrong = a e o
 Vweak = i u
 
-syllable: ($C)*0.8$V([s,n,$R,])*0.2
+syllable: ([$C*0.8, $Cr$R, $Cl$L,])*0.8 [$V*0.90,$Vstrong$Vweak,$Vweak$Vstrong,] ([s,n,$R,])*0.2
 
-reject: <$V$V> <$C$C>
+reject: <$R$C> <$Vweak$Vweak> <$Vstrong$Vstrong> <$V$V$V> <$C$C$V$V> <$V$V$C>
