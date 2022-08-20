@@ -97,7 +97,7 @@ submit?.addEventListener("click", () => {
         wordOutputTextArea.value = e;
         return;
     }
-    const rejectRegexp = new RegExp(rejectComps.map((r) => r.toRegex().source).join("|"), "g");
+    const rejectRegexp = new RegExp(rejectComps.map((r) => r.toRegex().source).join("|"));
 
     if (debugOutputElement.checked) {
         wordOutputTextArea.value += `reject syls: ${rejectComps.map((r) => JSON.stringify(r)).join(" ")}\n`;
@@ -278,6 +278,6 @@ class Reject {
         if (this.matchWordEnd) {
             reg = `${reg}$`;
         }
-        return new RegExp(reg);
+        return new RegExp(`(${reg})`);
     }
 }

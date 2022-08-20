@@ -15,27 +15,20 @@ const separateSyllablesElement = document.getElementById("separateSyllables");
 const forceWordLimitElement = document.getElementById("forceWordLimit");
 const duplicateAlertElement = document.getElementById("duplicateAlert");
 const rejectedAlertElement = document.getElementById("rejectedAlert");
-let wordCount = Number.parseInt(wordCountElement.value, 10);
-let categories = new Map();
-let tokens = [];
-let syllable;
-let rejects = [];
-let letters = [];
-let minSylCount = Number.parseInt(minSylCountElement.value, 10);
-let maxSylCount = Number.parseInt(maxSylCountElement.value, 10);
 submit?.addEventListener("click", () => {
     wordOutputTextArea.value = "";
     duplicateAlertElement.innerHTML = "";
     duplicateAlertElement.hidden = true;
     rejectedAlertElement.innerHTML = "";
     rejectedAlertElement.hidden = true;
-    wordCount = Number.parseInt(wordCountElement.value, 10);
-    categories = new Map();
-    tokens = [];
-    rejects = [];
-    letters = [];
-    minSylCount = Number.parseInt(minSylCountElement.value, 10);
-    maxSylCount = Number.parseInt(maxSylCountElement.value, 10);
+    const wordCount = Number.parseInt(wordCountElement.value, 10);
+    let categories = new Map();
+    let tokens = [];
+    let syllable;
+    const rejects = [];
+    let letters = [];
+    let minSylCount = Number.parseInt(minSylCountElement.value, 10);
+    let maxSylCount = Number.parseInt(maxSylCountElement.value, 10);
     if (maxSylCount < minSylCount) {
         minSylCountElement.value = maxSylCount.toString();
         minSylCount = maxSylCount;
@@ -94,7 +87,7 @@ submit?.addEventListener("click", () => {
         wordOutputTextArea.value = e;
         return;
     }
-    const rejectRegexp = new RegExp(rejectComps.map((r) => r.toRegex().source).join("|"), "g");
+    const rejectRegexp = new RegExp(rejectComps.map((r) => r.toRegex().source).join("|"));
     if (debugOutputElement.checked) {
         wordOutputTextArea.value += `reject syls: ${rejectComps.map((r) => JSON.stringify(r)).join(" ")}\n`;
         wordOutputTextArea.value += `reject regex: ${rejectRegexp}\n`;
@@ -199,30 +192,26 @@ submit?.addEventListener("click", () => {
         wordOutputTextArea.value += outWords.join("\n");
     }
 });
-// show/hide syllables when the checkbox is checked
-separateSyllablesElement.onchange = (ev) => {
-    console.log({ ev });
-};
 // generate a word as its syllables
-function generateWord(syl, minSyllables, maxSyllables) {
+function generateWord(syllable, minSyllables, maxSyllables) {
     const outWord = [];
     const numSyllables = Math.max(minSyllables, Math.floor(maxSyllables - Math.random() * maxSyllables) + 1);
     for (let i = 0; i < numSyllables; i += 1) {
-        outWord.push(syl.evaluate());
+        outWord.push(syllable.evaluate());
     }
     return outWord;
 }
-function toIndexArray(lets) {
-    return (wordLetters) => wordLetters.map((l) => lets.indexOf(l));
+function toIndexArray(letters) {
+    return (wordLetters) => wordLetters.map((l) => letters.indexOf(l));
 }
 // tokenize a word (as its syllables) into a list of contained letters
-function letterizeWord(word, lets) {
-    return word.flatMap((syl) => letterizeSyllable(syl, lets));
+function letterizeWord(word, letters) {
+    return word.flatMap((syl) => letterizeSyllable(syl, letters));
 }
 // tokenize a syllable into letters
-function letterizeSyllable(syl, lets) {
-    const letterRegexp = new RegExp(`(${lets.slice().sort((a, b) => b.length - a.length).join("|")})`, "u");
-    return syl.split(letterRegexp).filter((s) => s.length > 0);
+function letterizeSyllable(syllable, letters) {
+    const letterRegexp = new RegExp(`(${letters.slice().sort((a, b) => b.length - a.length).join("|")})`, "u");
+    return syllable.split(letterRegexp).filter((s) => s.length > 0);
 }
 class Reject {
     matchWordStart;
@@ -230,12 +219,12 @@ class Reject {
     matchSylStart;
     matchSylEnd;
     rejectSyllable;
-    constructor(rejection, cats) {
+    constructor(rejection, categories) {
         this.matchWordStart = rejection.startsWith("^");
         this.matchWordEnd = rejection.endsWith(";");
         this.matchSylStart = rejection.startsWith("@");
         this.matchSylEnd = rejection.endsWith("&");
-        const s = parseSyllable(tokenizeSyllable(rejection.replaceAll(/[&^;@]/g, "")), cats, rejection.replaceAll(/[&^;@]/g, ""));
+        const s = parseSyllable(tokenizeSyllable(rejection.replaceAll(/[&^;@]/g, "")), categories, rejection.replaceAll(/[&^;@]/g, ""));
         if (s instanceof ParseError) {
             throw s;
         }
@@ -249,7 +238,7 @@ class Reject {
         if (this.matchWordEnd) {
             reg = `${reg}$`;
         }
-        return new RegExp(reg);
+        return new RegExp(`(${reg})`);
     }
 }
 //# sourceMappingURL=main.js.map
