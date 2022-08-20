@@ -122,9 +122,9 @@
                 <h3>Rejections</h3>
                 <ul>
                     <li>Can reject a word based on category or phoneme</li>
-                    <li>After <code>reject: </code>, place a valid syllable: <code>reject: $C$V</code></li>
+                    <li>After <code>reject: </code>, place a valid syllable, within a grouping: <code>reject: {$C$V}</code></li>
                     <li>Place <code>reject: </code> on multiple lines for multiple rejects</li>
-                    <li>Alternatively, can surround each rejection filter in <code>&lt;&gt;</code>&nbsp;to separate them: <code>reject: &lt;$N$C&gt; &lt;$V$V&gt; &lt;pp&gt;</code></li>
+                    <li>Separate multiple rejects on the same line with vertical bar <code>|</code>, surrounding each with curly brackets <code>reject: {$C$V}|{$V$V}</code></li>
                 </ul>
                 <h3>Letters</h3>
                 <ul>

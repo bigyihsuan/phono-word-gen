@@ -1,7 +1,7 @@
 import { fillCategory, parseCategory, } from "./modules/category/Category.js";
 import tokenizeSyllable from "./modules/syllable/lexer.js";
 import { ParseError } from "./modules/syllable/ParseError.js";
-import { Syllable, parseSyllable } from "./modules/syllable/parser.js";
+import { parseSyllable } from "./modules/syllable/parser.js";
 const phonology = document.getElementById("phonology");
 const submit = document.getElementById("submit");
 const minSylCountElement = document.getElementById("minSylCount");
@@ -50,10 +50,11 @@ submit?.addEventListener("click", () => {
         }
         else if (line.match(/reject:/)) {
             rejects.push(...line.replaceAll("reject:", "")
-                // extract rejections in curly brackets
-                .split(/[<>]/)
+                .trim()
+                .split("|")
                 .map((s) => s
                 .trim()
+                // extract rejections in brackets
                 .replace(/{(.+)}/, (_, g1) => g1))
                 .filter((s) => s.length > 0));
         }
@@ -78,9 +79,17 @@ submit?.addEventListener("click", () => {
         return;
     }
     categories = maybeCats;
-    const rejectComps = rejects.map((r) => parseSyllable(tokenizeSyllable(r), categories, r)).filter((r) => r instanceof Syllable);
+    let rejectComps = [];
+    try {
+        rejectComps = rejects.map((r) => new Reject(r, categories));
+    }
+    catch (e) {
+        wordOutputTextArea.value = e;
+        return;
+    }
     const rejectRegexp = new RegExp(rejectComps.map((r) => r.toRegex().source).join("|"), "g");
     if (debugOutputElement.checked) {
+        wordOutputTextArea.value += `reject syls: ${rejectComps.map((r) => JSON.stringify(r)).join(" ")}\n`;
         wordOutputTextArea.value += `reject regex: ${rejectRegexp}\n`;
     }
     if (debugOutputElement.checked) {
@@ -126,12 +135,10 @@ submit?.addEventListener("click", () => {
                     rejectedAlertElement.hidden = false;
                     break;
                 }
-                else {
-                    // continue
-                }
             }
             generatedWords += 1;
         }
+        console.log({ generatedWords });
         rejectedAlertElement.innerHTML += `generated ${generatedWords} words, `;
         rejectedAlertElement.hidden = false;
         if (rejectedCount > 0) {
@@ -206,5 +213,33 @@ function letterizeWord(word, letters) {
 function letterizeSyllable(syllable, letters) {
     const letterRegexp = new RegExp(`(${letters.slice().sort((a, b) => b.length - a.length).join("|")})`, "u");
     return syllable.split(letterRegexp).filter((s) => s.length > 0);
+}
+class Reject {
+    matchWordStart;
+    matchWordEnd;
+    matchSylStart;
+    matchSylEnd;
+    rejectSyllable;
+    constructor(rejection, categories) {
+        this.matchWordStart = rejection.startsWith("^");
+        this.matchWordEnd = rejection.endsWith(";");
+        this.matchSylStart = rejection.startsWith("@");
+        this.matchSylEnd = rejection.endsWith("&");
+        const s = parseSyllable(tokenizeSyllable(rejection.replaceAll(/[&^;@]/g, "")), categories, rejection.replaceAll(/[&^;@]/g, ""));
+        if (s instanceof ParseError) {
+            throw s;
+        }
+        this.rejectSyllable = s;
+    }
+    toRegex() {
+        let reg = this.rejectSyllable.toRegex().source;
+        if (this.matchWordStart) {
+            reg = `^${reg}`;
+        }
+        if (this.matchWordEnd) {
+            reg = `${reg}$`;
+        }
+        return new RegExp(reg);
+    }
 }
 //# sourceMappingURL=main.js.map

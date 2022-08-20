@@ -60,10 +60,11 @@ submit?.addEventListener("click", () => {
         } else if (line.match(/reject:/)) {
             rejects.push(
                 ...line.replaceAll("reject:", "")
-                    // extract rejections in curly brackets
-                    .split(/[<>]/)
+                    .trim()
+                    .split("|")
                     .map((s) => s
                         .trim()
+                        // extract rejections in brackets
                         .replace(/{(.+)}/, (_, g1) => g1))
                     .filter((s) => s.length > 0),
             );
@@ -89,12 +90,17 @@ submit?.addEventListener("click", () => {
     }
     categories = maybeCats;
 
-    const rejectComps = rejects.map(
-        (r) => parseSyllable(tokenizeSyllable(r), categories, r),
-    ).filter((r) => r instanceof Syllable) as Syllable[];
+    let rejectComps: Reject[] = [];
+    try {
+        rejectComps = rejects.map((r) => new Reject(r, categories));
+    } catch (e: any) {
+        wordOutputTextArea.value = e;
+        return;
+    }
     const rejectRegexp = new RegExp(rejectComps.map((r) => r.toRegex().source).join("|"), "g");
 
     if (debugOutputElement.checked) {
+        wordOutputTextArea.value += `reject syls: ${rejectComps.map((r) => JSON.stringify(r)).join(" ")}\n`;
         wordOutputTextArea.value += `reject regex: ${rejectRegexp}\n`;
     }
 
@@ -126,6 +132,7 @@ submit?.addEventListener("click", () => {
 
         while (words.length < wordCount) {
             const syls = generateWord(syllable, minSylCount, maxSylCount);
+            generatedWords += 1;
 
             if (rejectRegexp.test(syls.join(""))) {
                 // rejections
@@ -147,14 +154,9 @@ submit?.addEventListener("click", () => {
                     rejectedAlertElement.innerHTML += `not enough possibilities: can only generate ${possibleSyllableCount * maxSylCount * maxSylCount}/${wordCount} desired words\n`;
                     rejectedAlertElement.hidden = false;
                     break;
-                } else {
-                    // continue
                 }
             }
-
-            generatedWords += 1;
         }
-
         rejectedAlertElement.innerHTML += `generated ${generatedWords} words, `;
         rejectedAlertElement.hidden = false;
 
@@ -243,4 +245,39 @@ function letterizeSyllable(syllable: string, letters: string[]): string[] {
     const letterRegexp = new RegExp(`(${letters.slice().sort((a, b) => b.length - a.length).join("|")})`, "u");
 
     return syllable.split(letterRegexp).filter((s) => s.length > 0);
+}
+
+class Reject {
+    matchWordStart: boolean;
+
+    matchWordEnd: boolean;
+
+    matchSylStart: boolean;
+
+    matchSylEnd: boolean;
+
+    rejectSyllable: Syllable;
+
+    constructor(rejection: string, categories: CategoryListing) {
+        this.matchWordStart = rejection.startsWith("^");
+        this.matchWordEnd = rejection.endsWith(";");
+        this.matchSylStart = rejection.startsWith("@");
+        this.matchSylEnd = rejection.endsWith("&");
+        const s = parseSyllable(tokenizeSyllable(rejection.replaceAll(/[&^;@]/g, "")), categories, rejection.replaceAll(/[&^;@]/g, ""));
+        if (s instanceof ParseError) {
+            throw s;
+        }
+        this.rejectSyllable = s;
+    }
+
+    toRegex(): RegExp {
+        let reg = this.rejectSyllable.toRegex().source;
+        if (this.matchWordStart) {
+            reg = `^${reg}`;
+        }
+        if (this.matchWordEnd) {
+            reg = `${reg}$`;
+        }
+        return new RegExp(reg);
+    }
 }
