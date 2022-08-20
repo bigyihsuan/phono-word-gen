@@ -102,12 +102,11 @@ submit?.addEventListener("click", () => {
             wordOutputTextArea.value += "\n---------------\n";
         }
         let words = [];
-        const numSyllables = Math.max(minSylCount, Math.floor(maxSylCount - Math.random() * maxSylCount) + 1);
         let rejectedCount = 0;
         let duplicateCount = 0;
         let generatedWords = 0;
         while (words.length < wordCount) {
-            const syls = generateWord(syllable, numSyllables);
+            const syls = generateWord(syllable, minSylCount, maxSylCount);
             if (rejectComps.some((r) => (r instanceof Syllable) && r.matches(syls.join("")))) {
                 // rejections
                 rejectedCount += 1;
@@ -123,9 +122,9 @@ submit?.addEventListener("click", () => {
                 break;
             }
             if (forceWordLimitElement.checked) {
-                if (syllable.possibilities.length * numSyllables <= wordCount
-                    && generatedWords === syllable.possibilities.length * numSyllables) {
-                    rejectedAlertElement.innerHTML += `not enough possibilities: can only generate ${syllable.possibilities.length * numSyllables}/${wordCount} desired words\n`;
+                if (syllable.possibilities.length * maxSylCount <= wordCount
+                    && generatedWords === syllable.possibilities.length * maxSylCount) {
+                    rejectedAlertElement.innerHTML += `not enough possibilities: can only generate ${syllable.possibilities.length * maxSylCount}/${wordCount} desired words\n`;
                     rejectedAlertElement.hidden = false;
                     break;
                 }
@@ -190,8 +189,9 @@ submit?.addEventListener("click", () => {
     }
 });
 // generate a word as its syllables
-function generateWord(syllable, numSyllables) {
+function generateWord(syllable, minSyllables, maxSyllables) {
     const outWord = [];
+    const numSyllables = Math.max(minSyllables, Math.floor(maxSyllables - Math.random() * maxSyllables) + 1);
     for (let i = 0; i < numSyllables; i += 1) {
         outWord.push(syllable.evaluate());
     }

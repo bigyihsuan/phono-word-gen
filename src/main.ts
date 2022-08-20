@@ -220,16 +220,12 @@ submit?.addEventListener("click", () => {
 // generate a word as its syllables
 function generateWord(syllable: Syllable, minSyllables: number, maxSyllables: number): string[] {
     const outWord: string[] = [];
-    let numSyllables = Math.max(
+    const numSyllables = Math.max(
         minSyllables,
         Math.floor(maxSyllables - Math.random() * maxSyllables) + 1,
     );
     for (let i = 0; i < numSyllables; i += 1) {
         outWord.push(syllable.evaluate());
-        numSyllables = Math.max(
-            minSyllables,
-            Math.floor(maxSyllables - Math.random() * maxSyllables) + 1,
-        );
     }
     return outWord;
 }
