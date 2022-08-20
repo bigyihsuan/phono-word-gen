@@ -82,8 +82,8 @@
             <div class="col">
                 <label for="outputText"><h3>Output</h3></label>
                 <textarea id="outputText" disabled class="form-control" rows="30"></textarea>
-                <div class="alert alert-warning" style="white-space: pre-line;" hidden id="duplicateAlert"></div>
                 <div class="alert alert-info" style="white-space: pre-line;" hidden id="rejectedAlert"></div>
+                <div class="alert alert-warning" style="white-space: pre-line;" hidden id="duplicateAlert"></div>
             </div>
         </div>
         <div class="row">
@@ -124,7 +124,13 @@
                     <li>Can reject a word based on category or phoneme</li>
                     <li>After <code>reject: </code>, place a valid syllable: <code>reject: $C$V</code></li>
                     <li>Place <code>reject: </code> on multiple lines for multiple rejects</li>
-                    <li>Alternatively, can surround each rejection filter in <code>&lt;&gt;</code> to separate them: <code>reject: &lt;$N$C&gt; &lt;$V$V&gt; &lt;pp&gt;</code></li>
+                    <li>Alternatively, can surround each rejection filter in <code>&lt;&gt;</code>&nbsp;to separate them: <code>reject: &lt;$N$C&gt; &lt;$V$V&gt; &lt;pp&gt;</code></li>
+                </ul>
+                <h3>Letters</h3>
+                <ul>
+                    <li>Have a line with <code>letters: </code>&nbsp;to define a sort order for your words.</li>
+                    <li>Each "letter" can have multiple characters.</li>
+                    <li>Only the last <code>letters: </code>&nbsp;directive will be applied.</li>
                 </ul>
             </div>
         </div>

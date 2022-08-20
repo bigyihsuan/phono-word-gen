@@ -26,7 +26,7 @@ submit?.addEventListener("click", () => {
     let tokens = [];
     let syllable;
     const rejects = [];
-    const letters = [];
+    let letters = [];
     let minSylCount = Number.parseInt(minSylCountElement.value, 10);
     let maxSylCount = Number.parseInt(maxSylCountElement.value, 10);
     if (maxSylCount < minSylCount) {
@@ -58,10 +58,11 @@ submit?.addEventListener("click", () => {
                 .filter((s) => s.length > 0));
         }
         else if (line.match(/letters:/)) {
-            letters.push(...line.replaceAll("letter:", "").split(" "));
+            letters = line.replaceAll("letters:", "").split(" ").filter((e) => e.length > 0);
         }
     });
     if (debugOutputElement.checked) {
+        wordOutputTextArea.value += `letters: ${letters.join(",")}\n`;
         wordOutputTextArea.value += `rejections: ${rejects.join(",")}\n`;
     }
     const maybeCats = new Map();
@@ -100,7 +101,7 @@ submit?.addEventListener("click", () => {
             wordOutputTextArea.value += `possibles: ${syllable.possibilities}`;
             wordOutputTextArea.value += "\n---------------\n";
         }
-        const words = [];
+        let words = [];
         const numSyllables = Math.max(minSylCount, Math.floor(maxSylCount - Math.random() * maxSylCount) + 1);
         let rejectedCount = 0;
         let duplicateCount = 0;
@@ -121,15 +122,21 @@ submit?.addEventListener("click", () => {
             if (!forceWordLimitElement.checked && generatedWords >= wordCount) {
                 break;
             }
-            if (forceWordLimitElement.checked
-                && syllable.possibilities.length * numSyllables <= wordCount
-                && generatedWords === syllable.possibilities.length * numSyllables) {
-                rejectedAlertElement.innerHTML += `not enough possibilities: can only generate ${syllable.possibilities.length * numSyllables} out of ${wordCount} desired words\n`;
-                rejectedAlertElement.hidden = false;
-                break;
+            if (forceWordLimitElement.checked) {
+                if (syllable.possibilities.length * numSyllables <= wordCount
+                    && generatedWords === syllable.possibilities.length * numSyllables) {
+                    rejectedAlertElement.innerHTML += `not enough possibilities: can only generate ${syllable.possibilities.length * numSyllables}/${wordCount} desired words\n`;
+                    rejectedAlertElement.hidden = false;
+                    break;
+                }
+                else {
+                    // continue
+                }
             }
             generatedWords += 1;
         }
+        rejectedAlertElement.innerHTML += `generated ${generatedWords} words, `;
+        rejectedAlertElement.hidden = false;
         if (rejectedCount > 0) {
             rejectedAlertElement.innerHTML += `rejected ${rejectedCount} words`;
             rejectedAlertElement.hidden = false;
@@ -137,6 +144,38 @@ submit?.addEventListener("click", () => {
         if (duplicateCount > 0) {
             duplicateAlertElement.innerHTML += `removed ${duplicateCount} duplicates`;
             duplicateAlertElement.hidden = false;
+        }
+        if (sortOutputElement.checked && letters.length > 0) {
+            // sort based on letters
+            // letters can be of any length
+            // tokenize the words into their letters
+            const letterizedWords = words.map((w) => ({ word: w, lets: letterizeWord(w, letters) }));
+            // sort based on these letters
+            words = letterizedWords.slice().sort((left, right) => {
+                // convert to indexes per letter
+                const letterIndexer = toIndexArray(letters);
+                const leftIndexes = letterIndexer(left.lets);
+                const rightIndexes = letterIndexer(right.lets);
+                const smallestLength = Math.min(leftIndexes.length, rightIndexes.length);
+                // compare letter-by-letter
+                for (let i = 0; i < smallestLength; i += 1) {
+                    if (leftIndexes[i] < rightIndexes[i]) {
+                        return -1;
+                    }
+                    if (leftIndexes[i] > rightIndexes[i]) {
+                        return 1;
+                    }
+                }
+                // handle when the smaller is a subset of the larger
+                // smaller word comes first
+                if (leftIndexes.length < rightIndexes.length) {
+                    return -1;
+                }
+                return 1;
+            }).map((obj) => obj.word);
+        }
+        else if (sortOutputElement.checked) {
+            words = words.slice().sort();
         }
         let outWords = words.map((syls) => syls.join(separateSyllablesElement.checked ? "." : ""));
         if (!allowDuplicatesElement.checked) {
@@ -146,12 +185,6 @@ submit?.addEventListener("click", () => {
                 duplicateAlertElement.hidden = false;
             }
             outWords = wordset;
-        }
-        if (sortOutputElement.checked && letters.length > 0) {
-            outWords = outWords.sort((a, b) => letters.indexOf(a[0]) - letters.indexOf(b[0]));
-        }
-        else if (sortOutputElement.checked) {
-            outWords = outWords.sort();
         }
         wordOutputTextArea.value += outWords.join("\n");
     }
@@ -163,5 +196,17 @@ function generateWord(syllable, numSyllables) {
         outWord.push(syllable.evaluate());
     }
     return outWord;
+}
+function toIndexArray(letters) {
+    return (wordLetters) => wordLetters.map((l) => letters.indexOf(l));
+}
+// tokenize a word (as its syllables) into a list of contained letters
+function letterizeWord(word, letters) {
+    return word.flatMap((syl) => letterizeSyllable(syl, letters));
+}
+// tokenize a syllable into letters
+function letterizeSyllable(syllable, letters) {
+    const letterRegexp = new RegExp(`(${letters.slice().sort((a, b) => b.length - a.length).join("|")})`, "u");
+    return syllable.split(letterRegexp).filter((s) => s.length > 0);
 }
 //# sourceMappingURL=main.js.map

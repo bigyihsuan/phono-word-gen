@@ -2,14 +2,14 @@ letters: a b c d e f g h i j k l ll m n ñ o p q r rr s t u v w x y z
 
 N = m n ñ
 P = p t k b d g
-S = f s j h
-L = l ll
-R = r rr
+S = f s j
+L = l
+R = r
 C = $P $S $L $R $N
 V = $Vstrong $Vweak
 Vstrong = a e o
 Vweak = i u
 
-syllable: ($C)$V
+syllable: ($C)*0.8$V([s,n,$R,])*0.2
 
-reject: <$V$V>
+reject: <$V$V> <$C$C>
