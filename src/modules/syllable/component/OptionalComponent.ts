@@ -27,6 +27,10 @@ export default class OptionalComponent implements IEvaluableComponent, IRandomly
     toString(): string {
         return `(${this.component.toString()}:${this.weight})`;
     }
+
+    toRegex(): RegExp {
+        return new RegExp(`(${this.component.toRegex().source})?`);
+    }
 }
 
 export { OptionalComponent };

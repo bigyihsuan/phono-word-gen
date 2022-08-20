@@ -36,6 +36,10 @@ export default class Phoneme {
         return `${this.value}:${this.weight.toFixed(3)}`;
     }
 
+    toRegex(): RegExp {
+        return new RegExp(this.value);
+    }
+
     copy(): Phoneme {
         const p = new Phoneme(this.value);
         p.weight = this.weight;

@@ -16,6 +16,7 @@ declare class Category implements IRandomlyChoosable, IEvaluableComponent {
     evaluate(): string;
     evaluateAll(): string[];
     toString(): string;
+    toRegex(): RegExp;
 }
 declare type CategoryListing = Map<string, Category>;
 declare function parseCategory(cat: string): Category;

@@ -54,6 +54,10 @@ export default class Selection implements IRandomlyChoosable, IEvaluableComponen
     toString(): string {
         return `[${this.options.join(",")}]`;
     }
+
+    toRegex(): RegExp {
+        return new RegExp(`(${this.options.map((o) => o.toRegex().source).join("|")})`);
+    }
 }
 
 export { Selection };

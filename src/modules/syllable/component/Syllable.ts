@@ -4,11 +4,8 @@ import IMatchable from "./IMatchable.js";
 export default class Syllable implements IEvaluableComponent, IMatchable {
     components: IEvaluableComponent[];
 
-    possibilities: string[]; // all possible strings generatable with this syllable
-
     constructor(components: IEvaluableComponent[]) {
         this.components = components;
-        this.possibilities = this.evaluateAll();
     }
 
     evaluate(): string {
@@ -40,7 +37,12 @@ export default class Syllable implements IEvaluableComponent, IMatchable {
     }
 
     matches(word: string): boolean {
-        return this.possibilities.some((pos) => word.match(pos));
+        // return this.possibilities.some((pos) => word.match(pos));
+        return this.toRegex().test(word);
+    }
+
+    toRegex(): RegExp {
+        return new RegExp(this.components.map((c) => c.toRegex().source).join(""));
     }
 }
 

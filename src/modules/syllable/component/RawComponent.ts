@@ -18,6 +18,10 @@ export default class RawComponent implements IEvaluableComponent {
     toString(): string {
         return this.component;
     }
+
+    toRegex(): RegExp {
+        return new RegExp(this.component);
+    }
 }
 
 export { RawComponent };

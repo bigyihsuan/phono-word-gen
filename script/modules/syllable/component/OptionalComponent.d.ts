@@ -8,5 +8,6 @@ export default class OptionalComponent implements IEvaluableComponent, IRandomly
     evaluate(): string;
     evaluateAll(): string[];
     toString(): string;
+    toRegex(): RegExp;
 }
 export { OptionalComponent };

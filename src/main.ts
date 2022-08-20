@@ -91,10 +91,11 @@ submit?.addEventListener("click", () => {
 
     const rejectComps = rejects.map(
         (r) => parseSyllable(tokenizeSyllable(r), categories, r),
-    ).filter((r) => r instanceof Syllable);
+    ).filter((r) => r instanceof Syllable) as Syllable[];
+    const rejectRegexp = new RegExp(rejectComps.map((r) => r.toRegex().source).join("|"), "g");
 
     if (debugOutputElement.checked) {
-        wordOutputTextArea.value += `parsed rejects:\n${rejectComps.join("\n")}\n`;
+        wordOutputTextArea.value += `reject regex: ${rejectRegexp}\n`;
     }
 
     if (debugOutputElement.checked) {
@@ -114,10 +115,8 @@ submit?.addEventListener("click", () => {
             wordOutputTextArea.value += syllable.toString();
             return;
         }
-        if (debugOutputElement.checked) {
-            wordOutputTextArea.value += `possibles: ${syllable.possibilities}`;
-            wordOutputTextArea.value += "\n---------------\n";
-        }
+
+        const possibleSyllableCount = syllable.evaluateAll().length;
 
         let words: string[][] = [];
 
@@ -128,7 +127,7 @@ submit?.addEventListener("click", () => {
         while (words.length < wordCount) {
             const syls = generateWord(syllable, minSylCount, maxSylCount);
 
-            if (rejectComps.some((r) => (r instanceof Syllable) && r.matches(syls.join("")))) {
+            if (rejectRegexp.test(syls.join(""))) {
                 // rejections
                 rejectedCount += 1;
             } else if (!allowDuplicatesElement.checked && [...new Set(words.map((s) => s.join("")))].includes(syls.join(""))) {
@@ -143,9 +142,9 @@ submit?.addEventListener("click", () => {
             }
 
             if (forceWordLimitElement.checked) {
-                if (syllable.possibilities.length * maxSylCount <= wordCount
-                    && generatedWords === syllable.possibilities.length * maxSylCount) {
-                    rejectedAlertElement.innerHTML += `not enough possibilities: can only generate ${syllable.possibilities.length * maxSylCount}/${wordCount} desired words\n`;
+                if (possibleSyllableCount * maxSylCount * maxSylCount <= wordCount
+                    && generatedWords === possibleSyllableCount * maxSylCount * maxSylCount) {
+                    rejectedAlertElement.innerHTML += `not enough possibilities: can only generate ${possibleSyllableCount * maxSylCount * maxSylCount}/${wordCount} desired words\n`;
                     rejectedAlertElement.hidden = false;
                     break;
                 } else {

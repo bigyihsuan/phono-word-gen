@@ -8,6 +8,9 @@ export default class SelectionOption {
     toString() {
         return `${this.component.toString()}:${this.weight}`;
     }
+    toRegex() {
+        return this.component.toRegex();
+    }
     evaluate() {
         return this.component.evaluate();
     }

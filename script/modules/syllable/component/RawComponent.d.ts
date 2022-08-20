@@ -5,5 +5,6 @@ export default class RawComponent implements IEvaluableComponent {
     evaluate(): string;
     evaluateAll(): string[];
     toString(): string;
+    toRegex(): RegExp;
 }
 export { RawComponent };

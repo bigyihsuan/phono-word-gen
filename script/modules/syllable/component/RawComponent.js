@@ -12,6 +12,9 @@ export default class RawComponent {
     toString() {
         return this.component;
     }
+    toRegex() {
+        return new RegExp(this.component);
+    }
 }
 export { RawComponent };
 //# sourceMappingURL=RawComponent.js.map

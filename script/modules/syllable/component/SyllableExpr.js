@@ -12,6 +12,9 @@ export default class SyllableExpr {
     toString() {
         return this.component.toString();
     }
+    toRegex() {
+        return this.component.toRegex();
+    }
 }
 export { SyllableExpr };
 //# sourceMappingURL=SyllableExpr.js.map

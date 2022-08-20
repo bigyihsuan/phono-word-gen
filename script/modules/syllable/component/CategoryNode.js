@@ -12,6 +12,9 @@ export default class CategoryNode {
     toString() {
         return this.category.toString();
     }
+    toRegex() {
+        return this.category.toRegex();
+    }
 }
 export { CategoryNode };
 //# sourceMappingURL=CategoryNode.js.map

@@ -14,6 +14,10 @@ export default class SelectionOption implements IEvaluableComponent {
         return `${this.component.toString()}:${this.weight}`;
     }
 
+    toRegex(): RegExp {
+        return this.component.toRegex();
+    }
+
     evaluate(): string {
         return this.component.evaluate();
     }

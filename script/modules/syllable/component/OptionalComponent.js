@@ -18,6 +18,9 @@ export default class OptionalComponent {
     toString() {
         return `(${this.component.toString()}:${this.weight})`;
     }
+    toRegex() {
+        return new RegExp(`(${this.component.toRegex().source})?`);
+    }
 }
 export { OptionalComponent };
 //# sourceMappingURL=OptionalComponent.js.map

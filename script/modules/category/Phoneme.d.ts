@@ -5,6 +5,7 @@ export default class Phoneme {
     constructor(phoneme: string);
     isCategoryName(): boolean;
     toString(): string;
+    toRegex(): RegExp;
     copy(): Phoneme;
 }
 export { Phoneme };

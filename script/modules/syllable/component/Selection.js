@@ -43,6 +43,9 @@ export default class Selection {
     toString() {
         return `[${this.options.join(",")}]`;
     }
+    toRegex() {
+        return new RegExp(`(${this.options.map((o) => o.toRegex().source).join("|")})`);
+    }
 }
 export { Selection };
 //# sourceMappingURL=Selection.js.map

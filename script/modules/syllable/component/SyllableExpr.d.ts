@@ -5,5 +5,6 @@ export default class SyllableExpr implements IEvaluableComponent {
     evaluate(): string;
     evaluateAll(): string[];
     toString(): string;
+    toRegex(): RegExp;
 }
 export { SyllableExpr };

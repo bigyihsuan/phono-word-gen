@@ -19,6 +19,10 @@ export default class CategoryNode implements IEvaluableComponent {
     toString(): string {
         return this.category.toString();
     }
+
+    toRegex(): RegExp {
+        return this.category.toRegex();
+    }
 }
 
 export { CategoryNode };

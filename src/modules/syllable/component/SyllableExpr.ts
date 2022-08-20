@@ -18,6 +18,10 @@ export default class SyllableExpr implements IEvaluableComponent {
     toString(): string {
         return this.component.toString();
     }
+
+    toRegex(): RegExp {
+        return this.component.toRegex();
+    }
 }
 
 export { SyllableExpr };

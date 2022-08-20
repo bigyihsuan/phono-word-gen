@@ -10,5 +10,6 @@ export default class Selection implements IRandomlyChoosable, IEvaluableComponen
     evaluate(): string;
     evaluateAll(): string[];
     toString(): string;
+    toRegex(): RegExp;
 }
 export { Selection };

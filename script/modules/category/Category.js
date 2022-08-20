@@ -70,6 +70,9 @@ class Category {
     toString() {
         return `{${this.name}: [${this.phonemes.toString()}]}`;
     }
+    toRegex() {
+        return new RegExp(`(${this.phonemes.map((p) => p.toRegex().source).join("|")})`);
+    }
 }
 function parseCategory(cat) {
     let name = "";

@@ -1,9 +1,7 @@
 export default class Syllable {
     components;
-    possibilities; // all possible strings generatable with this syllable
     constructor(components) {
         this.components = components;
-        this.possibilities = this.evaluateAll();
     }
     evaluate() {
         return this.components.map((c) => c.evaluate()).join("");
@@ -27,7 +25,11 @@ export default class Syllable {
         return `<${this.components.join(",")}>`;
     }
     matches(word) {
-        return this.possibilities.some((pos) => word.match(pos));
+        // return this.possibilities.some((pos) => word.match(pos));
+        return this.toRegex().test(word);
+    }
+    toRegex() {
+        return new RegExp(this.components.map((c) => c.toRegex().source).join(""));
     }
 }
 export { Syllable };

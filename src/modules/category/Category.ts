@@ -89,6 +89,10 @@ class Category implements IRandomlyChoosable, IEvaluableComponent {
     toString(): string {
         return `{${this.name}: [${this.phonemes.toString()}]}`;
     }
+
+    toRegex(): RegExp {
+        return new RegExp(`(${this.phonemes.map((p) => p.toRegex().source).join("|")})`);
+    }
 }
 
 type CategoryListing = Map<string, Category>;

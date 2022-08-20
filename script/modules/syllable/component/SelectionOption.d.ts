@@ -4,6 +4,7 @@ export default class SelectionOption implements IEvaluableComponent {
     weight: number;
     constructor(component: IEvaluableComponent, weight: number);
     toString(): string;
+    toRegex(): RegExp;
     evaluate(): string;
     evaluateAll(): string[];
 }

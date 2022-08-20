@@ -5,6 +5,7 @@ export default interface IEvaluableComponent {
     // create all possible strings
     evaluateAll(): string[];
     toString(): string;
+    toRegex(): RegExp;
 }
 
 export { IEvaluableComponent };

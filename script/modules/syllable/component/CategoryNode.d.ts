@@ -6,5 +6,6 @@ export default class CategoryNode implements IEvaluableComponent {
     evaluate(): string;
     evaluateAll(): string[];
     toString(): string;
+    toRegex(): RegExp;
 }
 export { CategoryNode };
