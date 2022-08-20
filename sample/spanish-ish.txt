@@ -15,4 +15,4 @@ Vweak = i u
 
 syllable: ([$C*0.8, $Cr$R, $Cl$L,])*0.8 [$V*0.95,$Vstrong$Vweak,$Vweak$Vstrong,] ([s,n,$R,])*0.2
 
-reject: {$R$C}|{$Vweak$Vweak}|{$Vstrong$Vstrong}|{$V$V$V}|{$C$C$V$V}|{$V$V$C}|{$N$N}
+reject: {$R$C}|{$Vweak$Vweak}|{$Vstrong$Vstrong}|{$V$V$V}|{$C$C$V$V}|{$V$V$C}|{$N$N}|{^ll}
