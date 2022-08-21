@@ -150,7 +150,7 @@ function parseSelectionOption(
 ): SelectionOption | ParseError {
     const component = parseSyllable(tokens, categories, sylStr);
     if (component instanceof ParseError) {
-        return component.within("SelectionOption-Component");
+        return component.within("SelectionOption-Component").appendMessage(" (Did you forget the trailing comma?)");
     }
     let weight = -1;
     if (tokens.at(0) instanceof StarToken) {

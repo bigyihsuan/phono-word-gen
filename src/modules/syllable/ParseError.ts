@@ -26,6 +26,11 @@ export default class ParseError {
         this.withins.push(funName);
         return this;
     }
+
+    appendMessage(message: string): ParseError {
+        this.reason += message;
+        return this;
+    }
 }
 
 export { ParseError };
