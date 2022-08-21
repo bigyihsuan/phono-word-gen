@@ -7,5 +7,6 @@ export default class ParseError {
     constructor(reason: string, token: Token, sylStr: string, sourceFun: string);
     toString(): string;
     within(funName: string): ParseError;
+    appendMessage(message: string): ParseError;
 }
 export { ParseError };

@@ -18,6 +18,10 @@ export default class ParseError {
         this.withins.push(funName);
         return this;
     }
+    appendMessage(message) {
+        this.reason += message;
+        return this;
+    }
 }
 export { ParseError };
 //# sourceMappingURL=ParseError.js.map
