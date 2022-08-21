@@ -80,14 +80,20 @@ submit?.addEventListener("click", () => {
     }
     categories = maybeCats;
     let rejectComps = [];
-    try {
-        rejectComps = rejects.map((r) => new Reject(r, categories));
+    let rejectRegexp;
+    if (rejects.length > 0) {
+        try {
+            rejectComps = rejects.map((r) => new Reject(r, categories));
+            rejectRegexp = new RegExp(rejectComps.map((r) => r.toRegex().source).join("|"));
+        }
+        catch (e) {
+            wordOutputTextArea.value = e;
+            return;
+        }
     }
-    catch (e) {
-        wordOutputTextArea.value = e;
-        return;
+    else {
+        rejectRegexp = /$^/;
     }
-    const rejectRegexp = new RegExp(rejectComps.map((r) => r.toRegex().source).join("|"));
     if (debugOutputElement.checked) {
         wordOutputTextArea.value += `reject syls: ${rejectComps.map((r) => JSON.stringify(r)).join(" ")}\n`;
         wordOutputTextArea.value += `reject regex: ${rejectRegexp}\n`;
