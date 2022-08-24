@@ -8,7 +8,7 @@ import Reject from "./Reject.js";
  * 2: the replacement,
  * 3: the conditions
  */
-const replaceRegex = /{(.+)}\s*>\s*{(.+)}\s*\/\s*(.+)/g;
+const replaceRegex = /{(.*)}\s*>\s*{(.*)}\s*\/\s*(.*)/g;
 export default class Replacement {
     source;
     sourceString;
@@ -18,11 +18,14 @@ export default class Replacement {
     rule;
     // sub: string;
     constructor(replStr, categories) {
-        const result = replStr.matchAll(replaceRegex);
-        const [, source, substitute, conditions] = result.next().value;
-        // console.log({
-        //     source, substitute, conditions,
-        // });
+        const result = Array.from(replStr.matchAll(replaceRegex));
+        console.log({ result, resultArr: [...result] });
+        const source = String(result[0][1]);
+        const substitute = String(result[0][2]);
+        const conditions = String(result[0][3]);
+        console.log({
+            source, substitute, conditions,
+        });
         const so = parseSyllable(tokenizeSyllable(source), categories, source);
         if (so instanceof ParseError) {
             throw so;

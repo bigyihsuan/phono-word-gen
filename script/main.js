@@ -78,6 +78,7 @@ submit?.addEventListener("click", () => {
     }
     catch (e) {
         wordOutputTextArea.value = e;
+        console.error(e);
         return;
     }
     categories = maybeCats;
@@ -90,6 +91,7 @@ submit?.addEventListener("click", () => {
         }
         catch (e) {
             wordOutputTextArea.value = e;
+            console.error(e);
             return;
         }
     }
@@ -103,7 +105,8 @@ submit?.addEventListener("click", () => {
         });
     }
     catch (e) {
-        wordOutputTextArea.value = e;
+        wordOutputTextArea.value += e;
+        console.error(e);
         return;
     }
     // replacements.forEach((r) => {
@@ -126,6 +129,7 @@ submit?.addEventListener("click", () => {
         }
         if (syllable instanceof ParseError) {
             wordOutputTextArea.value += syllable.toString();
+            console.error(syllable);
             return;
         }
         const possibleSyllableCount = syllable.evaluateAll().length;

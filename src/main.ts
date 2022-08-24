@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import {
     Category, CategoryListing, fillCategory, parseCategory,
 } from "./modules/category/Category.js";
@@ -87,6 +88,7 @@ submit?.addEventListener("click", () => {
         }));
     } catch (e: any) {
         wordOutputTextArea.value = e;
+        console.error(e);
         return;
     }
     categories = maybeCats;
@@ -99,6 +101,7 @@ submit?.addEventListener("click", () => {
             rejectRegexp = new RegExp(rejectComps.map((r) => r.toRegex().source).join("|"));
         } catch (e: any) {
             wordOutputTextArea.value = e;
+            console.error(e);
             return;
         }
     } else {
@@ -111,7 +114,8 @@ submit?.addEventListener("click", () => {
             replacements.push(new Replacement(r, categories));
         });
     } catch (e: any) {
-        wordOutputTextArea.value = e;
+        wordOutputTextArea.value += e;
+        console.error(e);
         return;
     }
     // replacements.forEach((r) => {
@@ -137,6 +141,7 @@ submit?.addEventListener("click", () => {
 
         if (syllable instanceof ParseError) {
             wordOutputTextArea.value += syllable.toString();
+            console.error(syllable);
             return;
         }
 

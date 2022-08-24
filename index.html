@@ -23,6 +23,7 @@
             width: auto;
             height: auto;
             padding: 0.1em 0.25em 0.1em 0.25em;
+            color: var(--bs-red);
         }
     </style>
 </head>
@@ -132,6 +133,9 @@
                     <li>You can replace <b>raw</b> characters with other <b>raw</b> characters.</li>
                     <li>The form of a replacement rule is: <code>replace: {source} > {substitution} / condition</code></li>
                     <li>The source and substitution can be any character.</li>
+                    <li>Sources and substitutions can be empty; just have nothing within the curly brackets.</li>
+                    <li>Empty sources means that the substitution will be inserted where the condition matches.</li>
+                    <li>Empty substitutions means that the source will be deleted.</li>
                     <li>Conditions must have exactly one underscore (<code>_</code>) representing the source.</li>
                     <li>Conditions can accept syllable components. For example this will replace "c" with "qu" before "a", "e", and "o": <code>replace: {c} > {qu} / _ [a,e,o,]</code></li>
                     <li>Conditions can also accept word start and word end checks. This will replace leading "s" with "es": <code>replace: {s} > {es} / ^ _</code></li>
