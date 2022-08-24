@@ -127,6 +127,17 @@
                     <li>Separate multiple rejects on the same line with vertical bar <code>|</code>, surrounding each with curly brackets <code>reject: {$C$V}|{$V$V}</code></li>
                     <li>Checking for components at the start and end of words is possible: <code>reject: {^start}|{end&}</code></li>
                 </ul>
+                <h3>Replacements</h3>
+                <ul>
+                    <li>You can replace <b>raw</b> characters with other <b>raw</b> characters.</li>
+                    <li>The form of a replacement rule is: <code>replace: {source} > {substitution} / condition</code></li>
+                    <li>The source and substitution can be any character.</li>
+                    <li>Conditions must have exactly one underscore (<code>_</code>) representing the source.</li>
+                    <li>Conditions can accept syllable components. For example this will replace "c" with "qu" before "a", "e", and "o": <code>replace: {c} > {qu} / _ [a,e,o,]</code></li>
+                    <li>Conditions can also accept word start and word end checks. This will replace leading "s" with "es": <code>replace: {s} > {es} / ^ _</code></li>
+                    <li>(Note: currently conditions only work on <b>raw</b> characters, just before displaying the word)</li>
+                    <li>(Note: currently non-conditions, i.e. "do not replace when...", are not implemented)</li>
+                </ul>
                 <h3>Letters</h3>
                 <ul>
                     <li>Have a line with <code>letters: </code>&nbsp;to define a sort order for your words.</li>

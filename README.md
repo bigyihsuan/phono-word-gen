@@ -1,5 +1,7 @@
 # `phono-word-gen`
 
+Deployed here: <https://bigyihsuan.github.io/phono-word-gen/>
+
 This project stems from a general dissatisfaction
 of the various "generate a random word given a phonology" tools and websites
 floating around the internet.

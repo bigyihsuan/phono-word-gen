@@ -45,6 +45,12 @@
         "semi": "off",
         "@typescript-eslint/semi": [
             "error"
+        ],
+        "no-restricted-syntax": [
+            "error",
+            "ForInStatement",
+            "LabeledStatement",
+            "WithStatement"
         ]
     }
 }

@@ -5,6 +5,8 @@ import tokenizeSyllable from "./modules/syllable/lexer.js";
 import { ParseError } from "./modules/syllable/ParseError.js";
 import { Syllable, parseSyllable } from "./modules/syllable/parser.js";
 import { Token } from "./modules/syllable/token.js";
+import { Reject } from "./modules/postprocess/Reject.js";
+import Replacement from "./modules/postprocess/Replacement.js";
 
 const phonology = document.getElementById("phonology") as HTMLInputElement;
 const submit = document.getElementById("submit") as HTMLButtonElement;
@@ -35,6 +37,7 @@ submit?.addEventListener("click", () => {
     let syllable: Syllable | ParseError;
     const rejects: string[] = [];
     let letters: string[] = [];
+    const replStrs: string[] = [];
 
     let minSylCount = Number.parseInt(minSylCountElement.value, 10);
     let maxSylCount = Number.parseInt(maxSylCountElement.value, 10);
@@ -61,7 +64,7 @@ submit?.addEventListener("click", () => {
             rejects.push(
                 ...line.replaceAll("reject:", "")
                     .trim()
-                    .split("|")
+                    .split(/\s*\|\s*/)
                     .map((s) => s
                         .trim()
                         // extract rejections in brackets
@@ -70,12 +73,10 @@ submit?.addEventListener("click", () => {
             );
         } else if (line.match(/letters:/)) {
             letters = line.replaceAll("letters:", "").split(" ").filter((e) => e.length > 0);
+        } else if (line.match(/replace:/)) {
+            replStrs.push(line);
         }
     });
-    if (debugOutputElement.checked) {
-        wordOutputTextArea.value += `letters: ${letters.join(",")}\n`;
-        wordOutputTextArea.value += `rejections: ${rejects.join(",")}\n`;
-    }
 
     const maybeCats: CategoryListing = new Map<string, Category>();
     try {
@@ -104,13 +105,25 @@ submit?.addEventListener("click", () => {
         rejectRegexp = /$^/;
     }
 
-    if (debugOutputElement.checked) {
-        wordOutputTextArea.value += `reject syls: ${rejectComps.map((r) => JSON.stringify(r)).join(" ")}\n`;
-        wordOutputTextArea.value += `reject regex: ${rejectRegexp}\n`;
+    const replacements: Replacement[] = [];
+    try {
+        replStrs.forEach((r) => {
+            replacements.push(new Replacement(r, categories));
+        });
+    } catch (e: any) {
+        wordOutputTextArea.value = e;
+        return;
     }
+    // replacements.forEach((r) => {
+    //     console.log(r);
+    // });
 
     if (debugOutputElement.checked) {
-        wordOutputTextArea.value += `categories: ${Array.from(categories).map((cn) => cn[1]).join("\n")}\n`;
+        wordOutputTextArea.value += `letters: ${letters.join(",")}\n\n`;
+        wordOutputTextArea.value += `rejections: ${rejects.join(",")}\n\n`;
+        wordOutputTextArea.value += `replacements:\n    ${replacements.map((r) => r.toString()).join("\n    ")}\n\n`;
+        wordOutputTextArea.value += `reject regex: ${rejectRegexp}\n\n`;
+        wordOutputTextArea.value += `categories: ${Array.from(categories).map((cn) => cn[1]).join("\n")}\n\n`;
     }
 
     const sylLine = lines.find((l) => l.trim().match(/syllable:/))?.replaceAll("syllable:", "").trim();
@@ -134,6 +147,7 @@ submit?.addEventListener("click", () => {
         let rejectedCount = 0;
         let duplicateCount = 0;
         let generatedWords = 0;
+        let replacedWords = 0;
 
         while (words.length < wordCount) {
             const syls = generateWord(syllable, minSylCount, maxSylCount);
@@ -162,11 +176,11 @@ submit?.addEventListener("click", () => {
                 }
             }
         }
-        rejectedAlertElement.innerHTML += `generated ${generatedWords} words, `;
+        rejectedAlertElement.innerHTML += `generated ${generatedWords} words`;
         rejectedAlertElement.hidden = false;
 
         if (rejectedCount > 0) {
-            rejectedAlertElement.innerHTML += `rejected ${rejectedCount} words`;
+            rejectedAlertElement.innerHTML += `, rejected ${rejectedCount} words`;
             rejectedAlertElement.hidden = false;
         }
 
@@ -219,6 +233,25 @@ submit?.addEventListener("click", () => {
             }
             outWords = wordset;
         }
+        // apply replacements
+        outWords = outWords.map((word) => {
+            let w = word;
+            let applied = false;
+            replacements.forEach((r) => {
+                const out = r.apply(w);
+                w = out.result;
+                if (out.couldApply) {
+                    applied = true;
+                }
+            });
+            if (applied) {
+                replacedWords += 1;
+            }
+            return w;
+        });
+        rejectedAlertElement.innerHTML += `, replaced ${replacedWords} words`;
+        rejectedAlertElement.hidden = false;
+
         wordOutputTextArea.value += outWords.join("\n");
     }
 });
@@ -250,39 +283,4 @@ function letterizeSyllable(syllable: string, letters: string[]): string[] {
     const letterRegexp = new RegExp(`(${letters.slice().sort((a, b) => b.length - a.length).join("|")})`, "u");
 
     return syllable.split(letterRegexp).filter((s) => s.length > 0);
-}
-
-class Reject {
-    matchWordStart: boolean;
-
-    matchWordEnd: boolean;
-
-    matchSylStart: boolean;
-
-    matchSylEnd: boolean;
-
-    rejectSyllable: Syllable;
-
-    constructor(rejection: string, categories: CategoryListing) {
-        this.matchWordStart = rejection.startsWith("^");
-        this.matchWordEnd = rejection.endsWith(";");
-        this.matchSylStart = rejection.startsWith("@");
-        this.matchSylEnd = rejection.endsWith("&");
-        const s = parseSyllable(tokenizeSyllable(rejection.replaceAll(/[&^;@]/g, "")), categories, rejection.replaceAll(/[&^;@]/g, ""));
-        if (s instanceof ParseError) {
-            throw s;
-        }
-        this.rejectSyllable = s;
-    }
-
-    toRegex(): RegExp {
-        let reg = this.rejectSyllable.toRegex().source;
-        if (this.matchWordStart) {
-            reg = `^${reg}`;
-        }
-        if (this.matchWordEnd) {
-            reg = `${reg}$`;
-        }
-        return new RegExp(`(${reg})`);
-    }
 }
