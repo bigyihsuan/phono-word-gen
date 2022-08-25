@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { fillCategory, parseCategory, } from "./modules/category/Category.js";
 import tokenizeSyllable from "./modules/syllable/lexer.js";
 import { ParseError } from "./modules/syllable/ParseError.js";
@@ -68,6 +69,7 @@ submit?.addEventListener("click", () => {
             replStrs.push(line);
         }
     });
+    const letterwiseCompare = compareWordsLetterwise(letters);
     const maybeCats = new Map();
     try {
         Array.from(categories).forEach(((nameCat) => {
@@ -180,28 +182,8 @@ submit?.addEventListener("click", () => {
             // tokenize the words into their letters
             const letterizedWords = words.map((w) => ({ word: w, lets: letterizeWord(w, letters) }));
             // sort based on these letters
-            words = letterizedWords.slice().sort((left, right) => {
-                // convert to indexes per letter
-                const letterIndexer = toIndexArray(letters);
-                const leftIndexes = letterIndexer(left.lets);
-                const rightIndexes = letterIndexer(right.lets);
-                const smallestLength = Math.min(leftIndexes.length, rightIndexes.length);
-                // compare letter-by-letter
-                for (let i = 0; i < smallestLength; i += 1) {
-                    if (leftIndexes[i] < rightIndexes[i]) {
-                        return -1;
-                    }
-                    if (leftIndexes[i] > rightIndexes[i]) {
-                        return 1;
-                    }
-                }
-                // handle when the smaller is a subset of the larger
-                // smaller word comes first
-                if (leftIndexes.length < rightIndexes.length) {
-                    return -1;
-                }
-                return 1;
-            }).map((obj) => obj.word);
+            const compare = compareWordsLetterwise(letters);
+            words = letterizedWords.slice().sort(compare).map((obj) => obj.word);
         }
         else if (sortOutputElement.checked) {
             words = words.slice().sort();
@@ -231,6 +213,11 @@ submit?.addEventListener("click", () => {
             }
             return w;
         });
+        // resort after doing replacements
+        if (sortOutputElement.checked) {
+            const letterizedWords = outWords.map((w) => ({ word: [w], lets: letterizeWord([w], letters) }));
+            outWords = letterizedWords.slice().sort(letterwiseCompare).map((obj) => obj.word).map((sarr) => sarr.join(""));
+        }
         rejectedAlertElement.innerHTML += `, replaced ${replacedWords} words`;
         rejectedAlertElement.hidden = false;
         wordOutputTextArea.value += outWords.join("\n");
@@ -244,6 +231,30 @@ function generateWord(syllable, minSyllables, maxSyllables) {
         outWord.push(syllable.evaluate());
     }
     return outWord;
+}
+function compareWordsLetterwise(letters) {
+    // convert to indexes per letter
+    return (left, right) => {
+        const letterIndexer = toIndexArray(letters);
+        const leftIndexes = letterIndexer(left.lets);
+        const rightIndexes = letterIndexer(right.lets);
+        const smallestLength = Math.min(leftIndexes.length, rightIndexes.length);
+        // compare letter-by-letter
+        for (let i = 0; i < smallestLength; i += 1) {
+            if (leftIndexes[i] < rightIndexes[i]) {
+                return -1;
+            }
+            if (leftIndexes[i] > rightIndexes[i]) {
+                return 1;
+            }
+        }
+        // handle when the smaller is a subset of the larger
+        // smaller word comes first
+        if (leftIndexes.length < rightIndexes.length) {
+            return -1;
+        }
+        return 1;
+    };
 }
 function toIndexArray(letters) {
     return (wordLetters) => wordLetters.map((l) => letters.indexOf(l));

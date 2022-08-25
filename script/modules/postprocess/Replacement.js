@@ -8,37 +8,50 @@ import Reject from "./Reject.js";
  * 2: the replacement,
  * 3: the conditions
  */
-const replaceRegex = /{(.*)}\s*>\s*{(.*)}\s*\/\s*(.*)/g;
+const replaceRegex = /{(.*?)}\s*>\s*{(.*?)}\s*\/\s*(.*)/g;
+const replaceWithExceptionRegex = /{(.*?)}\s*>\s*{(.*?)}\s*\/\s*(.*?)\s*\/\/\s*(.*)/g;
 export default class Replacement {
     source;
     sourceString;
     substitute;
     substituteString;
     conditionString;
+    exceptionString;
     rule;
-    // sub: string;
+    hasException;
     constructor(replStr, categories) {
-        const result = Array.from(replStr.matchAll(replaceRegex));
-        console.log({ result, resultArr: [...result] });
-        const source = String(result[0][1]);
-        const substitute = String(result[0][2]);
-        const conditions = String(result[0][3]);
-        console.log({
-            source, substitute, conditions,
-        });
+        let [source, substitute, conditions, exceptions] = ["", "", "", ""];
+        let result = [];
+        this.hasException = replStr.includes("//");
+        if (this.hasException) {
+            result = Array.from(replStr.matchAll(replaceWithExceptionRegex));
+        }
+        else {
+            result = Array.from(replStr.matchAll(replaceRegex));
+        }
+        // console.log({ result, resultArr: [...result] });
+        source = String(result[0][1]);
+        substitute = String(result[0][2]);
+        conditions = String(result[0][3]);
+        if (this.hasException) {
+            exceptions = String(result[0][4]);
+        }
+        // source
         const so = parseSyllable(tokenizeSyllable(source), categories, source);
         if (so instanceof ParseError) {
             throw so;
         }
         this.source = so;
         this.sourceString = source;
+        // substitution
         const su = parseSyllable(tokenizeSyllable(substitute), categories, substitute);
         if (su instanceof ParseError) {
             throw su;
         }
         this.substitute = su;
         this.substituteString = substitute;
-        const [left, right] = conditions.split("_", 2);
+        // condition
+        let [left, right] = conditions.split("_", 2);
         let leftReg = "";
         let rightReg = "";
         if (left.length > 0) {
@@ -54,12 +67,49 @@ export default class Replacement {
             rightReg = s;
         }
         this.conditionString = conditions;
-        this.rule = new RegExp(`(?<=${leftReg})${this.source.toRegex().source}(?=${rightReg})`);
+        // exception
+        let leftRegExc = "";
+        let rightRegExc = "";
+        if (this.hasException) {
+            [left, right] = exceptions.split("_", 2);
+            if (left.length > 0) {
+                const leftExc = new Reject(left, categories);
+                let s = leftExc.toRegex().source;
+                s = s.replace("(?:)", "");
+                leftRegExc = s;
+            }
+            if (right.length > 0) {
+                const rightExc = new Reject(right, categories);
+                let s = rightExc.toRegex().source;
+                s = s.replace("(?:)", "");
+                rightRegExc = s;
+            }
+        }
+        this.exceptionString = exceptions;
+        // generate rule
+        let ruleReg = this.source.toRegex().source;
+        if (leftReg.length > 0) {
+            ruleReg = `(?<=${leftReg})${ruleReg}`;
+        }
+        if (leftRegExc.length > 0) {
+            ruleReg = `(?<!${leftRegExc})${ruleReg}`;
+        }
+        if (rightReg.length > 0) {
+            ruleReg = `${ruleReg}(?=${rightReg})`;
+        }
+        if (rightRegExc.length > 0) {
+            ruleReg = `${ruleReg}(?!${rightRegExc})`;
+        }
+        this.rule = new RegExp(ruleReg);
+        // console.log({
+        //     source, substitute, conditions, exceptions, rule: this.rule,
+        // });
     }
     matches(word) {
         return this.rule.test(word);
     }
     replace(word) {
+        // TODO? replace with categories after switching to array-based vs. set-based
         return word.replace(this.rule, this.substituteString);
     }
     apply(word) {
@@ -69,7 +119,7 @@ export default class Replacement {
         return { result: word, couldApply: false };
     }
     toString() {
-        return `${this.sourceString} > ${this.substituteString} / ${this.conditionString}`;
+        return `${this.sourceString} > ${this.substituteString} / ${this.conditionString} // ${this.exceptionString}`;
     }
 }
 export { Replacement };

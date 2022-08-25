@@ -130,17 +130,20 @@
                 </ul>
                 <h3>Replacements</h3>
                 <ul>
-                    <li>You can replace <b>raw</b> characters with other <b>raw</b> characters.</li>
-                    <li>The form of a replacement rule is: <code>replace: {source} > {substitution} / condition</code></li>
+                    <li>You can replace characters or syllable components with other <b>raw</b> characters.</li>
+                    <li>The form of a replacement rule is: <code>replace: {source} > {substitution} / condition // optionalException </code></li>
                     <li>The source and substitution can be any character.</li>
+                    <li>The source only can be any syllable component.</li>
                     <li>Sources and substitutions can be empty; just have nothing within the curly brackets.</li>
                     <li>Empty sources means that the substitution will be inserted where the condition matches.</li>
                     <li>Empty substitutions means that the source will be deleted.</li>
-                    <li>Conditions must have exactly one underscore (<code>_</code>) representing the source.</li>
-                    <li>Conditions can accept syllable components. For example this will replace "c" with "qu" before "a", "e", and "o": <code>replace: {c} > {qu} / _ [a,e,o,]</code></li>
-                    <li>Conditions can also accept word start and word end checks. This will replace leading "s" with "es": <code>replace: {s} > {es} / ^ _</code></li>
-                    <li>(Note: currently conditions only work on <b>raw</b> characters, just before displaying the word)</li>
-                    <li>(Note: currently non-conditions, i.e. "do not replace when...", are not implemented)</li>
+                    <li>Conditions are <i>required</i>. Exceptions are <i>optional</i>.</li>
+                    <li>Condiitons specify where and when to apply a replacement.</li>
+                    <li>Exceptions work similarly to conditions, in that you can specify when <i>not</i> to apply a replacement.</li>
+                    <li>Conditions and exceptions must have exactly one underscore (<code>_</code>) representing the source.</li>
+                    <li>Conditions and exceptions with only an underscore means that it will always run when the source matches.</li>
+                    <li>Conditions and exceptions can accept syllable components. For example this will replace "c" with "qu" before "a", "e", and "o": <code>replace: {c} > {qu} / _ [a,e,o,]</code></li>
+                    <li>Conditions and exceptions can also accept word start and word end checks. This will replace leading "s" with "es": <code>replace: {s} > {es} / ^ _</code></li>
                 </ul>
                 <h3>Letters</h3>
                 <ul>

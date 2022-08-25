@@ -6,7 +6,9 @@ export default class Replacement {
     substitute: Syllable;
     substituteString: string;
     conditionString: string;
+    exceptionString: string;
     rule: RegExp;
+    hasException: boolean;
     constructor(replStr: string, categories: CategoryListing);
     matches(word: string): boolean;
     replace(word: string): string;

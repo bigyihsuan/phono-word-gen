@@ -79,6 +79,8 @@ submit?.addEventListener("click", () => {
         }
     });
 
+    const letterwiseCompare = compareWordsLetterwise(letters);
+
     const maybeCats: CategoryListing = new Map<string, Category>();
     try {
         Array.from(categories).forEach(((nameCat) => {
@@ -197,34 +199,12 @@ submit?.addEventListener("click", () => {
             // sort based on letters
             // letters can be of any length
             // tokenize the words into their letters
-            const letterizedWords = words.map(
+            const letterizedWords: letterizedWord[] = words.map(
                 (w) => ({ word: w, lets: letterizeWord(w, letters) }),
             );
             // sort based on these letters
-            words = letterizedWords.slice().sort(
-                (left, right) => {
-                    // convert to indexes per letter
-                    const letterIndexer = toIndexArray(letters);
-                    const leftIndexes = letterIndexer(left.lets);
-                    const rightIndexes = letterIndexer(right.lets);
-                    const smallestLength = Math.min(leftIndexes.length, rightIndexes.length);
-
-                    // compare letter-by-letter
-                    for (let i = 0; i < smallestLength; i += 1) {
-                        if (leftIndexes[i] < rightIndexes[i]) {
-                            return -1;
-                        } if (leftIndexes[i] > rightIndexes[i]) {
-                            return 1;
-                        }
-                    }
-                    // handle when the smaller is a subset of the larger
-                    // smaller word comes first
-                    if (leftIndexes.length < rightIndexes.length) {
-                        return -1;
-                    }
-                    return 1;
-                },
-            ).map((obj) => obj.word);
+            const compare = compareWordsLetterwise(letters);
+            words = letterizedWords.slice().sort(compare).map((obj) => obj.word);
         } else if (sortOutputElement.checked) {
             words = words.slice().sort();
         }
@@ -254,6 +234,15 @@ submit?.addEventListener("click", () => {
             }
             return w;
         });
+
+        // resort after doing replacements
+        if (sortOutputElement.checked) {
+            const letterizedWords: letterizedWord[] = outWords.map(
+                (w) => ({ word: [w], lets: letterizeWord([w], letters) }),
+            );
+            outWords = letterizedWords.slice().sort(letterwiseCompare).map((obj) => obj.word).map((sarr) => sarr.join(""));
+        }
+
         rejectedAlertElement.innerHTML += `, replaced ${replacedWords} words`;
         rejectedAlertElement.hidden = false;
 
@@ -272,6 +261,35 @@ function generateWord(syllable: Syllable, minSyllables: number, maxSyllables: nu
         outWord.push(syllable.evaluate());
     }
     return outWord;
+}
+
+type letterizedWord = { word: string[], lets: string[] };
+
+function compareWordsLetterwise(letters: string[]):
+    (left: letterizedWord, right: letterizedWord) => number {
+    // convert to indexes per letter
+
+    return (left: letterizedWord, right: letterizedWord) => {
+        const letterIndexer = toIndexArray(letters);
+        const leftIndexes = letterIndexer(left.lets);
+        const rightIndexes = letterIndexer(right.lets);
+        const smallestLength = Math.min(leftIndexes.length, rightIndexes.length);
+
+        // compare letter-by-letter
+        for (let i = 0; i < smallestLength; i += 1) {
+            if (leftIndexes[i] < rightIndexes[i]) {
+                return -1;
+            } if (leftIndexes[i] > rightIndexes[i]) {
+                return 1;
+            }
+        }
+        // handle when the smaller is a subset of the larger
+        // smaller word comes first
+        if (leftIndexes.length < rightIndexes.length) {
+            return -1;
+        }
+        return 1;
+    };
 }
 
 function toIndexArray(letters: string[]): (letters: string[]) => number[] {
