@@ -32,8 +32,6 @@ jobs:
         node-version: 12
     - name: yarn install
       run: yarn install
-    - name: create script folder
-      run: mkdir script
     - name: tsc
       uses: icrawl/action-tsc@v1
   deploy:
