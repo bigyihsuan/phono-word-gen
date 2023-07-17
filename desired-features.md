@@ -24,5 +24,6 @@
 ## Nice to Haves
 
 - Randomness control: Based on worldwide phoneme frequency (via [PHOIBLE data](https://phoible.org/))
+- Built-in examples
 
 ## TODOs
