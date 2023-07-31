@@ -32,8 +32,7 @@ const replacements = [];
 let replacedWords = 0;
 separateSyllablesElement?.addEventListener("click", () => { main(true); });
 submit?.addEventListener("click", () => { main(false); });
-sortOutputElement?.addEventListener("change", (e) => {
-    console.log("changed", { e });
+sortOutputElement?.addEventListener("change", () => {
     words = sortWords(letters);
     replacedWords = makeOutWords(replacedWords);
     renderOutput({
@@ -228,7 +227,6 @@ function main(keepPrevious) {
     }
 }
 function renderOutput(data) {
-    console.log("renderOutput", { data });
     const textArea = document.getElementById("outputText");
     textArea.value = data.outWords.join("\n");
     if (data.debug) {
@@ -286,7 +284,6 @@ function letterizeSyllable(syl, ls) {
     return syl.split(letterRegexp).filter((s) => s.length > 0);
 }
 function sortWords(ls) {
-    console.log("sortWords", { ls });
     if (sortOutputElement.checked && ls.length > 0) {
         // sort based on letters
         // letters can be of any length
