@@ -25,8 +25,15 @@ const forceWordLimitElement = document.getElementById("forceWordLimit") as HTMLI
 const duplicateAlertElement = document.getElementById("duplicateAlert") as HTMLElement;
 const rejectedAlertElement = document.getElementById("rejectedAlert") as HTMLElement;
 
+const copyOutputButton = document.getElementById("copyOutput") as HTMLButtonElement;
+
 separateSyllablesElement?.addEventListener("click", () => { main(true); });
 submit?.addEventListener("click", () => { main(false); });
+copyOutputButton?.addEventListener("click", () => {
+    wordOutputTextArea.select();
+    wordOutputTextArea.setSelectionRange(0, wordOutputTextArea.value.length);
+    navigator.clipboard.writeText(wordOutputTextArea.value);
+});
 
 let words: string[][] = [];
 let outWords = words.map((syls) => syls.join(separateSyllablesElement.checked ? "." : ""));

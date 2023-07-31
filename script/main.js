@@ -18,8 +18,14 @@ const separateSyllablesElement = document.getElementById("separateSyllables");
 const forceWordLimitElement = document.getElementById("forceWordLimit");
 const duplicateAlertElement = document.getElementById("duplicateAlert");
 const rejectedAlertElement = document.getElementById("rejectedAlert");
+const copyOutputButton = document.getElementById("copyOutput");
 separateSyllablesElement?.addEventListener("click", () => { main(true); });
 submit?.addEventListener("click", () => { main(false); });
+copyOutputButton?.addEventListener("click", () => {
+    wordOutputTextArea.select();
+    wordOutputTextArea.setSelectionRange(0, wordOutputTextArea.value.length);
+    navigator.clipboard.writeText(wordOutputTextArea.value);
+});
 let words = [];
 let outWords = words.map((syls) => syls.join(separateSyllablesElement.checked ? "." : ""));
 main(false);
