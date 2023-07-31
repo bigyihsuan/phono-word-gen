@@ -27,26 +27,48 @@ const rejectedAlertElement = document.getElementById("rejectedAlert") as HTMLEle
 
 const copyOutputButton = document.getElementById("copyOutput") as HTMLButtonElement;
 
+let words: string[][] = [];
+let unsortedWords: string[][] = [];
+let outWords = words.map((syls) => syls.join(separateSyllablesElement.checked ? "." : ""));
+let letters: string[] = [];
+const rejects: string[] = [];
+const replStrs: string[] = [];
+let rejectRegexp: RegExp;
+let categories: CategoryListing = new Map<string, Category>();
+let syllable: Syllable;
+const replacements: Replacement[] = [];
+let replacedWords = 0;
+
 separateSyllablesElement?.addEventListener("click", () => { main(true); });
 submit?.addEventListener("click", () => { main(false); });
+sortOutputElement?.addEventListener("change", (e) => {
+    console.log("changed", { e });
+    words = sortWords(letters);
+    replacedWords = makeOutWords(replacedWords);
+    renderOutput({
+        debug: debugOutputElement.checked,
+        separateSyllables: separateSyllablesElement.checked,
+        letters,
+        rejects,
+        rejectRegexp,
+        replacements,
+        categories,
+        syllable,
+        words,
+        outWords,
+    });
+});
+
 copyOutputButton?.addEventListener("click", () => {
     wordOutputTextArea.select();
     wordOutputTextArea.setSelectionRange(0, wordOutputTextArea.value.length);
     navigator.clipboard.writeText(wordOutputTextArea.value);
 });
 
-let words: string[][] = [];
-let outWords = words.map((syls) => syls.join(separateSyllablesElement.checked ? "." : ""));
-
 main(false);
 
 function main(keepPrevious: boolean) {
-    let categories: CategoryListing = new Map<string, Category>();
     let tokens: Token[] = [];
-    let syllable: Syllable | ParseError;
-    const rejects: string[] = [];
-    let letters: string[] = [];
-    const replStrs: string[] = [];
 
     wordOutputTextArea.value = "";
     duplicateAlertElement.innerHTML = "";
@@ -108,7 +130,6 @@ function main(keepPrevious: boolean) {
     categories = maybeCats;
 
     let rejectComps: Reject[] = [];
-    let rejectRegexp: RegExp;
     if (rejects.length > 0) {
         try {
             rejectComps = rejects.map((r) => new Reject(r, categories));
@@ -122,7 +143,6 @@ function main(keepPrevious: boolean) {
         rejectRegexp = /$^/;
     }
 
-    const replacements: Replacement[] = [];
     try {
         replStrs.forEach((r) => {
             replacements.push(new Replacement(r, categories));
@@ -149,17 +169,19 @@ function main(keepPrevious: boolean) {
     const sylLine = lines.find((l) => l.trim().match(/syllable:/))?.replaceAll("syllable:", "").trim();
     if (sylLine !== undefined) {
         tokens = tokenizeSyllable(sylLine);
-        syllable = parseSyllable(tokens.slice(), categories, sylLine);
+        const maybeSyllable = parseSyllable(tokens.slice(), categories, sylLine);
         // if (debugOutputElement.checked) {
         //     wordOutputTextArea.value += `syllable: ${syllable}`;
         //     wordOutputTextArea.value += "\n---------------\n";
         // }
 
-        if (syllable instanceof ParseError) {
-            wordOutputTextArea.value += syllable.toString();
-            console.error(syllable);
+        if (maybeSyllable instanceof ParseError) {
+            wordOutputTextArea.value += maybeSyllable.toString();
+            console.error(maybeSyllable);
             return;
         }
+
+        syllable = maybeSyllable as Syllable;
 
         const possibleSyllableCount = syllable.evaluateAll().length;
 
@@ -168,7 +190,7 @@ function main(keepPrevious: boolean) {
         let rejectedCount = 0;
         let duplicateCount = 0;
         let generatedWords = 0;
-        let replacedWords = 0;
+        replacedWords = 0;
 
         while (words.length < wordCount) {
             const syls = generateWord(syllable, minSylCount, maxSylCount);
@@ -209,53 +231,9 @@ function main(keepPrevious: boolean) {
             duplicateAlertElement.innerHTML += `removed ${duplicateCount} duplicates`;
             duplicateAlertElement.hidden = false;
         }
-        if (sortOutputElement.checked && letters.length > 0) {
-            // sort based on letters
-            // letters can be of any length
-            // tokenize the words into their letters
-            const letterizedWords: letterizedWord[] = words.map(
-                (w) => ({ word: w, lets: letterizeWord(w, letters) }),
-            );
-            // sort based on these letters
-            const compare = compareWordsLetterwise(letters);
-            words = letterizedWords.slice().sort(compare).map((obj) => obj.word);
-        } else if (sortOutputElement.checked) {
-            words = words.slice().sort();
-        }
-
-        outWords = words.map((syls) => syls.join(separateSyllablesElement.checked ? "." : ""));
-        if (!allowDuplicatesElement.checked) {
-            const wordset = [...new Set(outWords)];
-            if (wordset.length < outWords.length) {
-                duplicateAlertElement.innerHTML += `removed ${outWords.length - wordset.length} duplicates`;
-                duplicateAlertElement.hidden = false;
-            }
-            outWords = wordset;
-        }
-        // apply replacements
-        outWords = outWords.map((word) => {
-            let w = word;
-            let applied = false;
-            replacements.forEach((r) => {
-                const out = r.apply(w);
-                w = out.result;
-                if (out.couldApply) {
-                    applied = true;
-                }
-            });
-            if (applied) {
-                replacedWords += 1;
-            }
-            return w;
-        });
-
-        // resort after doing replacements
-        if (sortOutputElement.checked) {
-            const letterizedWords: letterizedWord[] = outWords.map(
-                (w) => ({ word: [w], lets: letterizeWord([w], letters) }),
-            );
-            outWords = letterizedWords.slice().map((obj) => obj.word).map((sarr) => sarr.join("")).sort();
-        }
+        unsortedWords = words.slice();
+        words = sortWords(letters);
+        replacedWords = makeOutWords(replacedWords);
 
         rejectedAlertElement.innerHTML += `, replaced ${replacedWords} words`;
         rejectedAlertElement.hidden = false;
@@ -291,7 +269,10 @@ type OutputData = {
 };
 
 function renderOutput(data: OutputData) {
+    console.log("renderOutput", { data });
     const textArea = document.getElementById("outputText") as HTMLInputElement;
+    textArea.value = data.outWords.join("\n");
+
     if (data.debug) {
         textArea.value += `letters: ${data.letters.join(",")}\n\n`;
         textArea.value += `rejections: ${data.rejects.join(",")}\n\n`;
@@ -300,30 +281,29 @@ function renderOutput(data: OutputData) {
         textArea.value += `syllable: ${data.syllable}`;
         textArea.value += "\n---------------\n";
     }
-    textArea.value += data.outWords.join("\n");
 }
 
 // generate a word as its syllables
-function generateWord(syllable: Syllable, minSyllables: number, maxSyllables: number): string[] {
+function generateWord(syl: Syllable, minSyllables: number, maxSyllables: number): string[] {
     const outWord: string[] = [];
     const numSyllables = Math.max(
         minSyllables,
         Math.floor(maxSyllables - Math.random() * maxSyllables) + 1,
     );
     for (let i = 0; i < numSyllables; i += 1) {
-        outWord.push(syllable.evaluate());
+        outWord.push(syl.evaluate());
     }
     return outWord;
 }
 
 type letterizedWord = { word: string[], lets: string[] };
 
-function compareWordsLetterwise(letters: string[]):
+function compareWordsLetterwise(ls: string[]):
     (left: letterizedWord, right: letterizedWord) => number {
     // convert to indexes per letter
 
     return (left: letterizedWord, right: letterizedWord) => {
-        const letterIndexer = toIndexArray(letters);
+        const letterIndexer = toIndexArray(ls);
         const leftIndexes = letterIndexer(left.lets);
         const rightIndexes = letterIndexer(right.lets);
         const smallestLength = Math.min(leftIndexes.length, rightIndexes.length);
@@ -345,17 +325,75 @@ function compareWordsLetterwise(letters: string[]):
     };
 }
 
-function toIndexArray(letters: string[]): (letters: string[]) => number[] {
-    return (wordLetters: string[]): number[] => wordLetters.map((l) => letters.indexOf(l));
+function toIndexArray(ls: string[]): (letters: string[]) => number[] {
+    return (wordLetters: string[]): number[] => wordLetters.map((l) => ls.indexOf(l));
 }
 
 // tokenize a word (as its syllables) into a list of contained letters
-function letterizeWord(word: string[], letters: string[]): string[] {
-    return word.flatMap((syl) => letterizeSyllable(syl, letters));
+function letterizeWord(word: string[], ls: string[]): string[] {
+    return word.flatMap((syl) => letterizeSyllable(syl, ls));
 }
 
 // tokenize a syllable into letters
-function letterizeSyllable(syllable: string, letters: string[]): string[] {
-    const letterRegexp = new RegExp(`(${letters.slice().sort((a, b) => b.length - a.length).join("|")})`, "u");
-    return syllable.split(letterRegexp).filter((s) => s.length > 0);
+function letterizeSyllable(syl: string, ls: string[]): string[] {
+    const letterRegexp = new RegExp(`(${ls.slice().sort((a, b) => b.length - a.length).join("|")})`, "u");
+    return syl.split(letterRegexp).filter((s) => s.length > 0);
+}
+
+function sortWords(ls: string[]): string[][] {
+    console.log("sortWords", { ls });
+    if (sortOutputElement.checked && ls.length > 0) {
+        // sort based on letters
+        // letters can be of any length
+        // tokenize the words into their letters
+        const letterizedWords: letterizedWord[] = words.map(
+            (w) => ({ word: w, lets: letterizeWord(w, ls) }),
+        );
+            // sort based on these letters
+        const compare = compareWordsLetterwise(ls);
+        words = letterizedWords.slice().sort(compare).map((obj) => obj.word);
+    } else if (sortOutputElement.checked) {
+        words = words.slice().sort();
+    } else {
+        words = unsortedWords;
+    }
+    return words;
+}
+
+function makeOutWords(rw: number): number {
+    let rws = rw;
+    outWords = words.map((syls) => syls.join(separateSyllablesElement.checked ? "." : ""));
+    if (!allowDuplicatesElement.checked) {
+        const wordset = [...new Set(outWords)];
+        if (wordset.length < outWords.length) {
+            duplicateAlertElement.innerHTML += `removed ${outWords.length - wordset.length} duplicates`;
+            duplicateAlertElement.hidden = false;
+        }
+        outWords = wordset;
+    }
+    // apply replacements
+    outWords = outWords.map((word) => {
+        let w = word;
+        let applied = false;
+        replacements.forEach((r) => {
+            const out = r.apply(w);
+            w = out.result;
+            if (out.couldApply) {
+                applied = true;
+            }
+        });
+        if (applied) {
+            rws += 1;
+        }
+        return w;
+    });
+
+    // resort after doing replacements
+    if (sortOutputElement.checked) {
+        const letterizedWords: letterizedWord[] = outWords.map(
+            (w) => ({ word: [w], lets: letterizeWord([w], letters) }),
+        );
+        outWords = letterizedWords.slice().map((obj) => obj.word).map((sarr) => sarr.join("")).sort();
+    }
+    return rws;
 }
