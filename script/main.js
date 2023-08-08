@@ -45,6 +45,7 @@ generateSentencesElement?.addEventListener("change", () => {
         allowDuplicatesElement.disabled = true;
         forceWordLimitElement.disabled = true;
         sortOutputElement.disabled = true;
+        separateSyllablesElement.disabled = true;
         wordCountInputDiv.hidden = true;
         sentenceCountInputDiv.hidden = false;
     }
@@ -52,6 +53,7 @@ generateSentencesElement?.addEventListener("change", () => {
         allowDuplicatesElement.disabled = false;
         forceWordLimitElement.disabled = false;
         sortOutputElement.disabled = false;
+        separateSyllablesElement.disabled = false;
         wordCountInputDiv.hidden = false;
         sentenceCountInputDiv.hidden = true;
     }
