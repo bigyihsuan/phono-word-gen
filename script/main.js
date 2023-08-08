@@ -60,6 +60,29 @@ submit?.addEventListener("click", () => {
     wordCount = Number.parseInt(wordCountElement.value, 10);
     minSylCount = Number.parseInt(minSylCountElement.value, 10);
     maxSylCount = Number.parseInt(maxSylCountElement.value, 10);
+    const lines = parseInput();
+    try {
+        categories = initCategories();
+        rejectRegexp = initRejects();
+        replStrs.forEach((r) => {
+            replacements.push(new Replacement(r, categories));
+        });
+    }
+    catch (e) {
+        wordOutputTextArea.value = e;
+        return;
+    }
+    const sylLine = lines.find((l) => l.trim().match(/syllable:/))?.replaceAll("syllable:", "").trim();
+    if (sylLine === undefined) {
+        return;
+    }
+    const tokens = tokenizeSyllable(sylLine);
+    const maybeSyllable = parseSyllable(tokens.slice(), categories, sylLine);
+    if (maybeSyllable instanceof ParseError) {
+        wordOutputTextArea.value += maybeSyllable.toString();
+        return;
+    }
+    syllable = maybeSyllable;
     if (generateSentencesElement.checked) {
         // generate sentenceCount sentences, of some random number of words each
         const sentences = [];
