@@ -51,6 +51,12 @@
             "ForInStatement",
             "LabeledStatement",
             "WithStatement"
+        ],
+        "max-len": [
+            "warn",
+            {
+                "code": 120
+            }
         ]
     }
 }
