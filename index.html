@@ -43,7 +43,7 @@
             <div class="col" id="inputs">
                 <label for="inputs"><h3>Input</h3></label>
                 <div class="mb-auto">
-                    <textarea id="phonology" class="form-control" rows="30"></textarea>
+                    <textarea id="phonology" class="form-control" rows="25"></textarea>
                 </div>
                 <div class="mb-auto">
                     <div id="checkboxes" class="form-control">
@@ -55,7 +55,7 @@
                         </div>
                         <div class="input-group" id="wordCountInput">
                             <span class="input-group-text">Number of Words</span>
-                            <input type="number" min="1" value="30" id="wordCount" class="form-control">
+                            <input type="number" min="1" value="25" id="wordCount" class="form-control">
                         </div>
                         <div class="input-group">
                             <div class="form-check form-check-inline">
@@ -77,6 +77,10 @@
                                 <label class="form-check-label" for="separateSyllables">Mark syllables</label>
                             </div>
                             <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="generateSentences">
+                                <label class="form-check-label" for="generateSentences">Generate sentences</label>
+                            </div>
+                            <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="checkbox" id="debugOutput">
                                 <label class="form-check-label" for="debugOutput">Include debug output</label>
                             </div>
@@ -87,7 +91,7 @@
             </div>
             <div class="col">
                 <label for="outputText"><h3>Output</h3></label>
-                <textarea id="outputText" class="form-control" rows="30" readonly></textarea>
+                <textarea id="outputText" class="form-control" rows="25" readonly></textarea>
                 <button id="copyOutput" class="btn btn-danger">Copy</button>
                 <div class="alert alert-info" style="white-space: pre-line;" hidden id="rejectedAlert"></div>
                 <div class="alert alert-warning" style="white-space: pre-line;" hidden id="duplicateAlert"></div>

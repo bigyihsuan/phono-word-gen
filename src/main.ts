@@ -27,6 +27,8 @@ const rejectedAlertElement = document.getElementById("rejectedAlert") as HTMLEle
 
 const copyOutputButton = document.getElementById("copyOutput") as HTMLButtonElement;
 
+const generateSentencesElement = document.getElementById("generateSentences") as HTMLInputElement;
+
 let words: string[][] = [];
 let unsortedWords: string[][] = [];
 let outWords = words.map((syls) => syls.join(separateSyllablesElement.checked ? "." : ""));
@@ -40,6 +42,20 @@ const replacements: Replacement[] = [];
 let replacedWords = 0;
 
 separateSyllablesElement?.addEventListener("click", () => { main(true); });
+generateSentencesElement?.addEventListener("change", () => {
+    const generateSentences = generateSentencesElement.checked;
+    if (generateSentences) {
+        // disable some word-related inputs
+        allowDuplicatesElement.disabled = true;
+        forceWordLimitElement.disabled = true;
+        sortOutputElement.disabled = true;
+    } else {
+        allowDuplicatesElement.disabled = false;
+        forceWordLimitElement.disabled = false;
+        sortOutputElement.disabled = false;
+    }
+});
+
 submit?.addEventListener("click", () => { main(false); });
 sortOutputElement?.addEventListener("change", () => {
     words = sortWords(letters);

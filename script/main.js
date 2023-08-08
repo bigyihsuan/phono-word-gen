@@ -19,6 +19,7 @@ const forceWordLimitElement = document.getElementById("forceWordLimit");
 const duplicateAlertElement = document.getElementById("duplicateAlert");
 const rejectedAlertElement = document.getElementById("rejectedAlert");
 const copyOutputButton = document.getElementById("copyOutput");
+const generateSentencesElement = document.getElementById("generateSentences");
 let words = [];
 let unsortedWords = [];
 let outWords = words.map((syls) => syls.join(separateSyllablesElement.checked ? "." : ""));
@@ -31,6 +32,20 @@ let syllable;
 const replacements = [];
 let replacedWords = 0;
 separateSyllablesElement?.addEventListener("click", () => { main(true); });
+generateSentencesElement?.addEventListener("change", () => {
+    const generateSentences = generateSentencesElement.checked;
+    if (generateSentences) {
+        // disable some word-related inputs
+        allowDuplicatesElement.disabled = true;
+        forceWordLimitElement.disabled = true;
+        sortOutputElement.disabled = true;
+    }
+    else {
+        allowDuplicatesElement.disabled = false;
+        forceWordLimitElement.disabled = false;
+        sortOutputElement.disabled = false;
+    }
+});
 submit?.addEventListener("click", () => { main(false); });
 sortOutputElement?.addEventListener("change", () => {
     words = sortWords(letters);
