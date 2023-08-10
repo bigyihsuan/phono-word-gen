@@ -9,17 +9,6 @@ import (
 )
 
 func TestGetNextToken(t *testing.T) {
-	input := `P = p t k
-R = l r w j; C=$P $R ŋ
-V = a*123 i*0.456 u ə ā`
-	/* //TODO:
-	syllable: ([$C*0.8, $C$R])$V ($R)
-	letters:  a i j k l p r t w
-	reject:   $V$V
-	replace:  source > {subA,subB} / condition // optionalException` */
-
-	l := New([]rune(input))
-
 	tests := []struct {
 		tt     tok.TokenType
 		lexeme string
@@ -56,11 +45,77 @@ V = a*123 i*0.456 u ə ā`
 		{tok.RAW, "u"},
 		{tok.RAW, "ə"},
 		{tok.RAW, "ā"},
+		{tok.LINE_ENDING, "\n"},
+		{tok.SYLLABLE, "syllable"},
+		{tok.COLON, ":"},
+		{tok.LPAREN, "("},
+		{tok.LBRACKET, "["},
+		{tok.DOLLAR, "$"},
+		{tok.RAW, "C"},
+		{tok.STAR, "*"},
+		{tok.NUMBER, "0.8"},
+		{tok.COMMA, ","},
+		{tok.DOLLAR, "$"},
+		{tok.RAW, "C"},
+		{tok.DOLLAR, "$"},
+		{tok.RAW, "R"},
+		{tok.RBRACKET, "]"},
+		{tok.RPAREN, ")"},
+		{tok.DOLLAR, "$"},
+		{tok.RAW, "V"},
+		{tok.LPAREN, "("},
+		{tok.DOLLAR, "$"},
+		{tok.RAW, "R"},
+		{tok.RPAREN, ")"},
+		{tok.LINE_ENDING, "\n"},
+		{tok.LETTERS, "letters"},
+		{tok.COLON, ":"},
+		{tok.RAW, "a"},
+		{tok.RAW, "i"},
+		{tok.RAW, "j"},
+		{tok.RAW, "k"},
+		{tok.RAW, "l"},
+		{tok.RAW, "p"},
+		{tok.RAW, "r"},
+		{tok.RAW, "t"},
+		{tok.RAW, "w"},
+		{tok.LINE_ENDING, "\n"},
+		{tok.REJECT, "reject"},
+		{tok.COLON, ":"},
+		{tok.DOLLAR, "$"},
+		{tok.RAW, "V"},
+		{tok.DOLLAR, "$"},
+		{tok.RAW, "V"},
+		{tok.LINE_ENDING, "\n"},
+		{tok.REPLACE, "replace"},
+		{tok.COLON, ":"},
+		{tok.LCURLY, "{"},
+		{tok.RAW, "sourceA"},
+		{tok.COMMA, ","},
+		{tok.RAW, "sourceB"},
+		{tok.RCURLY, "}"},
+		{tok.ARROW, ">"},
+		{tok.RAW, "substitute"},
+		{tok.SLASH, "/"},
+		{tok.RAW, "condition"},
+		{tok.DOUBLESLASH, "//"},
+		{tok.RAW, "optionalException"},
 		{tok.EOF, ""},
 		{tok.EOF, ""},
 		{tok.EOF, ""},
 		{tok.EOF, ""},
 	}
+
+	input := `P = p t k
+R = l r w j; C=$P $R ŋ
+V = a*123 i*0.456 u ə ā
+syllable: ([$C*0.8, $C$R])$V ($R)
+letters:  a i j k l p r t w
+reject:   $V$V
+replace:  {sourceA, sourceB} > substitute / condition // optionalException`
+
+	l := New([]rune(input))
+
 	for i, expected := range tests {
 		actual := l.GetNextToken()
 		if !assert.Equal(t, expected.tt, actual.Type,
