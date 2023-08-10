@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import dom "honnef.co/go/js/dom/v2"
 
 func main() {
-	fmt.Println("hello world!")
+	document := dom.GetWindow().Document()
+	outputTextElement := document.GetElementByID("outputText").(*dom.HTMLTextAreaElement)
+	outputTextElement.SetValue("hello world!")
 }

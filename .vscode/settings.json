@@ -4,5 +4,9 @@
     },
     "eslint.validate": [
         "javascript",
-    ]
+    ],
+    "go.toolsEnvVars": {
+        "GOARCH": "wasm",
+        "GOOS": "js"
+    }
 }

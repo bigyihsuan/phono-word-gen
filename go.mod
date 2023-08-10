@@ -2,7 +2,4 @@ module phono-word-gen
 
 go 1.21.0
 
-require (
-	github.com/shurcooL/go v0.0.0-20200502201357-93f07166e636 // indirect
-	github.com/shurcooL/go-goon v1.0.0 // indirect
-)
+require honnef.co/go/js/dom/v2 v2.0.0-20230808055721-96db8f4d5e3b
