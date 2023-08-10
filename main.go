@@ -1,6 +1,8 @@
 package main
 
-import dom "honnef.co/go/js/dom/v2"
+import (
+	dom "honnef.co/go/js/dom/v2"
+)
 
 func main() {
 	document := dom.GetWindow().Document()
