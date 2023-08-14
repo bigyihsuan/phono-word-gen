@@ -8,7 +8,7 @@ import (
 
 func TestPhonemeResolveCategories(t *testing.T) {
 	tests := []struct {
-		p        *Phoneme
+		p        CategoryElement
 		expected string
 	}{
 		{NewPhoneme("a"), "a"},
@@ -36,8 +36,8 @@ func TestPhonemeResolveCategories(t *testing.T) {
 			"[%d] type incorrect, want=%T got=%T (%+v)", i, tt.p, actual[0], actual[0]) {
 			continue
 		}
-		if !assert.Equal(t, tt.expected, actual[0].Value,
-			"[%d] value incorrect, want=%q got=%q", i, tt.expected, actual[0].Value) {
+		if !assert.Equal(t, tt.expected, actual[0].(*Phoneme).Value,
+			"[%d] value incorrect, want=%q got=%q", i, tt.expected, actual[0].(*Phoneme).Value) {
 			continue
 		}
 	}
@@ -45,7 +45,7 @@ func TestPhonemeResolveCategories(t *testing.T) {
 
 func TestPhonemeGet(t *testing.T) {
 	tests := []struct {
-		p        *Phoneme
+		p        CategoryElement
 		expected string
 	}{
 		{NewPhoneme("a"), "a"},
@@ -64,7 +64,7 @@ func TestPhonemeGet(t *testing.T) {
 	}
 
 	for i, tt := range tests {
-		actual := tt.p.Get(nil)
+		actual := tt.p.Get()
 		if !assert.Equal(t, tt.expected, actual, "[%d] get is incorrect, want=%q got=%q", i, tt.expected, actual) {
 			continue
 		}

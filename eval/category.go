@@ -1,40 +1,31 @@
 package eval
 
-import "math/rand"
+import (
+	"fmt"
+
+	"github.com/mroth/weightedrand/v2"
+)
 
 type Category struct {
 	Name     string
-	Elements []CategoryElement
+	Elements *weightedrand.Chooser[CategoryElement, int]
 }
 
-func NewCategory(name string, elements []CategoryElement) *Category {
-	c := &Category{Name: name, Elements: elements}
-	// TODO: set the weights of all phonemes
-	// TODO: resolve embedded categories into weighted phonemes
+func NewCategory(name string, elements []weightedrand.Choice[CategoryElement, int]) *Category {
+	c := &Category{Name: name}
+	chooser, err := weightedrand.NewChooser[CategoryElement, int](elements...)
+	if err != nil {
+		fmt.Println(err)
+	}
+	c.Elements = chooser
 	return c
 }
 
-func (c *Category) Get(random *rand.Rand) string {
-	idx := random.Intn(len(c.Elements))
-	return c.Elements[idx].Get(random)
+func (c *Category) Get() string {
+	return c.Elements.Pick().Get()
 }
 
 type CategoryElement interface {
-	Weight() float64
-	SetWeight(float64)
-	ResolveCategories(categories map[string]Category) []*Phoneme
-	Get(random *rand.Rand) string
-}
-
-type UnresolvedCategory struct {
-	Name     string
-	Elements []CategoryElement
-	weight   float64
-}
-
-func (uc UnresolvedCategory) Weight() float64           { return uc.weight }
-func (uc *UnresolvedCategory) SetWeight(weight float64) { uc.weight = weight }
-func (uc UnresolvedCategory) ResolveCategories(categories map[string]Category) []*Phoneme {
-	//TODO
-	return []*Phoneme{}
+	ResolveCategories(categories map[string]Category) []CategoryElement
+	Get() string
 }
