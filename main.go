@@ -21,7 +21,7 @@ func main() {
 		}
 		category := eval.NewCategory("C", elements)
 		for i := 0; i < 10; i++ {
-			text += category.Get()
+			text += category.Get(make(map[string]eval.Category))
 		}
 		outputTextElement.SetValue(text)
 	})

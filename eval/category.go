@@ -6,13 +6,16 @@ import (
 	"github.com/mroth/weightedrand/v2"
 )
 
+type CategoryChoice = weightedrand.Choice[CategoryElement, int]
+type CategoryChooser = *weightedrand.Chooser[CategoryElement, int]
+
 type Category struct {
 	Name     string
-	Elements *weightedrand.Chooser[CategoryElement, int]
+	Elements CategoryChooser
 }
 
-func NewCategory(name string, elements []weightedrand.Choice[CategoryElement, int]) *Category {
-	c := &Category{Name: name}
+func NewCategory(name string, elements []weightedrand.Choice[CategoryElement, int]) Category {
+	c := Category{Name: name}
 	chooser, err := weightedrand.NewChooser[CategoryElement, int](elements...)
 	if err != nil {
 		fmt.Println(err)
@@ -21,11 +24,7 @@ func NewCategory(name string, elements []weightedrand.Choice[CategoryElement, in
 	return c
 }
 
-func (c *Category) Get() string {
-	return c.Elements.Pick().Get()
-}
-
-type CategoryElement interface {
-	ResolveCategories(categories map[string]Category) []CategoryElement
-	Get() string
+func (c Category) Get(categories map[string]Category) string {
+	// just pick something from the contained elements
+	return c.Elements.Pick().Get(categories)
 }

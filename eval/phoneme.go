@@ -9,7 +9,4 @@ func NewPhoneme(value string, weights ...float64) CategoryElement {
 	return p
 }
 
-func (p *Phoneme) ResolveCategories(categories map[string]Category) []CategoryElement {
-	return []CategoryElement{p}
-}
-func (p *Phoneme) Get() string { return p.Value }
+func (p *Phoneme) Get(_ map[string]Category) string { return p.Value }
