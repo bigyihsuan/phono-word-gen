@@ -16,7 +16,7 @@ func TestSyllableRaw(t *testing.T) {
 
 func TestSyllableGrouping(t *testing.T) {
 	grouping := Grouping{
-		Values: []SyllableElement{
+		Elements: []SyllableElement{
 			&Raw{Value: "a"},
 			&Raw{Value: "b"},
 			&Raw{Value: "c"},

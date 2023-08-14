@@ -14,12 +14,11 @@ func main() {
 	submitButton := document.GetElementByID("submit").(*dom.HTMLButtonElement)
 	submitButton.AddEventListener("click", false, func(event dom.Event) {
 		text := ""
-		elements := []weightedrand.Choice[parts.CategoryElement, int]{
+		category, _ := parts.NewCategory(
 			weightedrand.NewChoice(parts.NewPhoneme("p"), 1),
 			weightedrand.NewChoice(parts.NewPhoneme("t"), 1),
 			weightedrand.NewChoice(parts.NewPhoneme("k"), 1),
-		}
-		category := parts.NewCategory("C", elements)
+		)
 		for i := 0; i < 10; i++ {
 			text += category.Get(make(map[string]parts.Category))
 		}

@@ -1,9 +1,11 @@
 package parts
 
 import (
+	"errors"
+	"phono-word-gen/errs"
 	"strings"
 
-	"github.com/mroth/weightedrand/v2"
+	wr "github.com/mroth/weightedrand/v2"
 )
 
 type Syllable struct {
@@ -28,27 +30,36 @@ type Raw struct {
 	Value string
 }
 
+func NewRaw(value string) *Raw                  { return &Raw{Value: value} }
 func (r *Raw) syllableElementTag()              {}
 func (r *Raw) Get(_ map[string]Category) string { return r.Value }
 
 type Grouping struct {
-	Values []SyllableElement
+	Elements []SyllableElement
 }
 
-func (g *Grouping) syllableElementTag() {}
+func NewGrouping(elements ...SyllableElement) *Grouping { return &Grouping{Elements: elements} }
+func (g *Grouping) syllableElementTag()                 {}
 func (g *Grouping) Get(categories map[string]Category) string {
 	// evaluate all elements in the grouping
 	values := []string{}
-	for _, v := range g.Values {
+	for _, v := range g.Elements {
 		values = append(values, v.Get(categories))
 	}
 	return strings.Join(values, "")
 }
 
 type Selection struct {
-	Choices *weightedrand.Chooser[SyllableElement, int]
+	Choices *wr.Chooser[SyllableElement, int]
 }
 
+func NewSelection(elements ...wr.Choice[SyllableElement, int]) (*Selection, error) {
+	chooser, err := wr.NewChooser(elements...)
+	if err != nil {
+		return nil, errors.Join(errs.SelectionCreationError, err)
+	}
+	return &Selection{Choices: chooser}, nil
+}
 func (s *Selection) syllableElementTag() {}
 func (s *Selection) Get(catgories map[string]Category) string {
 	// pick a random choice in the selection

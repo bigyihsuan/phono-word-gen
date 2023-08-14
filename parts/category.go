@@ -14,7 +14,7 @@ type Category struct {
 	Elements CategoryChooser
 }
 
-func NewCategory(elements []wr.Choice[Element, int]) (Category, error) {
+func NewCategory(elements ...wr.Choice[Element, int]) (Category, error) {
 	c := Category{}
 	chooser, err := wr.NewChooser[Element, int](elements...)
 	if err != nil {
