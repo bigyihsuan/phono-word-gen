@@ -1,5 +1,5 @@
 package parts
 
-type CategoryElement interface {
+type Element interface {
 	Get(categories map[string]Category) string
 }

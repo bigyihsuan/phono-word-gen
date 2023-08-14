@@ -8,7 +8,7 @@ import (
 
 func TestPhonemeGet(t *testing.T) {
 	tests := []struct {
-		p        CategoryElement
+		p        Element
 		expected string
 	}{
 		{NewPhoneme("a"), "a"},

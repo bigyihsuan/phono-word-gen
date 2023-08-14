@@ -3,12 +3,12 @@ package parts
 import (
 	"testing"
 
-	"github.com/mroth/weightedrand/v2"
+	wr "github.com/mroth/weightedrand/v2"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCategoryGet(t *testing.T) {
-	cat := NewCategory("C", []weightedrand.Choice[CategoryElement, int]{weightedrand.NewChoice[CategoryElement, int](NewPhoneme("p"), 1)})
+	cat, _ := NewCategory([]wr.Choice[Element, int]{wr.NewChoice[Element, int](NewPhoneme("p"), 1)})
 	for i := 0; i < 10; i++ {
 		expected := "p"
 		actual := cat.Get(make(map[string]Category))
@@ -17,10 +17,9 @@ func TestCategoryGet(t *testing.T) {
 }
 
 func TestCategoryNestedGet(t *testing.T) {
-	categories := map[string]Category{
-		"C": NewCategory("C", []weightedrand.Choice[CategoryElement, int]{weightedrand.NewChoice[CategoryElement, int](NewCategoryReference("S"), 1)}),
-		"S": NewCategory("S", []weightedrand.Choice[CategoryElement, int]{weightedrand.NewChoice[CategoryElement, int](NewPhoneme("p"), 1)}),
-	}
+	c, _ := NewCategory([]wr.Choice[Element, int]{wr.NewChoice[Element, int](NewReference("S"), 1)})
+	s, _ := NewCategory([]wr.Choice[Element, int]{wr.NewChoice[Element, int](NewPhoneme("p"), 1)})
+	categories := map[string]Category{"C": c, "S": s}
 	cat := categories["C"]
 	for i := 0; i < 10; i++ {
 		expected := "p"

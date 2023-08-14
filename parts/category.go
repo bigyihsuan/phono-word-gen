@@ -1,27 +1,27 @@
 package parts
 
 import (
-	"fmt"
+	"errors"
+	"phono-word-gen/errs"
 
-	"github.com/mroth/weightedrand/v2"
+	wr "github.com/mroth/weightedrand/v2"
 )
 
-type CategoryChoice = weightedrand.Choice[CategoryElement, int]
-type CategoryChooser = *weightedrand.Chooser[CategoryElement, int]
+type CategoryChoice = wr.Choice[Element, int]
+type CategoryChooser = *wr.Chooser[Element, int]
 
 type Category struct {
-	Name     string
 	Elements CategoryChooser
 }
 
-func NewCategory(name string, elements []weightedrand.Choice[CategoryElement, int]) Category {
-	c := Category{Name: name}
-	chooser, err := weightedrand.NewChooser[CategoryElement, int](elements...)
+func NewCategory(elements []wr.Choice[Element, int]) (Category, error) {
+	c := Category{}
+	chooser, err := wr.NewChooser[Element, int](elements...)
 	if err != nil {
-		fmt.Println(err)
+		return c, errors.Join(errs.CategoryCreationError, err)
 	}
 	c.Elements = chooser
-	return c
+	return c, nil
 }
 
 func (c Category) Get(categories map[string]Category) string {
