@@ -2,7 +2,6 @@ package parts
 
 import (
 	"errors"
-	"math/rand"
 	"phono-word-gen/errs"
 	"strings"
 
@@ -68,28 +67,31 @@ func (s *Selection) Get(catgories map[string]Category) string {
 	return s.Choices.Pick().Get(catgories)
 }
 
+// optional component. defaults to 50% chance of appearing when calling Get().
 type Optional struct {
-	Elements []SyllableElement
-	Chance   int // defaults to 50, for 50%
+	Choices *wr.Chooser[SyllableElement, int]
 }
 
-func NewOptional(elements []SyllableElement, chances ...int) *Optional {
-	chance := 50
-	if len(chances) > 0 {
-		chance = chances[0]
+func NewOptional(elements []SyllableElement, percentChance ...int) (*Optional, error) {
+	weight := 50 // default to 50/50
+	if len(percentChance) > 0 {
+		weight = percentChance[0]
 	}
-	return &Optional{Elements: elements, Chance: chance}
+	chooser, err := wr.NewChooser[SyllableElement, int](
+		wr.NewChoice[SyllableElement, int](NewGrouping(elements...), 100-weight),
+		wr.NewChoice[SyllableElement, int](nil, weight),
+	)
+	if err != nil {
+		return nil, errors.Join(errs.OptionalCreationError, err)
+	}
+	return &Optional{Choices: chooser}, nil
 }
 func (o *Optional) syllableElementTag() {}
 func (o *Optional) Get(categories map[string]Category) string {
-	// evaluate all elements in the optional if the rng is less than the chance
-	if rand.Intn(101) < o.Chance {
-		values := []string{}
-		for _, v := range o.Elements {
-			values = append(values, v.Get(categories))
-		}
-		return strings.Join(values, "")
-	} else {
+	element := o.Choices.Pick()
+	if element == nil {
 		return ""
+	} else {
+		return element.Get(categories)
 	}
 }

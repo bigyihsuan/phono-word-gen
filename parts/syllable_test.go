@@ -26,13 +26,13 @@ func TestSyllableGrouping(t *testing.T) {
 }
 
 func TestSyllableOptional(t *testing.T) {
-	optional := Optional{
-		Elements: []SyllableElement{
+	optional, _ := NewOptional(
+		[]SyllableElement{
 			&Raw{Value: "a"},
 			&Raw{Value: "b"},
 			&Raw{Value: "c"},
 		},
-	}
+	)
 	for i := 0; i < 10; i++ {
 		actual := optional.Get(categories)
 		assert.True(t, actual == "abc" || actual == "")
