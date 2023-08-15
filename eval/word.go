@@ -9,10 +9,14 @@ type Word struct {
 }
 
 func NewWord(syllables ...*parts.Syllable) *Word { return &Word{Syllables: syllables} }
-func (w *Word) MakeSyllables(categories map[string]parts.Category) []string {
+func (w *Word) MakeSyllables(categories map[string]parts.Category) ([]string, error) {
 	syllables := []string{}
 	for _, s := range w.Syllables {
-		syllables = append(syllables, s.Get(categories))
+		syl, err := s.Get(categories)
+		if err != nil {
+			return syllables, err
+		}
+		syllables = append(syllables, syl)
 	}
-	return syllables
+	return syllables, nil
 }
