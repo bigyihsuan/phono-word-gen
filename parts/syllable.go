@@ -2,6 +2,7 @@ package parts
 
 import (
 	"errors"
+	"math/rand"
 	"phono-word-gen/errs"
 	"strings"
 
@@ -65,4 +66,30 @@ func (s *Selection) syllableElementTag() {}
 func (s *Selection) Get(catgories map[string]Category) string {
 	// pick a random choice in the selection
 	return s.Choices.Pick().Get(catgories)
+}
+
+type Optional struct {
+	Elements []SyllableElement
+	Chance   int // defaults to 50, for 50%
+}
+
+func NewOptional(elements []SyllableElement, chances ...int) *Optional {
+	chance := 50
+	if len(chances) > 0 {
+		chance = chances[0]
+	}
+	return &Optional{Elements: elements, Chance: chance}
+}
+func (o *Optional) syllableElementTag() {}
+func (o *Optional) Get(categories map[string]Category) string {
+	// evaluate all elements in the optional if the rng is less than the chance
+	if rand.Intn(101) < o.Chance {
+		values := []string{}
+		for _, v := range o.Elements {
+			values = append(values, v.Get(categories))
+		}
+		return strings.Join(values, "")
+	} else {
+		return ""
+	}
 }

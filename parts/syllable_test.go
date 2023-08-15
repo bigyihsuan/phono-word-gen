@@ -25,6 +25,20 @@ func TestSyllableGrouping(t *testing.T) {
 	assert.Equal(t, "abc", grouping.Get(categories))
 }
 
+func TestSyllableOptional(t *testing.T) {
+	optional := Optional{
+		Elements: []SyllableElement{
+			&Raw{Value: "a"},
+			&Raw{Value: "b"},
+			&Raw{Value: "c"},
+		},
+	}
+	for i := 0; i < 10; i++ {
+		actual := optional.Get(categories)
+		assert.True(t, actual == "abc" || actual == "")
+	}
+}
+
 func TestSyllableSelection(t *testing.T) {
 	chooser, _ := weightedrand.NewChooser[SyllableElement, int](
 		weightedrand.NewChoice[SyllableElement, int](&Raw{"a"}, 1),
