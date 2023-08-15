@@ -11,20 +11,18 @@ type CategoryChoice = wr.Choice[Element, int]
 type CategoryChooser = *wr.Chooser[Element, int]
 
 type Category struct {
-	Elements CategoryChooser
+	Elements []CategoryChoice
 }
 
-func NewCategory(elements ...wr.Choice[Element, int]) (Category, error) {
-	c := Category{}
-	chooser, err := wr.NewChooser[Element, int](elements...)
-	if err != nil {
-		return c, errors.Join(errs.CategoryCreationError, err)
-	}
-	c.Elements = chooser
-	return c, nil
+func NewCategory(elements ...wr.Choice[Element, int]) Category {
+	return Category{Elements: elements}
 }
 
-func (c Category) Get(categories map[string]Category) string {
+func (c Category) Get(categories map[string]Category) (string, error) {
 	// just pick something from the contained elements
-	return c.Elements.Pick().Get(categories)
+	chooser, err := wr.NewChooser[Element, int](c.Elements...)
+	if err != nil {
+		return "", errors.Join(errs.CategoryCreationError, err)
+	}
+	return chooser.Pick().Get(categories)
 }

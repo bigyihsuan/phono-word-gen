@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mroth/weightedrand/v2"
+	wr "github.com/mroth/weightedrand/v2"
 	"honnef.co/go/js/dom/v2"
 )
 
@@ -22,15 +22,15 @@ func main() {
 
 	submitButton.AddEventListener("click", false, func(event dom.Event) {
 		text := ""
-		c, _ := parts.NewCategory(
-			weightedrand.NewChoice(parts.NewPhoneme("p"), 1),
-			weightedrand.NewChoice(parts.NewPhoneme("t"), 1),
-			weightedrand.NewChoice(parts.NewPhoneme("k"), 1),
+		c := parts.NewCategory(
+			wr.NewChoice(parts.NewPhoneme("p"), 1),
+			wr.NewChoice(parts.NewPhoneme("t"), 1),
+			wr.NewChoice(parts.NewPhoneme("k"), 1),
 		)
-		v, _ := parts.NewCategory(
-			weightedrand.NewChoice(parts.NewPhoneme("a"), 1),
-			weightedrand.NewChoice(parts.NewPhoneme("i"), 1),
-			weightedrand.NewChoice(parts.NewPhoneme("u"), 1),
+		v := parts.NewCategory(
+			wr.NewChoice(parts.NewPhoneme("a"), 1),
+			wr.NewChoice(parts.NewPhoneme("i"), 1),
+			wr.NewChoice(parts.NewPhoneme("u"), 1),
 		)
 		categories := map[string]parts.Category{"C": c, "V": v}
 		syllable := parts.NewSyllable(
@@ -50,7 +50,11 @@ func main() {
 
 			syllableCount := min(minCount+powerLaw(maxCount, 50), maxCount)
 			for i := 0; i < syllableCount; i++ {
-				syllables = append(syllables, syllable.Get(categories))
+				syl, err := syllable.Get(categories)
+				if err != nil {
+					text += err.Error()
+				}
+				syllables = append(syllables, syl)
 			}
 			syllables = append([]string{fmt.Sprintf("%d ", syllableCount)}, syllables...)
 			words = append(words, syllables)

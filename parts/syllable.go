@@ -13,12 +13,16 @@ type Syllable struct {
 }
 
 func NewSyllable(elements ...SyllableElement) *Syllable { return &Syllable{Elements: elements} }
-func (s *Syllable) Get(categories map[string]Category) string {
+func (s *Syllable) Get(categories map[string]Category) (string, error) {
 	elements := []string{}
 	for _, e := range s.Elements {
-		elements = append(elements, e.Get(categories))
+		ele, err := e.Get(categories)
+		if err != nil {
+			return ele, err
+		}
+		elements = append(elements, ele)
 	}
-	return strings.Join(elements, "")
+	return strings.Join(elements, ""), nil
 }
 
 type SyllableElement interface {
@@ -31,9 +35,9 @@ type Raw struct {
 	Value string
 }
 
-func NewRaw(value string) *Raw                  { return &Raw{Value: value} }
-func (r *Raw) syllableElementTag()              {}
-func (r *Raw) Get(_ map[string]Category) string { return r.Value }
+func NewRaw(value string) *Raw                           { return &Raw{Value: value} }
+func (r *Raw) syllableElementTag()                       {}
+func (r *Raw) Get(_ map[string]Category) (string, error) { return r.Value, nil }
 
 type Grouping struct {
 	Elements []SyllableElement
@@ -41,56 +45,61 @@ type Grouping struct {
 
 func NewGrouping(elements ...SyllableElement) *Grouping { return &Grouping{Elements: elements} }
 func (g *Grouping) syllableElementTag()                 {}
-func (g *Grouping) Get(categories map[string]Category) string {
+func (g *Grouping) Get(categories map[string]Category) (string, error) {
 	// evaluate all elements in the grouping
 	values := []string{}
 	for _, v := range g.Elements {
-		values = append(values, v.Get(categories))
+		val, err := v.Get(categories)
+		if err != nil {
+			return val, err
+		}
+		values = append(values, val)
 	}
-	return strings.Join(values, "")
+	return strings.Join(values, ""), nil
 }
 
 type Selection struct {
-	Choices *wr.Chooser[SyllableElement, int]
+	Choices []wr.Choice[SyllableElement, int]
 }
 
-func NewSelection(elements ...wr.Choice[SyllableElement, int]) (*Selection, error) {
-	chooser, err := wr.NewChooser(elements...)
-	if err != nil {
-		return nil, errors.Join(errs.SelectionCreationError, err)
-	}
-	return &Selection{Choices: chooser}, nil
+func NewSelection(elements ...wr.Choice[SyllableElement, int]) *Selection {
+	return &Selection{Choices: elements}
 }
 func (s *Selection) syllableElementTag() {}
-func (s *Selection) Get(catgories map[string]Category) string {
+func (s *Selection) Get(catgories map[string]Category) (string, error) {
 	// pick a random choice in the selection
-	return s.Choices.Pick().Get(catgories)
+	chooser, err := wr.NewChooser(s.Choices...)
+	if err != nil {
+		return "", errors.Join(errs.SelectionCreationError, err)
+	}
+	return chooser.Pick().Get(catgories)
 }
 
 // optional component. defaults to 50% chance of appearing when calling Get().
 type Optional struct {
-	Choices *wr.Chooser[SyllableElement, int]
+	Elements []SyllableElement
+	weight   int
 }
 
-func NewOptional(elements []SyllableElement, percentChance ...int) (*Optional, error) {
+func NewOptional(elements []SyllableElement, percentChance ...int) *Optional {
 	weight := 50 // default to 50/50
 	if len(percentChance) > 0 {
 		weight = percentChance[0]
 	}
-	chooser, err := wr.NewChooser[SyllableElement, int](
-		wr.NewChoice[SyllableElement, int](NewGrouping(elements...), 100-weight),
-		wr.NewChoice[SyllableElement, int](nil, weight),
-	)
-	if err != nil {
-		return nil, errors.Join(errs.OptionalCreationError, err)
-	}
-	return &Optional{Choices: chooser}, nil
+	return &Optional{Elements: elements, weight: weight}
 }
 func (o *Optional) syllableElementTag() {}
-func (o *Optional) Get(categories map[string]Category) string {
-	element := o.Choices.Pick()
+func (o *Optional) Get(categories map[string]Category) (string, error) {
+	chooser, err := wr.NewChooser[SyllableElement, int](
+		wr.NewChoice[SyllableElement, int](NewGrouping(o.Elements...), 100-o.weight),
+		wr.NewChoice[SyllableElement, int](nil, o.weight),
+	)
+	if err != nil {
+		return "", errors.Join(errs.OptionalCreationError, err)
+	}
+	element := chooser.Pick()
 	if element == nil {
-		return ""
+		return "", nil
 	} else {
 		return element.Get(categories)
 	}

@@ -27,7 +27,7 @@ func TestPhonemeGet(t *testing.T) {
 	}
 
 	for i, tt := range tests {
-		actual := tt.p.Get(make(map[string]Category))
+		actual, _ := tt.p.Get(make(map[string]Category))
 		if !assert.Equal(t, tt.expected, actual, "[%d] get is incorrect, want=%q got=%q", i, tt.expected, actual) {
 			continue
 		}

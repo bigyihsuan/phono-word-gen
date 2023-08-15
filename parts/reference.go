@@ -9,13 +9,13 @@ func NewReference(name string) Element {
 }
 
 func (r *Reference) syllableElementTag() {}
-func (r *Reference) Get(categories map[string]Category) string {
+func (r *Reference) Get(categories map[string]Category) (string, error) {
 	// look for the existence for the category
 	cat, ok := categories[r.Name]
 	if ok {
 		// if ok, get from the found category
 		return cat.Get(categories)
 	} else {
-		return ""
+		return "", nil
 	}
 }

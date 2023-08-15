@@ -9,4 +9,4 @@ func NewPhoneme(value string, weights ...float64) Element {
 	return p
 }
 
-func (p *Phoneme) Get(_ map[string]Category) string { return p.Value }
+func (p *Phoneme) Get(_ map[string]Category) (string, error) { return p.Value, nil }
