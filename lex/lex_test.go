@@ -1,7 +1,6 @@
 package lex
 
 import (
-	"fmt"
 	"phono-word-gen/tok"
 	"testing"
 
@@ -38,7 +37,7 @@ func TestGetNextToken(t *testing.T) {
 		{tok.EQ, "="},
 		{tok.RAW, "a"},
 		{tok.STAR, "*"},
-		{tok.NUMBER, "123"},
+		{tok.NUMBER, "0.123"},
 		{tok.RAW, "i"},
 		{tok.STAR, "*"},
 		{tok.NUMBER, "0.456"},
@@ -82,6 +81,7 @@ func TestGetNextToken(t *testing.T) {
 		{tok.LINE_ENDING, "\n"},
 		{tok.REJECT, "reject"},
 		{tok.COLON, ":"},
+		{tok.BANG, "!"},
 		{tok.DOLLAR, "$"},
 		{tok.RAW, "V"},
 		{tok.DOLLAR, "$"},
@@ -97,9 +97,13 @@ func TestGetNextToken(t *testing.T) {
 		{tok.ARROW, ">"},
 		{tok.RAW, "substitute"},
 		{tok.SLASH, "/"},
+		{tok.CARET, "^"},
 		{tok.RAW, "condition"},
+		{tok.BSLASH, "\\"},
 		{tok.DOUBLESLASH, "//"},
+		{tok.AT, "@"},
 		{tok.RAW, "optionalException"},
+		{tok.AMPERSAND, "&"},
 		{tok.EOF, ""},
 		{tok.EOF, ""},
 		{tok.EOF, ""},
@@ -108,21 +112,21 @@ func TestGetNextToken(t *testing.T) {
 
 	input := `P = p t k
 R = l r w j; C=$P $R ŋ
-V = a*123 i*0.456 u ə ā
+V = a*0.123 i*0.456 u ə ā
 syllable: ([$C*0.8, $C$R])$V ($R)
 letters:  a i j k l p r t w
-reject:   $V$V
-replace:  {sourceA, sourceB} > substitute / condition // optionalException`
+reject:   !$V$V
+replace:  {sourceA, sourceB} > substitute / ^condition\ // @optionalException&`
 
 	l := New([]rune(input))
 
 	for i, expected := range tests {
 		actual := l.GetNextToken()
 		if !assert.Equal(t, expected.tt, actual.Type,
-			fmt.Sprintf("[%d] incorrect tokentype: expected=%q got=%q (%s)", i, expected.tt, actual.Type, actual.String())) {
+			"[%d] incorrect tokentype: expected=%q got=%q (%s)", i, expected.tt, actual.Type, actual.String()) {
 			continue
 		}
 		assert.Equal(t, expected.lexeme, actual.Lexeme,
-			fmt.Sprintf("[%d] incorrect lexeme: expected=%q got=%q (%s)", i, expected.lexeme, actual.Lexeme, actual.String()))
+			"[%d] incorrect lexeme: expected=%q got=%q (%s)", i, expected.lexeme, actual.Lexeme, actual.String())
 	}
 }

@@ -24,7 +24,13 @@ const (
 	EQ
 	DOLLAR
 	RAW
-	// rejections
+	// context sigils
+	CARET
+	BSLASH
+	AT
+	AMPERSAND
+	BANG
+	// replacements
 	ARROW
 	SLASH
 	DOUBLESLASH

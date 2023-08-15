@@ -46,6 +46,16 @@ func (l *Lexer) GetNextToken() tok.Token {
 		token = tok.New(tok.DOLLAR, string(l.ch), l.currIdx)
 	case '>':
 		token = tok.New(tok.ARROW, string(l.ch), l.currIdx)
+	case '^':
+		token = tok.New(tok.CARET, string(l.ch), l.currIdx)
+	case '\\':
+		token = tok.New(tok.BSLASH, string(l.ch), l.currIdx)
+	case '@':
+		token = tok.New(tok.AT, string(l.ch), l.currIdx)
+	case '&':
+		token = tok.New(tok.AMPERSAND, string(l.ch), l.currIdx)
+	case '!':
+		token = tok.New(tok.BANG, string(l.ch), l.currIdx)
 	case '/':
 		lexeme := string(l.ch)
 		if l.peekRune() == '/' {
@@ -115,11 +125,9 @@ func (l *Lexer) number() string {
 	for unicode.IsDigit(l.ch) {
 		l.nextRune()
 	}
-	if l.ch == '.' {
+	l.nextRune()
+	for unicode.IsDigit(l.ch) {
 		l.nextRune()
-		for unicode.IsDigit(l.ch) {
-			l.nextRune()
-		}
 	}
 	return string(l.src[startPosition:l.currIdx])
 }

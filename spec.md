@@ -44,7 +44,7 @@ with-weight    = "*" weight ;
 weight         = [0-9]+.[0-9]+ ; # any decimal number
 comment        = "#" .* "\n" ;
 context-prefix = "^" | "@" | "!";
-context-suffix = "$" | "/" ;
+context-suffix = "\" | "&" ;
 ```
 
 ### Components
