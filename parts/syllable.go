@@ -12,6 +12,7 @@ type Syllable struct {
 	Elements []SyllableElement
 }
 
+func NewSyllable(elements ...SyllableElement) *Syllable { return &Syllable{Elements: elements} }
 func (s *Syllable) Get(categories map[string]Category) string {
 	elements := []string{}
 	for _, e := range s.Elements {
