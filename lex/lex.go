@@ -31,9 +31,9 @@ func (l *Lexer) GetNextToken() tok.Token {
 	case ']':
 		token = tok.New(tok.RBRACKET, string(l.ch), l.currIdx)
 	case '{':
-		token = tok.New(tok.LCURLY, string(l.ch), l.currIdx)
+		token = tok.New(tok.LBRACE, string(l.ch), l.currIdx)
 	case '}':
-		token = tok.New(tok.RCURLY, string(l.ch), l.currIdx)
+		token = tok.New(tok.RBRACE, string(l.ch), l.currIdx)
 	case ',':
 		token = tok.New(tok.COMMA, string(l.ch), l.currIdx)
 	case '*':

@@ -5,6 +5,7 @@ type Phoneme struct {
 	Value string
 }
 
-func (p *Phoneme) nodeTag()            {}
-func (p *Phoneme) categoryElementTag() {}
-func (p *Phoneme) String() string      { return p.Value }
+func (p *Phoneme) node()              {}
+func (p *Phoneme) categoryElement()   {}
+func (p *Phoneme) syllableComponent() {}
+func (p *Phoneme) String() string     { return p.Value }

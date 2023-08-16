@@ -80,14 +80,14 @@ If you do not want uniform randomness for syllables, explicitly wrap them in a w
 
 ```ebnf
 syllable-definition = "syllable" ":" syllable-components line-ending ;
-syllable-components = syllable-component (" "? syllable-component)+ ;
+syllable-components = syllable-component+ ;
 syllable-component  = phoneme | reference | grouping | selection | optional ;
-grouping  = "{" grouping-elements "}" ;
-selection = "[" selection-elements "]" ;
-optional  = "(" grouping-elements ")" with-weight? ;
+grouping  = "{" "}" | "{" syllable-components (" "? syllable-components)* "}" ;
+optional  = "(" syllable-components ")" with-weight? ;
+selection = "[" "]" | "[" selection-elements "]" ;
 
-grouping-elements  = syllable-components ;
-selection-elements = weighted-components ("," weighted-components)* ;
+selection-elements = selection-element ("," selection-element)*
+selection-element  = syllable-components with-weight?;
 ```
 
 ### Rejections

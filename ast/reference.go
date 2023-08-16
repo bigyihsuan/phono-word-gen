@@ -4,6 +4,7 @@ type Reference struct {
 	Name string
 }
 
-func (r *Reference) nodeTag()            {}
-func (r *Reference) categoryElementTag() {}
-func (r *Reference) String() string      { return "$" + r.Name }
+func (r *Reference) node()              {}
+func (r *Reference) categoryElement()   {}
+func (r *Reference) syllableComponent() {}
+func (r *Reference) String() string     { return "$" + r.Name }

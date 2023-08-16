@@ -8,10 +8,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func checkParseErrors(t *testing.T, p *Parser) {
-	for _, err := range p.Errors() {
-		t.Error(err)
+func checkParseErrors(t *testing.T, p *Parser, i int) {
+	if len(p.errors) == 0 {
+		return
 	}
+	t.Errorf("[%d] parser has %d errors", i, len(p.errors))
+	for _, err := range p.errors {
+		t.Errorf("parser error: %s", err)
+	}
+	t.FailNow()
 }
 
 func TestParsePhoneme(t *testing.T) {
@@ -25,12 +30,8 @@ func TestParsePhoneme(t *testing.T) {
 	for i, tt := range tests {
 		l := lex.New([]rune(tt.input))
 		p := New(l)
-		ele := p.Phoneme()
-		checkParseErrors(t, p)
-		phoneme, ok := ele.(*ast.Phoneme)
-		if !assert.True(t, ok, "[%d] not a Phoneme: got=%T (%+v)", i, ele, ele) {
-			continue
-		}
+		phoneme := p.Phoneme()
+		checkParseErrors(t, p, i)
 		assert.Equal(t, tt.expected, phoneme.Value,
 			"[%d] incorrect: want=%q got=%q", i, tt.expected, phoneme.Value)
 	}
@@ -47,12 +48,8 @@ func TestParseReference(t *testing.T) {
 	for i, tt := range tests {
 		l := lex.New([]rune(tt.input))
 		p := New(l)
-		ele := p.Reference()
-		checkParseErrors(t, p)
-		reference, ok := ele.(*ast.Reference)
-		if !assert.True(t, ok, "[%d] not a Reference: got=%T (%+v)", i, ele, ele) {
-			continue
-		}
+		reference := p.Reference()
+		checkParseErrors(t, p, i)
 		assert.Equal(t, tt.expected, reference.Name,
 			"[%d] incorrect: want=%q got=%q", i, tt.expected, reference.Name)
 	}
@@ -73,12 +70,8 @@ func TestParseWeightedCategoryElement(t *testing.T) {
 	for i, tt := range tests {
 		l := lex.New([]rune(tt.input))
 		p := New(l)
-		ele := p.WeightedCategoryElement()
-		checkParseErrors(t, p)
-		weighted, ok := ele.(*ast.WeightedElement)
-		if !assert.True(t, ok, "[%d] not a WeightedElement: got=%T (%+v)", i, ele, ele) {
-			continue
-		}
+		weighted := p.WeightedCategoryElement()
+		checkParseErrors(t, p, i)
 		assert.Equal(t, tt.expected, weighted.Weight,
 			"[%d] incorrect: want=%d got=%d", i, tt.expected, weighted.Weight)
 	}
@@ -97,15 +90,41 @@ func TestParseCategory(t *testing.T) {
 		l := lex.New([]rune(tt.input))
 		p := New(l)
 		directive := p.Directive()
-		checkParseErrors(t, p)
-		category, ok := directive.(*ast.Category)
-		if !assert.True(t, ok, "[%d] not a Category: got=%T (%+v)", i, directive, directive) {
+		checkParseErrors(t, p, i)
+		category, ok := directive.(*ast.CategoryDirective)
+		if !assert.True(t, ok, "[%d] not a CategoryDirective: got=%T (%+v)", i, directive, directive) {
 			continue
 		}
-		if !assert.NotNil(t, category) {
+		if !assert.NotNil(t, category, "[%d] category was nil") {
 			continue
 		}
 		assert.Equal(t, tt.expected, category.String(),
-			"[%d] incorrect: want=%q got=%q", tt.expected, category.String())
+			"[%d] incorrect: want=%q got=%q", i, tt.expected, category.String())
+	}
+}
+
+func TestParseSyllableDirective(t *testing.T) {
+	tests := []struct{ input, expected string }{
+		{"syllable: [$C*9, $Cr$R, $Cl$L, s[c,t]]", "(syllable [($C * 9), ($Cr $R * 1), ($Cl $L * 1), (s [(c * 1), (t * 1)] * 1)])"},
+		{"syllable: $C$V", "(syllable $C $V)"},
+		{"syllable: {$C$V}", "(syllable {$C $V})"},
+		{"syllable: ($C)*123$V", "(syllable (($C) * 123) $V)"},
+		{"syllable: ($C)$V", "(syllable (($C) * 50) $V)"},
+		{"syllable: [$C,$V]", "(syllable [($C * 1), ($V * 1)])"},
+	}
+	for i, tt := range tests {
+		l := lex.New([]rune(tt.input))
+		p := New(l)
+		directive := p.Directive()
+		checkParseErrors(t, p, i)
+		syllable, ok := directive.(*ast.SyllableDirective)
+		if !assert.True(t, ok, "[%d] not a SyllableDirective: got=%T (%+v)", i, directive, directive) {
+			continue
+		}
+		if !assert.NotNil(t, syllable, "[%d] syllable was nil") {
+			continue
+		}
+		assert.Equal(t, tt.expected, syllable.String(),
+			"[%d] incorrect: want=%q got=%q", tt.expected, syllable.String())
 	}
 }

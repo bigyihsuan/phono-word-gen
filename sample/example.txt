@@ -10,16 +10,6 @@ approximant = ʋ ɹ ɰ w
 
 syllable: ($C)$V([$approximant*0.5,$nasal*0.2,$fricative*0.1,])($C)
 
-C = m n ŋ ŋʷ p t k kʷ ɸ s x xʷ p͡ɸ t͡s k͡x k͡xʷ ʋ ɹ ɰ w
-V = i u ɛ ɔ æ ɒ
-frontVowel = i ɛ æ
-backVowel = u ɔ ɒ
-nasal = m n ŋ ŋʷ
-plosive = p t k kʷ
-fricative = ɸ s x xʷ
-affricate = p͡ɸ t͡s k͡x k͡xʷ
-approximant = ʋ ɹ ɰ w
-
 syllable: $nasal$V$C
 
 reject: mn

@@ -5,6 +5,7 @@
     "eslint.validate": [
         "javascript",
     ],
+    // https://github.com/golang/vscode-go/issues/2588#issuecomment-1368216105
     "go.toolsEnvVars": {
         "GOARCH": "wasm",
         "GOOS": "js"
