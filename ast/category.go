@@ -11,7 +11,7 @@ type CategoryElement interface {
 
 type WeightedElement struct {
 	Element CategoryElement
-	Weight  *Weight
+	Weight  int
 }
 
-type Weight struct{ Value float64 }
+func (w *WeightedElement) categoryElementTag() {}

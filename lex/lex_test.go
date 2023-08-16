@@ -37,10 +37,10 @@ func TestGetNextToken(t *testing.T) {
 		{tok.EQ, "="},
 		{tok.RAW, "a"},
 		{tok.STAR, "*"},
-		{tok.NUMBER, "0.123"},
+		{tok.NUMBER, "123"},
 		{tok.RAW, "i"},
 		{tok.STAR, "*"},
-		{tok.NUMBER, "0.456"},
+		{tok.NUMBER, "456"},
 		{tok.RAW, "u"},
 		{tok.RAW, "ə"},
 		{tok.RAW, "ā"},
@@ -52,7 +52,7 @@ func TestGetNextToken(t *testing.T) {
 		{tok.DOLLAR, "$"},
 		{tok.RAW, "C"},
 		{tok.STAR, "*"},
-		{tok.NUMBER, "0.8"},
+		{tok.NUMBER, "8"},
 		{tok.COMMA, ","},
 		{tok.DOLLAR, "$"},
 		{tok.RAW, "C"},
@@ -112,8 +112,8 @@ func TestGetNextToken(t *testing.T) {
 
 	input := `P = p t k
 R = l r w j; C=$P $R ŋ
-V = a*0.123 i*0.456 u ə ā
-syllable: ([$C*0.8, $C$R])$V ($R)
+V = a*123 i*456 u ə ā
+syllable: ([$C*8, $C$R])$V ($R)
 letters:  a i j k l p r t w
 reject:   !$V$V
 replace:  {sourceA, sourceB} > substitute / ^condition\ // @optionalException&`

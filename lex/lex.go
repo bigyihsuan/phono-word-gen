@@ -125,10 +125,6 @@ func (l *Lexer) number() string {
 	for unicode.IsDigit(l.ch) {
 		l.nextRune()
 	}
-	l.nextRune()
-	for unicode.IsDigit(l.ch) {
-		l.nextRune()
-	}
 	return string(l.src[startPosition:l.currIdx])
 }
 
