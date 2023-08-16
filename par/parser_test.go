@@ -74,11 +74,38 @@ func TestParseWeightedCategoryElement(t *testing.T) {
 		l := lex.New([]rune(tt.input))
 		p := New(l)
 		ele := p.WeightedCategoryElement()
+		checkParseErrors(t, p)
 		weighted, ok := ele.(*ast.WeightedElement)
 		if !assert.True(t, ok, "[%d] not a WeightedElement: got=%T (%+v)", i, ele, ele) {
 			continue
 		}
 		assert.Equal(t, tt.expected, weighted.Weight,
 			"[%d] incorrect: want=%d got=%d", i, tt.expected, weighted.Weight)
+	}
+}
+
+func TestParseCategory(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"N = m n ñ", "(N = m*1 n*1 ñ*1)"},
+		{"C = p*1 t*3", "(C = p*1 t*3)"},
+		{"C = $N t*3", "(C = $N*1 t*3)"},
+	}
+	for i, tt := range tests {
+		l := lex.New([]rune(tt.input))
+		p := New(l)
+		directive := p.Directive()
+		checkParseErrors(t, p)
+		category, ok := directive.(*ast.Category)
+		if !assert.True(t, ok, "[%d] not a Category: got=%T (%+v)", i, directive, directive) {
+			continue
+		}
+		if !assert.NotNil(t, category) {
+			continue
+		}
+		assert.Equal(t, tt.expected, category.String(),
+			"[%d] incorrect: want=%q got=%q", tt.expected, category.String())
 	}
 }

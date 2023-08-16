@@ -6,3 +6,4 @@ type Reference struct {
 
 func (r *Reference) nodeTag()            {}
 func (r *Reference) categoryElementTag() {}
+func (r *Reference) String() string      { return "$" + r.Name }

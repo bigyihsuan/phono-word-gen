@@ -13,7 +13,7 @@ type Lexer struct {
 }
 
 func New(src []rune) *Lexer {
-	l := &Lexer{src: src, currIdx: 0, peekIdx: 0}
+	l := &Lexer{src: append(src, '\n'), currIdx: 0, peekIdx: 0}
 	l.nextRune()
 	return l
 }

@@ -104,6 +104,7 @@ func TestGetNextToken(t *testing.T) {
 		{tok.AT, "@"},
 		{tok.RAW, "optionalException"},
 		{tok.AMPERSAND, "&"},
+		{tok.LINE_ENDING, "\n"},
 		{tok.EOF, ""},
 		{tok.EOF, ""},
 		{tok.EOF, ""},

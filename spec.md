@@ -41,7 +41,7 @@ The following grammar is in common for all rules below:
 ```ebnf
 line-ending    = "\n" | ";" ;
 with-weight    = "*" weight ;
-weight         = [0-9]+.[0-9]+ ; # any decimal number
+weight         = [1-9]+[0-9]* ; # any positive decimal integer
 comment        = "#" .* "\n" ;
 context-prefix = "^" | "@" | "!";
 context-suffix = "\" | "&" ;

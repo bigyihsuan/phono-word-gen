@@ -7,3 +7,4 @@ type Phoneme struct {
 
 func (p *Phoneme) nodeTag()            {}
 func (p *Phoneme) categoryElementTag() {}
+func (p *Phoneme) String() string      { return p.Value }

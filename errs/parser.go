@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ParserUnexpectedTokenError = func(tts ...tok.TokenType) error {
+	ParserUnexpectedToken = func(tts ...tok.TokenType) error {
 		switch {
 		case len(tts) < 2:
 			return fmt.Errorf("unexpected token: got=%q", tts[0])
@@ -16,4 +16,5 @@ var (
 			return fmt.Errorf("unexpected token: got=%q want=%q", tts[0], tts[1])
 		}
 	}
+	ParserUnknownDirective = func(tt tok.TokenType) error { return fmt.Errorf("unknwown directive: got=%q", tt) }
 )
