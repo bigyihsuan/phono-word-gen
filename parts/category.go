@@ -2,7 +2,6 @@ package parts
 
 import (
 	"errors"
-	"phono-word-gen/errs"
 
 	wr "github.com/mroth/weightedrand/v2"
 )
@@ -22,7 +21,7 @@ func (c Category) Get(categories map[string]Category) (string, error) {
 	// just pick something from the contained elements
 	chooser, err := wr.NewChooser[Element, int](c.Elements...)
 	if err != nil {
-		return "", errors.Join(errs.CategoryCreationError, err)
+		return "", errors.Join(CategoryCreationError, err)
 	}
 	return chooser.Pick().Get(categories)
 }

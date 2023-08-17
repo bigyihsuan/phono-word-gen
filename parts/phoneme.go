@@ -4,7 +4,7 @@ type Phoneme struct {
 	Value string
 }
 
-func NewPhoneme(value string, weights ...float64) Element {
+func NewPhoneme(value string) Element {
 	p := &Phoneme{Value: value}
 	return p
 }

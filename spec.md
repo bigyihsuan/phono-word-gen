@@ -13,6 +13,10 @@
   - [Evaluating](#evaluating)
     - [Preparation](#preparation)
     - [Word Generation](#word-generation)
+      - [Directives](#directives)
+    - [Weights](#weights)
+    - [Categories](#categories)
+    - [Syllables](#syllables-1)
   - [Presentation](#presentation)
 
 ## Lexing
@@ -74,9 +78,7 @@ category-element = phoneme | reference ;
 
 ### Syllables
 
-Defines all possible syllables in the language.
-Multiple syllable directives per file is allowed; all kinds of syllable will be randomly selected equally.
-If you do not want uniform randomness for syllables, explicitly wrap them in a weighted selection.
+Defines all possible syllables in the language. Multiple syllable directives per file is allowed.
 
 ```ebnf
 syllable-definition = "syllable" ":" syllable-components line-ending ;
@@ -136,6 +138,27 @@ letters = phoneme (" " phoneme)* ;
 3. Apply replacement rules
 4. Apply rejection rules
 5. Generate the word's letterization
+
+#### Directives
+
+### Weights
+
+Weights on components represent how much more probable it is to select it compared to other components.
+Components that have the same weight have identical probabilities to be selected.
+Based on the semantics of the [weightedrandom](https://pkg.go.dev/github.com/mroth/weightedrand/v2) package.
+
+### Categories
+
+Categories should assign weights to every phoneme during preparation.
+By default, every phoneme has a weight of 1.
+Weighted phonemes have their written weight.
+
+When `Get` is called, it should return a phoneme from its colleciton of phonemes.
+If the element that was gotten is a reference, it should get from the reference.
+Recursive/looped references (`C = $A; A = $C`) are not allowed.
+This is checked during preperation, after the categories are generated.
+
+### Syllables
 
 ## Presentation
 

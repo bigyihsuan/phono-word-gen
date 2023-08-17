@@ -2,7 +2,7 @@ package par
 
 import (
 	"phono-word-gen/ast"
-	"phono-word-gen/errs"
+	"phono-word-gen/parts"
 	"phono-word-gen/tok"
 )
 
@@ -42,7 +42,7 @@ func (p *Parser) SyllableComponent() ast.SyllableComponent {
 	case tok.LBRACKET:
 		return p.SyllableSelection()
 	default:
-		p.errors = append(p.errors, errs.UnexpectedToken(p.curr.Type))
+		p.errors = append(p.errors, parts.UnexpectedToken(p.curr, p.curr.Type))
 		return nil
 	}
 }

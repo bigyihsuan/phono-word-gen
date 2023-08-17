@@ -2,7 +2,7 @@ package parts
 
 import (
 	"errors"
-	"phono-word-gen/errs"
+	"math/rand"
 	"strings"
 
 	wr "github.com/mroth/weightedrand/v2"
@@ -70,7 +70,7 @@ func (s *Selection) Get(catgories map[string]Category) (string, error) {
 	// pick a random choice in the selection
 	chooser, err := wr.NewChooser(s.Choices...)
 	if err != nil {
-		return "", errors.Join(errs.SelectionCreationError, err)
+		return "", errors.Join(SelectionCreationError, err)
 	}
 	return chooser.Pick().Get(catgories)
 }
@@ -90,17 +90,10 @@ func NewOptional(elements []SyllableElement, percentChance ...int) *Optional {
 }
 func (o *Optional) syllableElementTag() {}
 func (o *Optional) Get(categories map[string]Category) (string, error) {
-	chooser, err := wr.NewChooser[SyllableElement, int](
-		wr.NewChoice[SyllableElement, int](NewGrouping(o.Elements...), 100-o.weight),
-		wr.NewChoice[SyllableElement, int](nil, o.weight),
-	)
-	if err != nil {
-		return "", errors.Join(errs.OptionalCreationError, err)
-	}
-	element := chooser.Pick()
-	if element == nil {
-		return "", nil
+	chance := rand.Intn(101)
+	if chance < o.weight {
+		return NewGrouping(o.Elements...).Get(categories)
 	} else {
-		return element.Get(categories)
+		return "", nil
 	}
 }

@@ -2,8 +2,8 @@ package par
 
 import (
 	"phono-word-gen/ast"
-	"phono-word-gen/errs"
 	"phono-word-gen/lex"
+	"phono-word-gen/parts"
 	"phono-word-gen/tok"
 )
 
@@ -53,7 +53,7 @@ func (p *Parser) expectPeek(tt tok.TokenType) bool {
 		p.getNextToken()
 		return true
 	} else {
-		p.errors = append(p.errors, errs.UnexpectedToken(p.peek.Type, tt))
+		p.errors = append(p.errors, parts.UnexpectedToken(p.peek, p.peek.Type, tt))
 		return false
 	}
 }
@@ -62,9 +62,22 @@ func (p *Parser) expectCurr(tt tok.TokenType) bool {
 		p.getNextToken()
 		return true
 	} else {
-		p.errors = append(p.errors, errs.UnexpectedToken(p.curr.Type, tt))
+		p.errors = append(p.errors, parts.UnexpectedToken(p.curr, p.curr.Type, tt))
 		return false
 	}
+}
+
+func (p *Parser) Directives() (directives []ast.Directive) {
+	for p.peek.Type != tok.EOF {
+		dir := p.Directive()
+		if dir != nil {
+			directives = append(directives, dir)
+		} else {
+			return
+		}
+		p.getNextToken()
+	}
+	return
 }
 
 func (p *Parser) Directive() ast.Directive {
@@ -78,7 +91,7 @@ func (p *Parser) Directive() ast.Directive {
 	case tok.SYLLABLE:
 		return p.Syllable()
 	default:
-		p.errors = append(p.errors, errs.UnknownDirective(p.curr.Type))
+		p.errors = append(p.errors, parts.UnknownDirective(p.curr.Type))
 		return nil
 	}
 }

@@ -2,7 +2,7 @@ package par
 
 import (
 	"phono-word-gen/ast"
-	"phono-word-gen/errs"
+	"phono-word-gen/parts"
 	"phono-word-gen/tok"
 )
 
@@ -45,7 +45,7 @@ func (p *Parser) CategoryElement() ast.CategoryElement {
 	case tok.DOLLAR:
 		return p.Reference()
 	default:
-		p.errors = append(p.errors, errs.UnexpectedToken(p.peek.Type))
+		p.errors = append(p.errors, parts.UnexpectedToken(p.peek, p.peek.Type))
 		return nil
 	}
 }
