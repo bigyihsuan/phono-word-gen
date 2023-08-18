@@ -8,26 +8,22 @@ import (
 	"phono-word-gen/par"
 	"phono-word-gen/parts"
 	"phono-word-gen/util"
-	"strconv"
 	"strings"
 
 	"github.com/mroth/weightedrand/v2"
+	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 	"honnef.co/go/js/dom/v2"
 )
 
 type Evaluator struct {
 	document dom.Document
-
-	inputTextElement   *dom.HTMLTextAreaElement
-	outputTextElement  *dom.HTMLTextAreaElement
-	submitButton       *dom.HTMLButtonElement
-	minSylCountElement *dom.HTMLInputElement
-	maxSylCountElement *dom.HTMLInputElement
-	wordCountElement   *dom.HTMLInputElement
+	elements elements
 
 	minSylCount, maxSylCount int
 	wordCount                int
+
+	forbidDuplicates, forceWordLimit, sortOutput bool
 
 	categories map[string]parts.Category
 	syllables  []*parts.Syllable
@@ -35,28 +31,22 @@ type Evaluator struct {
 
 func New() (*Evaluator, error) {
 	evaluator := &Evaluator{}
-
 	evaluator.loadDocument()
-	// directives, err := evaluator.loadCode(evaluator.inputTextElement.Value())
-	// if err != nil {
-	// 	return evaluator, err
-	// }
-	// evaluator.evalDirectives(directives)
-	// if ok, err := evaluator.checkCategories(); !ok {
-	// 	return evaluator, err
-	// }
 	evaluator.setEventListeners()
 	return evaluator, nil
 }
 
 func (evaluator *Evaluator) loadDocument() {
 	evaluator.document = dom.GetWindow().Document()
-	evaluator.inputTextElement = evaluator.document.GetElementByID("phonology").(*dom.HTMLTextAreaElement)
-	evaluator.outputTextElement = evaluator.document.GetElementByID("outputText").(*dom.HTMLTextAreaElement)
-	evaluator.submitButton = evaluator.document.GetElementByID("submit").(*dom.HTMLButtonElement)
-	evaluator.minSylCountElement = evaluator.document.GetElementByID("minSylCount").(*dom.HTMLInputElement)
-	evaluator.maxSylCountElement = evaluator.document.GetElementByID("maxSylCount").(*dom.HTMLInputElement)
-	evaluator.wordCountElement = evaluator.document.GetElementByID("wordCount").(*dom.HTMLInputElement)
+	evaluator.elements.inputTextElement = evaluator.document.GetElementByID("phonology").(*dom.HTMLTextAreaElement)
+	evaluator.elements.outputTextElement = evaluator.document.GetElementByID("outputText").(*dom.HTMLTextAreaElement)
+	evaluator.elements.submitButton = evaluator.document.GetElementByID("submit").(*dom.HTMLButtonElement)
+	evaluator.elements.minSylCountElement = evaluator.document.GetElementByID("minSylCount").(*dom.HTMLInputElement)
+	evaluator.elements.maxSylCountElement = evaluator.document.GetElementByID("maxSylCount").(*dom.HTMLInputElement)
+	evaluator.elements.wordCountElement = evaluator.document.GetElementByID("wordCount").(*dom.HTMLInputElement)
+	evaluator.elements.forbidDuplicatesElement = evaluator.document.GetElementByID("forbidDuplicates").(*dom.HTMLInputElement)
+	evaluator.elements.forceWordLimitElement = evaluator.document.GetElementByID("forceWordLimit").(*dom.HTMLInputElement)
+	evaluator.elements.sortOutputElement = evaluator.document.GetElementByID("sortOutput").(*dom.HTMLInputElement)
 }
 
 func (evaluator *Evaluator) loadCode(src string) ([]ast.Directive, error) {
@@ -97,17 +87,15 @@ func (evaluator *Evaluator) checkCategories() (ok bool, err error) {
 }
 
 func (e *Evaluator) setEventListeners() {
-	e.submitButton.AddEventListener("click", false, e.submitMain)
+	e.elements.submitButton.AddEventListener("click", false, e.submitMain)
 }
 
 func (e *Evaluator) submitMain(event dom.Event) {
 	// get the values of the various options
-	e.minSylCount, _ = strconv.Atoi(e.minSylCountElement.Value())
-	e.maxSylCount, _ = strconv.Atoi(e.maxSylCountElement.Value())
-	e.wordCount, _ = strconv.Atoi(e.wordCountElement.Value())
+	e.getOptions()
 
 	// refesh the code input
-	directives, err := e.loadCode(e.inputTextElement.Value())
+	directives, err := e.loadCode(e.elements.inputTextElement.Value())
 	if err != nil {
 		e.displayError(err)
 		return
@@ -126,13 +114,39 @@ func (e *Evaluator) submitMain(event dom.Event) {
 	// generate N words
 	words := e.generateWords(e.wordCount)
 
-	// TODO: if on, remove duplicates
-	// TODO: if on, force generate to wordCount
-
 	// convert the words to lists of syllables
 	wordSyllables := e.syllabizeWords(words)
 
-	// TODO: if on, sort by letters
+	// TODO: if on, remove duplicates
+	if e.forbidDuplicates {
+		util.Log("forbidding duplicates")
+		wordSet := make(map[string][]string)
+		for i, word := range wordSyllables {
+			w := strings.Join(word, "")
+			if _, containsWord := wordSet[w]; !containsWord {
+				wordSet[w] = wordSyllables[i]
+			}
+		}
+		wordSyllables = maps.Values(wordSet)
+	}
+
+	// TODO: if on, sort
+	if e.sortOutput {
+		// TODO: letter-based sorting
+		wordSyllableSortFunc := func(a, b []string) int {
+			x, y := strings.Join(a, ""), strings.Join(b, "")
+			if x < y {
+				return -1
+			} else if x == y {
+				return 0
+			} else {
+				return 1
+			}
+		}
+		slices.SortFunc(wordSyllables, wordSyllableSortFunc)
+	}
+
+	// TODO: if on, force generate to wordCount
 
 	syllableSep := ""
 	// TODO: if on, display with syllable separators
@@ -164,7 +178,7 @@ func (e *Evaluator) syllabizeWords(words []Word) (wordSyllables [][]string) {
 		wordSyls, err := word.GenerateSyllables(e.categories)
 		if err != nil {
 			util.LogError(err.Error())
-			e.outputTextElement.SetValue(err.Error())
+			e.elements.outputTextElement.SetValue(err.Error())
 			return
 		}
 		wordSyllables = append(wordSyllables, wordSyls)
@@ -179,10 +193,32 @@ func (e *Evaluator) display(wordSyllables [][]string, syllableSep string) {
 		wordStrings = append(wordStrings, strings.Join(word, syllableSep))
 	}
 	text += strings.Join(wordStrings, "\n")
-	e.outputTextElement.SetValue(text)
+	e.elements.outputTextElement.SetValue(text)
 }
 
 func (e *Evaluator) displayError(err error) {
 	util.LogError(err.Error())
-	e.outputTextElement.SetValue(err.Error())
+	e.elements.outputTextElement.SetValue(err.Error())
+}
+
+func (e *Evaluator) getOptions() {
+	e.minSylCount = int(e.elements.minSylCountElement.ValueAsNumber())
+	e.maxSylCount = int(e.elements.maxSylCountElement.ValueAsNumber())
+	e.wordCount = int(e.elements.wordCountElement.ValueAsNumber())
+
+	e.forbidDuplicates = e.elements.forbidDuplicatesElement.Checked()
+	e.forceWordLimit = e.elements.forceWordLimitElement.Checked()
+	e.sortOutput = e.elements.sortOutputElement.Checked()
+}
+
+type elements struct {
+	inputTextElement        *dom.HTMLTextAreaElement
+	outputTextElement       *dom.HTMLTextAreaElement
+	submitButton            *dom.HTMLButtonElement
+	minSylCountElement      *dom.HTMLInputElement
+	maxSylCountElement      *dom.HTMLInputElement
+	wordCountElement        *dom.HTMLInputElement
+	forbidDuplicatesElement *dom.HTMLInputElement
+	forceWordLimitElement   *dom.HTMLInputElement
+	sortOutputElement       *dom.HTMLInputElement
 }
