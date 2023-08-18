@@ -10,13 +10,16 @@ func main() {
 		if r := recover(); r != nil {
 			fmt.Println("Recovered from", r)
 		}
+		initialize()
 	}()
-	evaluator, err := eval.New()
+	initialize()
+}
+
+func initialize() {
+	_, err := eval.New()
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(evaluator)
-
 	// keep the go program alive
 	select {}
 }

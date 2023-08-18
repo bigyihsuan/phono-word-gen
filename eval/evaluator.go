@@ -7,6 +7,7 @@ import (
 	"phono-word-gen/lex"
 	"phono-word-gen/par"
 	"phono-word-gen/parts"
+	"phono-word-gen/util"
 	"strconv"
 	"strings"
 
@@ -36,14 +37,14 @@ func New() (*Evaluator, error) {
 	evaluator := &Evaluator{}
 
 	evaluator.loadDocument()
-	directives, err := evaluator.loadCode(evaluator.inputTextElement.Value())
-	if err != nil {
-		return evaluator, err
-	}
-	evaluator.evalDirectives(directives)
-	if ok, err := evaluator.checkCategories(); !ok {
-		return evaluator, err
-	}
+	// directives, err := evaluator.loadCode(evaluator.inputTextElement.Value())
+	// if err != nil {
+	// 	return evaluator, err
+	// }
+	// evaluator.evalDirectives(directives)
+	// if ok, err := evaluator.checkCategories(); !ok {
+	// 	return evaluator, err
+	// }
 	evaluator.setEventListeners()
 	return evaluator, nil
 }
@@ -95,68 +96,93 @@ func (evaluator *Evaluator) checkCategories() (ok bool, err error) {
 	return true, nil
 }
 
-func (evaluator *Evaluator) setEventListeners() {
-	evaluator.submitButton.AddEventListener("click", false, func(event dom.Event) {
-		text := ""
-		evaluator.minSylCount, _ = strconv.Atoi(evaluator.minSylCountElement.Value())
-		evaluator.maxSylCount, _ = strconv.Atoi(evaluator.maxSylCountElement.Value())
-		evaluator.wordCount, _ = strconv.Atoi(evaluator.wordCountElement.Value())
-
-		words := [][]string{}
-
-		directives, err := evaluator.loadCode(evaluator.inputTextElement.Value())
-		if err != nil {
-			logError(err.Error())
-			evaluator.outputTextElement.SetValue(err.Error())
-			return
-		}
-		evaluator.evalDirectives(directives)
-		if ok, err := evaluator.checkCategories(); !ok {
-			logError(err.Error())
-			evaluator.outputTextElement.SetValue(err.Error())
-			return
-		}
-
-		syllable := evaluator.syllables[rand.Intn(len(evaluator.syllables))]
-
-		for i := 0; i < evaluator.wordCount; i++ {
-			syllables := []string{}
-
-			syllableCount := min(evaluator.minSylCount+powerLaw(evaluator.maxSylCount, 50), evaluator.maxSylCount)
-			for i := 0; i < syllableCount; i++ {
-				syl, err := syllable.Get(evaluator.categories)
-				if err != nil {
-					text += err.Error()
-				}
-				syllables = append(syllables, syl)
-			}
-			// syllables = append([]string{fmt.Sprintf("%d ", syllableCount)}, syllables...)
-			words = append(words, syllables)
-		}
-		wordStrings := []string{}
-		for _, word := range words {
-			wordStrings = append(wordStrings, strings.Join(word, ""))
-		}
-		text += strings.Join(wordStrings, "\n")
-		evaluator.outputTextElement.SetValue(text)
-	})
+func (e *Evaluator) setEventListeners() {
+	e.submitButton.AddEventListener("click", false, e.submitMain)
 }
 
-func powerLaw(max, percentage int) int {
-	for r := 0; ; r = (r + 1) % max {
-		if randomPercentage() < percentage {
-			return r
-		}
+func (e *Evaluator) submitMain(event dom.Event) {
+	// get the values of the various options
+	e.minSylCount, _ = strconv.Atoi(e.minSylCountElement.Value())
+	e.maxSylCount, _ = strconv.Atoi(e.maxSylCountElement.Value())
+	e.wordCount, _ = strconv.Atoi(e.wordCountElement.Value())
+
+	// refesh the code input
+	directives, err := e.loadCode(e.inputTextElement.Value())
+	if err != nil {
+		e.displayError(err)
+		return
 	}
+	e.evalDirectives(directives)
+	if ok, err := e.checkCategories(); !ok {
+		e.displayError(err)
+		return
+	}
+
+	// don't try to generate if we have no syllables
+	if len(e.syllables) < 1 {
+		return
+	}
+
+	// generate N words
+	words := e.generateWords(e.wordCount)
+
+	// TODO: if on, remove duplicates
+	// TODO: if on, force generate to wordCount
+
+	// convert the words to lists of syllables
+	wordSyllables := e.syllabizeWords(words)
+
+	// TODO: if on, sort by letters
+
+	syllableSep := ""
+	// TODO: if on, display with syllable separators
+
+	// display to the output textbox
+	e.display(wordSyllables, syllableSep)
 }
 
-func randomPercentage() int {
-	return rand.Intn(101) + 1
+// generate a `wordCount` number of words.
+func (e *Evaluator) generateWords(wordCount int) (words []Word) {
+	for i := 0; i < wordCount; i++ {
+		syllableCount := min(e.minSylCount+util.PowerLaw(e.maxSylCount, 50), e.maxSylCount)
+		words = append(words, e.generateWord(syllableCount))
+	}
+	return
 }
 
-func log(o ...any) {
-	dom.GetWindow().Console().Call("log", o...)
+func (e *Evaluator) generateWord(syllableCount int) Word {
+	syllables := []*parts.Syllable{}
+	for i := 0; i < syllableCount; i++ {
+		syllable := e.syllables[rand.Intn(min(len(e.syllables)))]
+		syllables = append(syllables, syllable)
+	}
+	return NewWord(syllables...)
 }
-func logError(o ...any) {
-	dom.GetWindow().Console().Call("error", o...)
+
+func (e *Evaluator) syllabizeWords(words []Word) (wordSyllables [][]string) {
+	for _, word := range words {
+		wordSyls, err := word.GenerateSyllables(e.categories)
+		if err != nil {
+			util.LogError(err.Error())
+			e.outputTextElement.SetValue(err.Error())
+			return
+		}
+		wordSyllables = append(wordSyllables, wordSyls)
+	}
+	return
+}
+
+func (e *Evaluator) display(wordSyllables [][]string, syllableSep string) {
+	wordStrings := []string{}
+	text := ""
+	for _, word := range wordSyllables {
+		wordStrings = append(wordStrings, strings.Join(word, syllableSep))
+	}
+	text += strings.Join(wordStrings, "\n")
+	e.outputTextElement.SetValue(text)
+}
+
+func (e *Evaluator) displayError(err error) {
+	util.LogError(err.Error())
+	e.outputTextElement.SetValue(err.Error())
 }

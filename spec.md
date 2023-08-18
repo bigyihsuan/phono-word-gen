@@ -13,10 +13,10 @@
   - [Evaluating](#evaluating)
     - [Preparation](#preparation)
     - [Word Generation](#word-generation)
-      - [Directives](#directives)
-    - [Weights](#weights)
-    - [Categories](#categories)
-    - [Syllables](#syllables-1)
+      - [Weights](#weights)
+      - [Categories](#categories)
+      - [Syllables](#syllables-1)
+      - [Words](#words)
   - [Presentation](#presentation)
 
 ## Lexing
@@ -139,15 +139,13 @@ letters = phoneme (" " phoneme)* ;
 4. Apply rejection rules
 5. Generate the word's letterization
 
-#### Directives
-
-### Weights
+#### Weights
 
 Weights on components represent how much more probable it is to select it compared to other components.
 Components that have the same weight have identical probabilities to be selected.
 Based on the semantics of the [weightedrandom](https://pkg.go.dev/github.com/mroth/weightedrand/v2) package.
 
-### Categories
+#### Categories
 
 Categories should assign weights to every phoneme during preparation.
 By default, every phoneme has a weight of 1.
@@ -158,7 +156,16 @@ If the element that was gotten is a reference, it should get from the reference.
 Recursive/looped references (`C = $A; A = $C`) are not allowed.
 This is checked during preperation, after the categories are generated.
 
-### Syllables
+#### Syllables
+
+Syllables should be prepared once, and run many times (assuming the source input doesn't change).
+When a syllable's `Get` is called, call `Get` for each component, and turn itself into a string.
+
+#### Words
+
+Words are groupings of multiple syllables.
+The number of syllables in a word is dependent on the min/max syllable count options.
+The number of words generated is determined by the word count, "allow duplicates", and "force generate to word limit" options.
 
 ## Presentation
 
