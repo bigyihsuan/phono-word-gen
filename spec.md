@@ -169,6 +169,7 @@ The number of words generated is determined by the word count, "allow duplicates
 
 ## Presentation
 
-1. If on, sort the words based on letters
-2. If on, display the word split into syllables
-3. Otherwise, display the word as one word
+1. If on, remove duplicates
+2. If on, sort the words based on letters
+3. If on, display the word split into syllables
+4. Otherwise, display the word as one word

@@ -69,6 +69,12 @@ func (p *Parser) expectCurr(tt tok.TokenType) bool {
 
 func (p *Parser) Directives() (directives []ast.Directive) {
 	for p.peek.Type != tok.EOF {
+		for p.currIs(tok.LINE_ENDING) {
+			p.getNextToken()
+		}
+		if p.curr.Type == tok.EOF {
+			return
+		}
 		dir := p.Directive()
 		if dir != nil {
 			directives = append(directives, dir)
@@ -82,16 +88,15 @@ func (p *Parser) Directives() (directives []ast.Directive) {
 
 func (p *Parser) Directive() ast.Directive {
 	// skip duplicate line endings
-	for p.currIs(tok.LINE_ENDING) {
-		p.getNextToken()
-	}
 	switch p.curr.Type {
 	case tok.RAW:
 		return p.Category()
 	case tok.SYLLABLE:
 		return p.Syllable()
+	case tok.LETTERS:
+		return p.Letters()
 	default:
-		p.errors = append(p.errors, parts.UnknownDirective(p.curr.Type))
+		p.errors = append(p.errors, parts.UnknownDirective(p.curr))
 		return nil
 	}
 }

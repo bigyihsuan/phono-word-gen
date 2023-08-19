@@ -4,8 +4,12 @@ import (
 	"fmt"
 	"phono-word-gen/ast"
 	"phono-word-gen/parts"
+	"phono-word-gen/util"
+	"regexp"
+	"strings"
 
 	"github.com/mroth/weightedrand/v2"
+	"golang.org/x/exp/slices"
 )
 
 func (evaluator *Evaluator) evalDirectives(directives []ast.Directive) {
@@ -15,13 +19,13 @@ func (evaluator *Evaluator) evalDirectives(directives []ast.Directive) {
 	for _, dir := range directives {
 		switch dir := dir.(type) {
 		case *ast.CategoryDirective:
-			category := evaluator.evalCategory(dir)
-			evaluator.categories[dir.Name] = category
+			evaluator.categories[dir.Name] = evaluator.evalCategory(dir)
 		case *ast.SyllableDirective:
-			syllable := evaluator.evalSyllable(dir)
-			evaluator.syllables = append(evaluator.syllables, syllable)
+			evaluator.syllables = append(evaluator.syllables, evaluator.evalSyllable(dir))
+		case *ast.LettersDirective:
+			evaluator.letters = evaluator.evalLetters(dir)
 		default:
-			fmt.Printf("unknown directive: %T (%+v)\n", dir, dir)
+			util.LogError(fmt.Sprintf("unknown directive: %T (%+v)\n", dir, dir))
 		}
 	}
 }
@@ -107,4 +111,18 @@ func (evaluator *Evaluator) evalWeightedComponent(component *ast.WeightedSyllabl
 		components = append(components, evaluator.evalComponent(c))
 	}
 	return parts.NewGrouping(components...), component.Weight
+}
+
+func (e *Evaluator) evalLetters(dir *ast.LettersDirective) (letters []string) {
+	for _, phoneme := range dir.Phonemes {
+		letters = append(letters, phoneme.Value)
+	}
+	// make letter regexp
+	ls := []string{}
+	for _, l := range letters {
+		ls = append(ls, "("+l+")")
+	}
+	slices.SortStableFunc(ls, func(a, b string) int { return len([]rune(b)) - len([]rune(a)) })
+	e.letterRegexp = regexp.MustCompile(strings.Join(ls, "|"))
+	return
 }

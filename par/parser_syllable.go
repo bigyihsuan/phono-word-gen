@@ -6,7 +6,7 @@ import (
 	"phono-word-gen/tok"
 )
 
-func (p *Parser) Syllable() ast.Directive {
+func (p *Parser) Syllable() *ast.SyllableDirective {
 	if !p.expectPeek(tok.COLON) {
 		return nil
 	}

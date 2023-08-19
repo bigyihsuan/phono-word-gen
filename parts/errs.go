@@ -17,7 +17,7 @@ var (
 			return fmt.Errorf("unexpected token: got=%q (%s) want=%q", tts[0], token.String(), tts[1])
 		}
 	}
-	UnknownDirective = func(tt tok.TokenType) error { return fmt.Errorf("unknown directive: got=%q", tt) }
+	UnknownDirective = func(t tok.Token) error { return fmt.Errorf("unknown directive: got=%q (%s)", t.Type, t.String()) }
 )
 
 var (

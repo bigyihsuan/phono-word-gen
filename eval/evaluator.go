@@ -8,6 +8,8 @@ import (
 	"phono-word-gen/par"
 	"phono-word-gen/parts"
 	"phono-word-gen/util"
+	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/mroth/weightedrand/v2"
@@ -25,8 +27,10 @@ type Evaluator struct {
 
 	forbidDuplicates, forceWordLimit, sortOutput bool
 
-	categories map[string]parts.Category
-	syllables  []*parts.Syllable
+	categories   map[string]parts.Category
+	syllables    []*parts.Syllable
+	letters      []string
+	letterRegexp *regexp.Regexp
 }
 
 func New() (*Evaluator, error) {
@@ -119,7 +123,6 @@ func (e *Evaluator) submitMain(event dom.Event) {
 
 	// TODO: if on, remove duplicates
 	if e.forbidDuplicates {
-		util.Log("forbidding duplicates")
 		wordSet := make(map[string][]string)
 		for i, word := range wordSyllables {
 			w := strings.Join(word, "")
@@ -130,20 +133,49 @@ func (e *Evaluator) submitMain(event dom.Event) {
 		wordSyllables = maps.Values(wordSet)
 	}
 
-	// TODO: if on, sort
+	// if on, sort output
 	if e.sortOutput {
-		// TODO: letter-based sorting
-		wordSyllableSortFunc := func(a, b []string) int {
-			x, y := strings.Join(a, ""), strings.Join(b, "")
-			if x < y {
-				return -1
-			} else if x == y {
-				return 0
-			} else {
-				return 1
-			}
+		// letter-based sorting
+		if len(e.letters) > 0 {
+			sort.Slice(wordSyllables, func(left, right int) bool {
+				// letterize words
+				l := strings.Join(wordSyllables[left], "")
+				leftLetters := e.letterRegexp.FindAllString(l, -1)
+				leftIndexes := []int{}
+				for _, letter := range leftLetters {
+					leftIndexes = append(leftIndexes, slices.Index(e.letters, letter))
+				}
+				r := strings.Join(wordSyllables[right], "")
+				rightLetters := e.letterRegexp.FindAllString(r, -1)
+				rightIndexes := []int{}
+				for _, letter := range rightLetters {
+					rightIndexes = append(rightIndexes, slices.Index(e.letters, letter))
+				}
+				minLen := min(len(leftIndexes), len(rightIndexes))
+
+				for i := 0; i < minLen; i++ {
+					if leftIndexes[i] < rightIndexes[i] {
+						return true
+					}
+					if leftIndexes[i] > rightIndexes[i] {
+						return false
+					}
+				}
+				if len(leftIndexes) < len(rightIndexes) {
+					return true
+				}
+				if len(leftIndexes) > len(rightIndexes) {
+					return false
+				}
+				return false
+			})
+		} else {
+			sort.Slice(wordSyllables, func(i, j int) bool {
+				a, b := wordSyllables[i], wordSyllables[j]
+				as, bs := strings.Join(a, ""), strings.Join(b, "")
+				return as < bs
+			})
 		}
-		slices.SortFunc(wordSyllables, wordSyllableSortFunc)
 	}
 
 	// TODO: if on, force generate to wordCount

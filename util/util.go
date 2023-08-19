@@ -24,3 +24,10 @@ func Log(o ...any) {
 func LogError(o ...any) {
 	dom.GetWindow().Console().Call("error", o...)
 }
+
+func AnySlice[T any](ele []T) (o []any) {
+	for _, e := range ele {
+		o = append(o, e)
+	}
+	return
+}
