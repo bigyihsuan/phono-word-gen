@@ -6,5 +6,7 @@ get_wasm_exec:
 build: $(go_files) main.wasm
 	GOOS=js GOARCH=wasm go build -o main.wasm
 
-run: build ./wasm_exec.js
+server:
 	python3 -m http.server
+
+run: build ./wasm_exec.js server

@@ -1,0 +1,21 @@
+textarea,
+input[type=number],
+code {
+    font-family: 'Iosevka Web', 'Courier New', Courier, monospace;
+}
+
+code {
+    background-color: var(--bs-gray-250);
+    opacity: 1;
+    border-radius: 0.25em;
+    width: auto;
+    height: auto;
+    padding: 0.1em 0.25em 0.1em 0.25em;
+    color: var(--bs-red);
+}
+
+footer {
+    bottom: 0px;
+    width: 100%;
+    text-align: center;
+}

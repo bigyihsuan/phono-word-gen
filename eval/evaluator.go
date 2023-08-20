@@ -2,6 +2,7 @@ package eval
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 	"phono-word-gen/ast"
 	"phono-word-gen/lex"
@@ -20,12 +21,13 @@ import (
 
 type Evaluator struct {
 	document dom.Document
-	elements elements
+	elements
 
 	minSylCount, maxSylCount int
 	wordCount                int
 
-	forbidDuplicates, forceWordLimit, sortOutput bool
+	forbidDuplicates, forceWordLimit, sortOutput                 bool
+	generatedCount, duplicateCount, rejectedCount, replacedCount int
 
 	categories   map[string]parts.Category
 	syllables    []*parts.Syllable
@@ -42,15 +44,20 @@ func New() (*Evaluator, error) {
 
 func (evaluator *Evaluator) loadDocument() {
 	evaluator.document = dom.GetWindow().Document()
-	evaluator.elements.inputTextElement = evaluator.document.GetElementByID("phonology").(*dom.HTMLTextAreaElement)
-	evaluator.elements.outputTextElement = evaluator.document.GetElementByID("outputText").(*dom.HTMLTextAreaElement)
-	evaluator.elements.submitButton = evaluator.document.GetElementByID("submit").(*dom.HTMLButtonElement)
-	evaluator.elements.minSylCountElement = evaluator.document.GetElementByID("minSylCount").(*dom.HTMLInputElement)
-	evaluator.elements.maxSylCountElement = evaluator.document.GetElementByID("maxSylCount").(*dom.HTMLInputElement)
-	evaluator.elements.wordCountElement = evaluator.document.GetElementByID("wordCount").(*dom.HTMLInputElement)
-	evaluator.elements.forbidDuplicatesElement = evaluator.document.GetElementByID("forbidDuplicates").(*dom.HTMLInputElement)
-	evaluator.elements.forceWordLimitElement = evaluator.document.GetElementByID("forceWordLimit").(*dom.HTMLInputElement)
-	evaluator.elements.sortOutputElement = evaluator.document.GetElementByID("sortOutput").(*dom.HTMLInputElement)
+	evaluator.inputTextElement = evaluator.document.QuerySelector("#phonology").(*dom.HTMLTextAreaElement)
+	evaluator.outputTextElement = evaluator.document.QuerySelector("#outputText").(*dom.HTMLTextAreaElement)
+	evaluator.submitButton = evaluator.document.QuerySelector("#submit").(*dom.HTMLButtonElement)
+	evaluator.minSylCountElement = evaluator.document.QuerySelector("#minSylCount").(*dom.HTMLInputElement)
+	evaluator.maxSylCountElement = evaluator.document.QuerySelector("#maxSylCount").(*dom.HTMLInputElement)
+	evaluator.wordCountElement = evaluator.document.QuerySelector("#wordCount").(*dom.HTMLInputElement)
+	evaluator.forbidDuplicatesElement = evaluator.document.QuerySelector("#forbidDuplicates").(*dom.HTMLInputElement)
+	evaluator.forceWordLimitElement = evaluator.document.QuerySelector("#forceWordLimit").(*dom.HTMLInputElement)
+	evaluator.sortOutputElement = evaluator.document.QuerySelector("#sortOutput").(*dom.HTMLInputElement)
+
+	evaluator.generatedAlertElement = evaluator.document.QuerySelector("#generatedAlert").(*dom.HTMLDivElement)
+	evaluator.duplicateAlertElement = evaluator.document.QuerySelector("#duplicateAlert").(*dom.HTMLDivElement)
+	evaluator.rejectedAlertElement = evaluator.document.QuerySelector("#rejectedAlert").(*dom.HTMLDivElement)
+	evaluator.replacedAlertElement = evaluator.document.QuerySelector("#replacedAlert").(*dom.HTMLDivElement)
 }
 
 func (evaluator *Evaluator) loadCode(src string) ([]ast.Directive, error) {
@@ -117,21 +124,21 @@ func (e *Evaluator) submitMain(event dom.Event) {
 
 	// generate N words
 	words := e.generateWords(e.wordCount)
-
 	// convert the words to lists of syllables
 	wordSyllables := e.syllabizeWords(words)
 
 	// TODO: if on, remove duplicates
-	if e.forbidDuplicates {
-		wordSet := make(map[string][]string)
-		for i, word := range wordSyllables {
-			w := strings.Join(word, "")
-			if _, containsWord := wordSet[w]; !containsWord {
-				wordSet[w] = wordSyllables[i]
-			}
-		}
-		wordSyllables = maps.Values(wordSet)
-	}
+	words, wordSyllables = e.removeDuplicates(words, wordSyllables)
+
+	// TODO: if on, force generate to wordCount
+	// TODO: get number of possible syllables, and abort forced gen if possible < wanted
+	// util.Log(e.forceWordLimit, e.wordCount, len(wordSyllables))
+	// for e.forceWordLimit && e.wordCount > len(wordSyllables) {
+	// 	needed := e.wordCount - len(wordSyllables)
+	// 	words = append(words, e.generateWords(needed)...)
+	// 	wordSyllables = append(wordSyllables, e.syllabizeWords(words)...)
+	// 	words, wordSyllables = e.removeDuplicates(words, wordSyllables)
+	// }
 
 	// if on, sort output
 	if e.sortOutput {
@@ -178,8 +185,6 @@ func (e *Evaluator) submitMain(event dom.Event) {
 		}
 	}
 
-	// TODO: if on, force generate to wordCount
-
 	syllableSep := ""
 	// TODO: if on, display with syllable separators
 
@@ -193,6 +198,7 @@ func (e *Evaluator) generateWords(wordCount int) (words []Word) {
 		syllableCount := min(e.minSylCount+util.PowerLaw(e.maxSylCount, 50), e.maxSylCount)
 		words = append(words, e.generateWord(syllableCount))
 	}
+	e.generatedCount += e.wordCount
 	return
 }
 
@@ -226,6 +232,8 @@ func (e *Evaluator) display(wordSyllables [][]string, syllableSep string) {
 	}
 	text += strings.Join(wordStrings, "\n")
 	e.elements.outputTextElement.SetValue(text)
+
+	e.updateAlerts()
 }
 
 func (e *Evaluator) displayError(err error) {
@@ -241,6 +249,46 @@ func (e *Evaluator) getOptions() {
 	e.forbidDuplicates = e.elements.forbidDuplicatesElement.Checked()
 	e.forceWordLimit = e.elements.forceWordLimitElement.Checked()
 	e.sortOutput = e.elements.sortOutputElement.Checked()
+
+	e.generatedCount = 0
+	e.duplicateCount = 0
+	e.rejectedCount = 0
+	e.replacedCount = 0
+}
+
+func (e *Evaluator) updateAlerts() {
+	e.generatedAlertElement.SetInnerHTML(fmt.Sprintf("generated %d words", e.generatedCount))
+	e.duplicateAlertElement.SetInnerHTML(fmt.Sprintf("removed %d duplicates", e.duplicateCount))
+	e.rejectedAlertElement.SetInnerHTML(fmt.Sprintf("rejected %d words", e.rejectedCount))
+	e.replacedAlertElement.SetInnerHTML(fmt.Sprintf("rejected %d words", e.replacedCount))
+}
+
+func (e *Evaluator) removeDuplicates(words []Word, wordSyllables [][]string) (ws []Word, syls [][]string) {
+	if e.forbidDuplicates {
+		type entry struct {
+			word Word
+			syls []string
+		}
+		oldLen := len(wordSyllables)
+		wordSet := make(map[string]entry)
+		for i, word := range wordSyllables {
+			w := strings.Join(word, "")
+			if _, containsWord := wordSet[w]; !containsWord {
+				wordSet[w] = entry{words[i], wordSyllables[i]}
+			}
+		}
+		values := maps.Values(wordSet)
+		ws = []Word{}
+		syls = [][]string{}
+		for _, v := range values {
+			ws = append(ws, v.word)
+			syls = append(syls, v.syls)
+		}
+		e.duplicateCount = oldLen - len(syls)
+		return ws, syls
+	} else {
+		return words, wordSyllables
+	}
 }
 
 type elements struct {
@@ -253,4 +301,8 @@ type elements struct {
 	forbidDuplicatesElement *dom.HTMLInputElement
 	forceWordLimitElement   *dom.HTMLInputElement
 	sortOutputElement       *dom.HTMLInputElement
+	generatedAlertElement   *dom.HTMLDivElement
+	duplicateAlertElement   *dom.HTMLDivElement
+	rejectedAlertElement    *dom.HTMLDivElement
+	replacedAlertElement    *dom.HTMLDivElement
 }
