@@ -8,6 +8,7 @@ const (
 	_ TokenType = iota
 	EOF
 	ILLEGAL
+	COMMENT
 	// common
 	LPAREN
 	RPAREN

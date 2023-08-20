@@ -12,6 +12,8 @@ func TestGetNextToken(t *testing.T) {
 		tt     tok.TokenType
 		lexeme string
 	}{
+		{tok.COMMENT, "# this is a comment"},
+		{tok.LINE_ENDING, "\n"},
 		{tok.RAW, "P"},
 		{tok.EQ, "="},
 		{tok.RAW, "p"},
@@ -67,6 +69,8 @@ func TestGetNextToken(t *testing.T) {
 		{tok.RAW, "R"},
 		{tok.RPAREN, ")"},
 		{tok.LINE_ENDING, "\n"},
+		{tok.COMMENT, "#comment"},
+		{tok.LINE_ENDING, "\n"},
 		{tok.LETTERS, "letters"},
 		{tok.COLON, ":"},
 		{tok.RAW, "a"},
@@ -111,10 +115,12 @@ func TestGetNextToken(t *testing.T) {
 		{tok.EOF, ""},
 	}
 
-	input := `P = p t k
+	input := `# this is a comment
+P = p t k
 R = l r w j; C=$P $R ŋ
 V = a*123 i*456 u ə ā
 syllable: ([$C*8, $C$R])$V ($R)
+#comment
 letters:  a i j k l p r t w
 reject:   !$V$V
 replace:  {sourceA, sourceB} > substitute / ^condition\ // @optionalException&`
@@ -125,7 +131,7 @@ replace:  {sourceA, sourceB} > substitute / ^condition\ // @optionalException&`
 		actual := l.GetNextToken()
 		if !assert.Equal(t, expected.tt, actual.Type,
 			"[%d] incorrect tokentype: expected=%q got=%q (%s)", i, expected.tt, actual.Type, actual.String()) {
-			continue
+			t.Fatal()
 		}
 		assert.Equal(t, expected.lexeme, actual.Lexeme,
 			"[%d] incorrect lexeme: expected=%q got=%q (%s)", i, expected.lexeme, actual.Lexeme, actual.String())

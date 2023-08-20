@@ -22,6 +22,13 @@ func (l *Lexer) GetNextToken() tok.Token {
 	var token tok.Token
 	l.skipSpace()
 	switch l.ch {
+	case '#': // comment
+		lexeme := string(l.ch)
+		for l.peekRune() != '\n' && l.peekRune() != ';' {
+			l.nextRune()
+			lexeme += string(l.ch)
+		}
+		token = tok.New(tok.COMMENT, lexeme, l.currIdx)
 	case '(':
 		token = tok.New(tok.LPAREN, string(l.ch), l.currIdx)
 	case ')':
