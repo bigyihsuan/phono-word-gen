@@ -21,21 +21,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  tsc:
-    name: tsc
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-    - name: install node v12
-      uses: actions/setup-node@v1
-      with:
-        node-version: 12
-    - name: yarn install
-      run: yarn install
-    - name: tsc
-      uses: icrawl/action-tsc@v1
   deploy:
-    needs: tsc
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -44,11 +30,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Setup Pages
-        uses: actions/configure-pages@v1
+        uses: actions/configure-pages@v3
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v2
         with:
-          path: '.'
+          path: './dist'
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@main
+        uses: actions/deploy-pages@v2
