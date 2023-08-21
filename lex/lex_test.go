@@ -90,6 +90,11 @@ func TestGetNextToken(t *testing.T) {
 		{tok.RAW, "V"},
 		{tok.DOLLAR, "$"},
 		{tok.RAW, "V"},
+		{tok.PIPE, "|"},
+		{tok.DOLLAR, "$"},
+		{tok.RAW, "C"},
+		{tok.DOLLAR, "$"},
+		{tok.RAW, "C"},
 		{tok.LINE_ENDING, "\n"},
 		{tok.REPLACE, "replace"},
 		{tok.COLON, ":"},
@@ -122,7 +127,7 @@ V = a*123 i*456 u ə ā
 syllable: ([$C*8, $C$R])$V ($R)
 #comment
 letters:  a i j k l p r t w
-reject:   !$V$V
+reject:   !$V$V|$C$C
 replace:  {sourceA, sourceB} > substitute / ^condition\ // @optionalException&`
 
 	l := New([]rune(input))

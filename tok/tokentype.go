@@ -31,6 +31,8 @@ const (
 	AT
 	AMPERSAND
 	BANG
+	// rejections
+	PIPE
 	// replacements
 	ARROW
 	SLASH

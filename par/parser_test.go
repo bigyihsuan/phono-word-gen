@@ -150,3 +150,21 @@ func TestParseLettersDirective(t *testing.T) {
 	assert.Equal(t, expected, letters.String(),
 		"incorrect: want=%q got=%q", expected, letters.String())
 }
+
+func TestParseRejectionDirective(t *testing.T) {
+	input := `reject: $R$C n | $Vweak$Vweak | $Vstrong$Vstrong`
+	expected := `(reject ($R $C n)|($Vweak $Vweak)|($Vstrong $Vstrong))`
+	l := lex.New([]rune(input))
+	p := New(l)
+	directive := p.Directive()
+	checkParseErrors(t, p)
+	reject, ok := directive.(*ast.RejectionDirective)
+	if !assert.True(t, ok, "not a RejectionDirective: got=%T (%+v)", directive, directive) {
+		return
+	}
+	if !assert.NotNil(t, reject, "reject was nil") {
+		return
+	}
+	assert.Equal(t, expected, reject.String(),
+		"incorrect: want=%q got=%q", expected, reject.String())
+}

@@ -96,6 +96,8 @@ func (p *Parser) Directive() ast.Directive {
 		return p.Category()
 	case tok.SYLLABLE:
 		return p.Syllable()
+	case tok.REJECT:
+		return p.Rejection()
 	case tok.LETTERS:
 		return p.Letters()
 	default:

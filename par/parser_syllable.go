@@ -18,7 +18,7 @@ func (p *Parser) Syllable() *ast.SyllableDirective {
 }
 
 func (p *Parser) SyllableComponents() (sc []ast.SyllableComponent) {
-	for !p.peekIsAny(tok.LINE_ENDING, tok.RBRACE, tok.RPAREN, tok.RBRACKET, tok.COMMA, tok.STAR) {
+	for !p.peekIsAny(tok.LINE_ENDING, tok.RBRACE, tok.RPAREN, tok.RBRACKET, tok.COMMA, tok.STAR, tok.PIPE) {
 		p.getNextToken()
 		component := p.SyllableComponent()
 		if component == nil {
