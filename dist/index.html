@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phonology Random Word Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+    <link href="https://pvinis.github.io/iosevka-webfont/7.0.2/iosevka.css" rel="stylesheet" />
+    <!-- <script type="module" src="./script/main.js"></script> -->
+    <script src="wasm_exec.js"></script>
+    <script>
+        const go = new Go();
+        WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
+            go.run(result.instance);
+        });
+    </script>
+    <style>
+        textarea,
+        input[type=number],
+        code {
+            font-family: 'Iosevka Web', 'Courier New', Courier, monospace;
+        }
+
+        code {
+            background-color: var(--bs-gray-250);
+            opacity: 1;
+            border-radius: 0.25em;
+            width: auto;
+            height: auto;
+            padding: 0.1em 0.25em 0.1em 0.25em;
+            color: var(--bs-red);
+        }
+
+        footer {
+            bottom: 0px;
+            width: 100%;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <h1>WIP &mdash; Random Word Generator</h1>
+            <p>see <a href="https://github.com/bigyihsuan/phono-word-gen">the github repo</a> for more information</p>
+        </div>
+        <div class="row">
+            <div class="col" id="inputs">
+                <label for="inputs">
+                    <h3>Input</h3>
+                </label>
+                <div class="mb-auto">
+                    <textarea id="phonology" class="form-control" rows="25" placeholder="Input code..."></textarea>
+                </div>
+                <div class="mb-auto">
+                    <div id="checkboxes" class="form-control">
+                        <div class="input-group" id="syllableCountInput">
+                            <span class="input-group-text">Min/Max
+                                syllables/word</span>
+                            <input type="number" min="1" value="1" id="minSylCount" class="form-control">
+                            <span class="input-group-text">&ndash;</span>
+                            <input type="number" min="1" value="1" id="maxSylCount" class="form-control">
+                        </div>
+                        <div class="input-group" id="wordCountInput">
+                            <span class="input-group-text">Number of Words</span>
+                            <input type="number" min="1" value="25" id="wordCount" class="form-control">
+                        </div>
+                        <div class="input-group" id="sentenceCountInput">
+                            <span class="input-group-text">Number of Sentences</span>
+                            <input type="number" min="1" value="5" id="sentenceCount" class="form-control" disabled>
+                        </div>
+                        <div class="container">
+                            <div class="input-group row">
+                                <div class="form-check form-check-inline col">
+                                    <input class="form-check-input" type="checkbox" id="generateSentences">
+                                    <label class="form-check-label" for="generateSentences">Generate sentences</label>
+                                </div>
+                            </div>
+                            <div class="input-group row">
+                                <div class="form-check form-check-inline col">
+                                    <input class="form-check-input" type="checkbox" id="forbidDuplicates">
+                                    <label class="form-check-label" for="forbidDuplicates">Forbid duplicates</label>
+                                </div>
+                                <div class="form-check form-check-inline col">
+                                    <input class="form-check-input" type="checkbox" id="forceWordLimit">
+                                    <label class="form-check-label" for="forceWordLimit">Force generate to word limit</label>
+                                </div>
+                            </div>
+                            <div class="input-group row">
+                                <div class="form-check form-check-inline col">
+                                    <input class="form-check-input" type="checkbox" id="applyRejections">
+                                    <label class="form-check-label" for="applyRejections">Apply rejections</label>
+                                </div>
+                                <div class="form-check form-check-inline col">
+                                    <input class="form-check-input" type="checkbox" id="applyReplacements">
+                                    <label class="form-check-label" for="applyReplacements">Apply replacements</label>
+                                </div>
+                            </div>
+                            <div class="input-group row">
+                                <div class="form-check form-check-inline col">
+                                    <input class="form-check-input" type="checkbox" id="separateSyllables">
+                                    <label class="form-check-label" for="separateSyllables">Mark syllables</label>
+                                </div>
+                                <div class="form-check form-check-inline col">
+                                    <input class="form-check-input" type="checkbox" id="sortOutput">
+                                    <label class="form-check-label" for="sortOutput">Sort output</label>
+                                </div>
+                                <!-- <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" id="debugOutput">
+                                        <label class="form-check-label" for="debugOutput">Include debug output</label>
+                                    </div> -->
+                            </div>
+                        </div>
+                        <button type="button" id="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <label for="outputText">
+                    <h3>Output</h3>
+                </label>
+                <textarea id="outputText" class="form-control" rows="25" readonly></textarea>
+                <button id="copyOutput" class="btn btn-danger">Copy</button>
+                <div class="alert alert-primary" style="white-space: pre-line;" id="generatedAlert"></div>
+                <div class="alert alert-info" style="white-space: pre-line;" id="duplicateAlert"></div>
+                <div class="alert alert-warning" style="white-space: pre-line;" id="rejectedAlert"></div>
+                <div class="alert alert-secondary" style="white-space: pre-line;" id="replacedAlert"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h2>Quick Docs</h2>
+                <h3>General</h3>
+                <ul>
+                    <li>Comments:
+                        <code># comment ends at the end of the line</code>
+                    </li>
+                </ul>
+                <h3>Phonology</h3>
+                <ul>
+                    <li>Category:
+                        <code>name = phoneme phoneme phoneme ...</code>
+                    </li>
+                    <li>Phonemes can be any non-space, non-newline character
+                    </li>
+                    <li>Using a category in a category:
+                        <code>C = $A $B raw $D ...</code> (Note:
+                        recursive/circular usage, i.e. A in B in A, not allowed)
+                    </li>
+                </ul>
+                <h3>Syllable</h3>
+                <ul>
+                    <li>Syllable definition: <code>syllable: components</code>
+                    </li>
+                    <li>Using categories in syllables:
+                        <code>syllable: $C $V $N</code>
+                    </li>
+                    <li>Grouping components:
+                        <code>syllable: {group}{$C$V}{}</code>
+                    </li>
+                    <li>Optional: <code>syllable: (s)$C$V(n)</code></li>
+                    <li>Selection: <code>syllable: [$P,$F,]r$V</code> (Note:
+                        trailing comma on last element is required)</li>
+                    <li>Optional with weight: <code>syllable: ($C)*0.5$V</code>
+                    </li>
+                    <li>Selection with weight:
+                        <code>syllable: [$P,$F*0.3,{$K$L}*0.1,]r$V</code>
+                    </li>
+                </ul>
+                <h3>Weighting Rules</h3>
+                <ul>
+                    <li>Weights mark how often a component or phoneme can appear
+                        (typically a decimal number from 0 to 1, inclusive)</li>
+                    <li>Weights can be applied to phonemes, optionals, or
+                        elements in a selection</li>
+                    <li>Phoneme weights are placed after the phoneme:
+                        <code>C = p*0.1 t*0.3 k</code>
+                    </li>
+                    <li>Manually-marked weights on phonemes are carried over
+                        into any categories using that phoneme (i.e.
+                        <code>P = p*0.4 k; C = $P t</code> will have phoneme
+                        <code>p</code> have weight 0.4 in all categories).
+                    </li>
+                    <li>Weighted optionals define what chance for that optional
+                        to appear (i.e. a weight of 0.33 means that it will
+                        appear ~33% of the time).</li>
+                    <li>Weighted selection elements with multiple components
+                        must use grouping <code>{group}*0.3</code>.</li>
+                    <li>Selection elements and phonemes without weights have
+                        their weights automatically assigned to
+                        <code>max((1 - sum(marked weights)) / (# unmarked components), 0.0)</code>.
+                    </li>
+                </ul>
+                <h3>Rejections</h3>
+                <ul>
+                    <li>Can reject a word based on category or phoneme</li>
+                    <li>After <code>reject: </code>, place a valid syllable,
+                        within a grouping: <code>reject: {$C$V}</code></li>
+                    <li>Place <code>reject: </code> on multiple lines for
+                        multiple rejects</li>
+                    <li>Separate multiple rejects on the same line with vertical
+                        bar <code>|</code>, surrounding each with curly brackets
+                        <code>reject: {$C$V}|{$V$V}</code>
+                    </li>
+                    <li>Checking for components at the start and end of words is
+                        possible: <code>reject: {^start}|{end&}</code></li>
+                </ul>
+                <h3>Replacements</h3>
+                <ul>
+                    <li>You can replace characters or syllable components with
+                        other <b>raw</b> characters.</li>
+                    <li>The form of a replacement rule is:
+                        <code>replace: {source} > {substitution} / condition // optionalException </code>
+                    </li>
+                    <li>The source and substitution can be any character.</li>
+                    <li>The source only can be any syllable component.</li>
+                    <li>Sources and substitutions can be empty; just have
+                        nothing within the curly brackets.</li>
+                    <li>Empty sources means that the substitution will be
+                        inserted where the condition matches.</li>
+                    <li>Empty substitutions means that the source will be
+                        deleted.</li>
+                    <li>Conditions are <i>required</i>. Exceptions are
+                        <i>optional</i>.
+                    </li>
+                    <li>Condiitons specify where and when to apply a
+                        replacement.</li>
+                    <li>Exceptions work similarly to conditions, in that you can
+                        specify when <i>not</i> to apply a replacement.</li>
+                    <li>Conditions and exceptions must have exactly one
+                        underscore (<code>_</code>) representing the source.
+                    </li>
+                    <li>Conditions and exceptions with only an underscore means
+                        that it will always run when the source matches.</li>
+                    <li>Conditions and exceptions can accept syllable
+                        components. For example this will replace "c" with "qu"
+                        before "a", "e", and "o":
+                        <code>replace: {c} > {qu} / _ [a,e,o,]</code>
+                    </li>
+                    <li>Conditions and exceptions can also accept word start and
+                        word end checks. This will replace leading "s" with
+                        "es": <code>replace: {s} > {es} / ^ _</code></li>
+                </ul>
+                <h3>Letters</h3>
+                <ul>
+                    <li>Have a line with <code>letters: </code>&nbsp;to define a
+                        sort order for your words.</li>
+                    <li>Each "letter" can have multiple characters.</li>
+                    <li>Only the last <code>letters: </code>&nbsp;directive will
+                        be applied.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p><a href="https://github.com/bigyihsuan/phono-word-gen">phono-word-gen</a>
+            v0.0.5 by <a href="https://github.com/bigyihsuan">bigyihsuan</a></p>
+    </footer>
+</body>
+
+
+</html>
