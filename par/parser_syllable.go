@@ -42,7 +42,7 @@ func (p *Parser) SyllableComponent() ast.SyllableComponent {
 	case tok.LBRACKET:
 		return p.SyllableSelection()
 	default:
-		p.errors = append(p.errors, parts.UnexpectedToken(p.curr, p.curr.Type))
+		p.errors = append(p.errors, parts.UnexpectedTokenError(p.curr, p.curr.Type))
 		return nil
 	}
 }

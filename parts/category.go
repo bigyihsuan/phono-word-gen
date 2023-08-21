@@ -25,3 +25,6 @@ func (c Category) Get(categories map[string]Category) (string, error) {
 	}
 	return chooser.Pick().Get(categories)
 }
+func (c Category) ChoiceCount(categories map[string]Category) int {
+	return len(c.Elements)
+}

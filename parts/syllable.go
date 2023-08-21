@@ -24,10 +24,12 @@ func (s *Syllable) Get(categories map[string]Category) (string, error) {
 	}
 	return strings.Join(elements, ""), nil
 }
-
-type SyllableElement interface {
-	Element
-	syllableElementTag()
+func (s *Syllable) ChoiceCount(categories map[string]Category) int {
+	count := 1
+	for _, e := range s.Elements {
+		count *= e.ChoiceCount(categories)
+	}
+	return count
 }
 
 // A raw string in a syllable
@@ -35,9 +37,10 @@ type Raw struct {
 	Value string
 }
 
-func NewRaw(value string) *Raw                           { return &Raw{Value: value} }
-func (r *Raw) syllableElementTag()                       {}
-func (r *Raw) Get(_ map[string]Category) (string, error) { return r.Value, nil }
+func NewRaw(value string) *Raw                                { return &Raw{Value: value} }
+func (r *Raw) syllableElementTag()                            {}
+func (r *Raw) Get(_ map[string]Category) (string, error)      { return r.Value, nil }
+func (r *Raw) ChoiceCount(categories map[string]Category) int { return 1 }
 
 type Grouping struct {
 	Elements []SyllableElement
@@ -57,6 +60,13 @@ func (g *Grouping) Get(categories map[string]Category) (string, error) {
 	}
 	return strings.Join(values, ""), nil
 }
+func (g *Grouping) ChoiceCount(categories map[string]Category) int {
+	count := 1
+	for _, e := range g.Elements {
+		count *= e.ChoiceCount(categories)
+	}
+	return count
+}
 
 type Selection struct {
 	Choices []wr.Choice[SyllableElement, int]
@@ -73,6 +83,13 @@ func (s *Selection) Get(catgories map[string]Category) (string, error) {
 		return "", errors.Join(SelectionCreationError, err)
 	}
 	return chooser.Pick().Get(catgories)
+}
+func (s *Selection) ChoiceCount(categories map[string]Category) int {
+	count := len(s.Choices)
+	for _, choice := range s.Choices {
+		count *= choice.Item.ChoiceCount(categories)
+	}
+	return count
 }
 
 // optional component. defaults to 50% chance of appearing when calling Get().
@@ -96,4 +113,11 @@ func (o *Optional) Get(categories map[string]Category) (string, error) {
 	} else {
 		return "", nil
 	}
+}
+func (o *Optional) ChoiceCount(categories map[string]Category) int {
+	count := 2
+	for _, e := range o.Elements {
+		count *= e.ChoiceCount(categories)
+	}
+	return count
 }

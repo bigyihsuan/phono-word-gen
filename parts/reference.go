@@ -16,6 +16,14 @@ func (r *Reference) Get(categories map[string]Category) (string, error) {
 		// if ok, get from the found category
 		return cat.Get(categories)
 	} else {
-		return "", nil
+		return "", UndefinedCategoryError(r.Name, r.Name)
+	}
+}
+func (r *Reference) ChoiceCount(categories map[string]Category) int {
+	cat, ok := categories[r.Name]
+	if ok {
+		return cat.ChoiceCount(categories)
+	} else {
+		return 0
 	}
 }

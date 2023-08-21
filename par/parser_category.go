@@ -45,7 +45,7 @@ func (p *Parser) CategoryElement() ast.CategoryElement {
 	case tok.DOLLAR:
 		return p.Reference()
 	default:
-		p.errors = append(p.errors, parts.UnexpectedToken(p.peek, p.peek.Type))
+		p.errors = append(p.errors, parts.UnexpectedTokenError(p.peek, p.peek.Type))
 		return nil
 	}
 }

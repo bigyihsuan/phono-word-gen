@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	UnexpectedToken = func(token tok.Token, tts ...tok.TokenType) error {
+	UnexpectedTokenError = func(token tok.Token, tts ...tok.TokenType) error {
 		switch {
 		case len(tts) < 2:
 			return fmt.Errorf("unexpected token: got=%q (%s)", tts[0], token.String())
@@ -17,7 +17,7 @@ var (
 			return fmt.Errorf("unexpected token: got=%q (%s) want=%q", tts[0], token.String(), tts[1])
 		}
 	}
-	UnknownDirective = func(t tok.Token) error { return fmt.Errorf("unknown directive: got=%q (%s)", t.Type, t.String()) }
+	UnknownDirectiveError = func(t tok.Token) error { return fmt.Errorf("unknown directive: got=%q (%s)", t.Type, t.String()) }
 )
 
 var (

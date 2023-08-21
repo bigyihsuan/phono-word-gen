@@ -56,7 +56,7 @@ func (p *Parser) expectPeek(tt tok.TokenType) bool {
 		p.getNextToken()
 		return true
 	} else {
-		p.errors = append(p.errors, parts.UnexpectedToken(p.peek, p.peek.Type, tt))
+		p.errors = append(p.errors, parts.UnexpectedTokenError(p.peek, p.peek.Type, tt))
 		return false
 	}
 }
@@ -65,7 +65,7 @@ func (p *Parser) expectCurr(tt tok.TokenType) bool {
 		p.getNextToken()
 		return true
 	} else {
-		p.errors = append(p.errors, parts.UnexpectedToken(p.curr, p.curr.Type, tt))
+		p.errors = append(p.errors, parts.UnexpectedTokenError(p.curr, p.curr.Type, tt))
 		return false
 	}
 }
@@ -99,7 +99,7 @@ func (p *Parser) Directive() ast.Directive {
 	case tok.LETTERS:
 		return p.Letters()
 	default:
-		p.errors = append(p.errors, parts.UnknownDirective(p.curr))
+		p.errors = append(p.errors, parts.UnknownDirectiveError(p.curr))
 		return nil
 	}
 }

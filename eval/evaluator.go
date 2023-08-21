@@ -127,18 +127,24 @@ func (e *Evaluator) submitMain(event dom.Event) {
 	// convert the words to lists of syllables
 	wordSyllables := e.syllabizeWords(words)
 
-	// TODO: if on, remove duplicates
+	// if on, remove duplicates
 	words, wordSyllables = e.removeDuplicates(words, wordSyllables)
 
-	// TODO: if on, force generate to wordCount
-	// TODO: get number of possible syllables, and abort forced gen if possible < wanted
-	// util.Log(e.forceWordLimit, e.wordCount, len(wordSyllables))
-	// for e.forceWordLimit && e.wordCount > len(wordSyllables) {
-	// 	needed := e.wordCount - len(wordSyllables)
-	// 	words = append(words, e.generateWords(needed)...)
-	// 	wordSyllables = append(wordSyllables, e.syllabizeWords(words)...)
-	// 	words, wordSyllables = e.removeDuplicates(words, wordSyllables)
-	// }
+	// if on, force generate to wordCount
+	// get number of possible syllables, and abort forced gen if possible < wanted
+	count := e.ChoiceCount(e.categories)
+	util.Log(e.forceWordLimit, e.wordCount, len(wordSyllables), count)
+	if e.forceWordLimit && count >= e.wordCount {
+		for e.wordCount > len(wordSyllables) {
+			needed := e.wordCount - len(wordSyllables)
+			words = append(words, e.generateWords(needed)...)
+			wordSyllables = append(wordSyllables, e.syllabizeWords(words)...)
+			words, wordSyllables = e.removeDuplicates(words, wordSyllables)
+		}
+	} else if e.forceWordLimit && count < e.wordCount {
+		e.displayError(fmt.Errorf("not enough choices to force word count: only %d/%d choices available", count, e.wordCount))
+		return
+	}
 
 	// if on, sort output
 	if e.sortOutput {
@@ -289,6 +295,14 @@ func (e *Evaluator) removeDuplicates(words []Word, wordSyllables [][]string) (ws
 	} else {
 		return words, wordSyllables
 	}
+}
+
+func (e *Evaluator) ChoiceCount(categories map[string]parts.Category) int {
+	count := len(e.syllables)
+	for _, s := range e.syllables {
+		count *= s.ChoiceCount(categories)
+	}
+	return count
 }
 
 type elements struct {
