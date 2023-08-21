@@ -1,5 +1,9 @@
 package parts
 
+import (
+	"regexp"
+)
+
 type Reference struct {
 	Name string
 }
@@ -25,5 +29,13 @@ func (r *Reference) ChoiceCount(categories map[string]Category) int {
 		return cat.ChoiceCount(categories)
 	} else {
 		return 0
+	}
+}
+func (r *Reference) Regexp(categories map[string]Category) *regexp.Regexp {
+	cat, ok := categories[r.Name]
+	if ok {
+		return cat.Regexp(categories)
+	} else {
+		return regexp.MustCompile("")
 	}
 }

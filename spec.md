@@ -32,11 +32,11 @@ The lexer should allow raw source in 2 forms:
 
 | Token                 | Description         | Multiple Allowed? |
 | --------------------- | ------------------- | :---------------: |
+| `[any category name]` | Category definition |         ✅         |
 | `syllable`            | Syllable definition |         ✅         |
 | `reject`              | Rejection rule      |         ✅         |
 | `replace`             | Replacement rule    |         ✅         |
 | `letters`             | Sorting order       |         ❌         |
-| `[any category name]` | Category definition |         ✅         |
 
 ### Common Tokens
 
@@ -100,7 +100,7 @@ They are of the form `reject: ...` where `...` is any syllable component.
 ```ebnf
 rejection-definition = "reject" ":" rejection-elements line-ending ;
 rejection-elements   = rejection-element ("|" rejection-element)? ;
-rejection-element    = context-prefix? category-element+ context-suffix? ;
+rejection-element    = context-prefix? syllable-components context-suffix? ;
 ```
 
 ### Replacements
@@ -127,16 +127,16 @@ letters = phoneme (" " phoneme)* ;
 
 1. Create categories
 2. Create syllables
-3. Create replacement rules
-4. Create rejection rules
+3. Create rejection rules
+4. Create replacement rules
 5. Create letter sorting order
 
 ### Word Generation
 
 1. Pick the syllable count
 2. Generate that many syllables
-3. Apply replacement rules
-4. Apply rejection rules
+3. Apply rejection rules
+4. Apply replacement rules
 5. Generate the word's letterization
 
 #### Weights

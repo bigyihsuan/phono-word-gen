@@ -152,8 +152,8 @@ func TestParseLettersDirective(t *testing.T) {
 }
 
 func TestParseRejectionDirective(t *testing.T) {
-	input := `reject: $R$C n | $Vweak$Vweak | $Vstrong$Vstrong`
-	expected := `(reject ($R $C n)|($Vweak $Vweak)|($Vstrong $Vstrong))`
+	input := `reject: ^$Vweak$Vweak | $R$C n | $Vstrong$Vstrong`
+	expected := `(reject (^$Vweak $Vweak)|($R $C n)|($Vstrong $Vstrong))`
 	l := lex.New([]rune(input))
 	p := New(l)
 	directive := p.Directive()

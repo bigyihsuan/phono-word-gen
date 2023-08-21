@@ -2,6 +2,8 @@ package parts
 
 import (
 	"errors"
+	"regexp"
+	"strings"
 
 	wr "github.com/mroth/weightedrand/v2"
 )
@@ -27,4 +29,11 @@ func (c Category) Get(categories map[string]Category) (string, error) {
 }
 func (c Category) ChoiceCount(categories map[string]Category) int {
 	return len(c.Elements)
+}
+func (c Category) Regexp(categories map[string]Category) *regexp.Regexp {
+	elements := []string{}
+	for _, e := range c.Elements {
+		elements = append(elements, e.Item.Regexp(categories).String())
+	}
+	return regexp.MustCompile("(" + strings.Join(elements, "|") + ")")
 }

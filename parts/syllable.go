@@ -3,6 +3,7 @@ package parts
 import (
 	"errors"
 	"math/rand"
+	"regexp"
 	"strings"
 
 	wr "github.com/mroth/weightedrand/v2"
@@ -41,6 +42,9 @@ func NewRaw(value string) *Raw                                { return &Raw{Valu
 func (r *Raw) syllableElementTag()                            {}
 func (r *Raw) Get(_ map[string]Category) (string, error)      { return r.Value, nil }
 func (r *Raw) ChoiceCount(categories map[string]Category) int { return 1 }
+func (r *Raw) Regexp(_ map[string]Category) *regexp.Regexp {
+	return regexp.MustCompile("(" + regexp.QuoteMeta(r.Value) + ")")
+}
 
 type Grouping struct {
 	Elements []SyllableElement
@@ -67,6 +71,13 @@ func (g *Grouping) ChoiceCount(categories map[string]Category) int {
 	}
 	return count
 }
+func (g *Grouping) Regexp(categories map[string]Category) *regexp.Regexp {
+	elements := []string{}
+	for _, e := range g.Elements {
+		elements = append(elements, e.Regexp(categories).String())
+	}
+	return regexp.MustCompile("(" + strings.Join(elements, "") + ")")
+}
 
 type Selection struct {
 	Choices []wr.Choice[SyllableElement, int]
@@ -90,6 +101,13 @@ func (s *Selection) ChoiceCount(categories map[string]Category) int {
 		count *= choice.Item.ChoiceCount(categories)
 	}
 	return count
+}
+func (s *Selection) Regexp(categories map[string]Category) *regexp.Regexp {
+	elements := []string{}
+	for _, e := range s.Choices {
+		elements = append(elements, e.Item.Regexp(categories).String())
+	}
+	return regexp.MustCompile("(" + strings.Join(elements, "|") + ")")
 }
 
 // optional component. defaults to 50% chance of appearing when calling Get().
@@ -120,4 +138,11 @@ func (o *Optional) ChoiceCount(categories map[string]Category) int {
 		count *= e.ChoiceCount(categories)
 	}
 	return count
+}
+func (o *Optional) Regexp(categories map[string]Category) *regexp.Regexp {
+	elements := []string{}
+	for _, e := range o.Elements {
+		elements = append(elements, e.Regexp(categories).String())
+	}
+	return regexp.MustCompile("(" + strings.Join(elements, "") + ")?")
 }

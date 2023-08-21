@@ -28,9 +28,6 @@ func (p *Parser) Errors() []error {
 func (p *Parser) getNextToken() {
 	p.curr = p.peek
 	p.peek = p.l.GetNextToken()
-	if p.peek.Type == tok.COMMENT {
-		p.getNextToken()
-	}
 }
 
 func (p *Parser) currIs(tt tok.TokenType) bool { return p.curr.Type == tt }
@@ -72,7 +69,7 @@ func (p *Parser) expectCurr(tt tok.TokenType) bool {
 
 func (p *Parser) Directives() (directives []ast.Directive) {
 	for p.peek.Type != tok.EOF {
-		for p.currIs(tok.LINE_ENDING) {
+		for p.currIsAny(tok.LINE_ENDING, tok.COMMENT) {
 			p.getNextToken()
 		}
 		if p.curr.Type == tok.EOF {

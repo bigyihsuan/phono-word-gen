@@ -27,10 +27,16 @@ type Evaluator struct {
 	wordCount                int
 
 	forbidDuplicates, forceWordLimit, sortOutput                 bool
+	applyRejections, applyReplacements                           bool
 	generatedCount, duplicateCount, rejectedCount, replacedCount int
 
-	categories   map[string]parts.Category
-	syllables    []*parts.Syllable
+	categories map[string]parts.Category
+	syllables  []*parts.Syllable
+
+	wordRejections     *regexp.Regexp
+	syllableRejections *regexp.Regexp
+	generalRejections  *regexp.Regexp
+
 	letters      []string
 	letterRegexp *regexp.Regexp
 }
@@ -53,6 +59,8 @@ func (evaluator *Evaluator) loadDocument() {
 	evaluator.forbidDuplicatesElement = evaluator.document.QuerySelector("#forbidDuplicates").(*dom.HTMLInputElement)
 	evaluator.forceWordLimitElement = evaluator.document.QuerySelector("#forceWordLimit").(*dom.HTMLInputElement)
 	evaluator.sortOutputElement = evaluator.document.QuerySelector("#sortOutput").(*dom.HTMLInputElement)
+	evaluator.applyRejectionsElement = evaluator.document.QuerySelector("#applyRejections").(*dom.HTMLInputElement)
+	evaluator.applyReplacementsElement = evaluator.document.QuerySelector("#applyReplacements").(*dom.HTMLInputElement)
 
 	evaluator.generatedAlertElement = evaluator.document.QuerySelector("#generatedAlert").(*dom.HTMLDivElement)
 	evaluator.duplicateAlertElement = evaluator.document.QuerySelector("#duplicateAlert").(*dom.HTMLDivElement)
@@ -130,17 +138,31 @@ func (e *Evaluator) submitMain(event dom.Event) {
 	// if on, remove duplicates
 	words, wordSyllables = e.removeDuplicates(words, wordSyllables)
 
+	// TODO: if on, apply rejections
+	// TODO: allow contexts in the middle of rejection elements
+	words, wordSyllables = e.rejectWords(words, wordSyllables)
+
+	// TODO: if on, apply replacements
+
 	// if on, force generate to wordCount
 	// get number of possible syllables, and abort forced gen if possible < wanted
 	count := e.ChoiceCount(e.categories)
-	util.Log(e.forceWordLimit, e.wordCount, len(wordSyllables), count)
 	if e.forceWordLimit && count >= e.wordCount {
-		for e.wordCount > len(wordSyllables) {
-			needed := e.wordCount - len(wordSyllables)
-			words = append(words, e.generateWords(needed)...)
-			wordSyllables = append(wordSyllables, e.syllabizeWords(words)...)
+		for len(words) < e.wordCount {
+			words = append(words, e.generateWords(e.wordCount)...)
+			wordSyllables = e.syllabizeWords(words)
 			words, wordSyllables = e.removeDuplicates(words, wordSyllables)
+			// TODO: apply rejections
+			words, wordSyllables = e.rejectWords(words, wordSyllables)
+			// TODO: apply replacements
 		}
+		rand.Shuffle(len(words), func(i, j int) {
+			words[i], words[j] = words[j], words[i]
+		})
+		rand.Shuffle(len(wordSyllables), func(i, j int) {
+			wordSyllables[i], wordSyllables[j] = wordSyllables[j], wordSyllables[i]
+		})
+		words, wordSyllables = words[:e.wordCount], wordSyllables[:e.wordCount]
 	} else if e.forceWordLimit && count < e.wordCount {
 		e.displayError(fmt.Errorf("not enough choices to force word count: only %d/%d choices available", count, e.wordCount))
 		return
@@ -248,13 +270,15 @@ func (e *Evaluator) displayError(err error) {
 }
 
 func (e *Evaluator) getOptions() {
-	e.minSylCount = int(e.elements.minSylCountElement.ValueAsNumber())
-	e.maxSylCount = int(e.elements.maxSylCountElement.ValueAsNumber())
-	e.wordCount = int(e.elements.wordCountElement.ValueAsNumber())
+	e.minSylCount = int(e.minSylCountElement.ValueAsNumber())
+	e.maxSylCount = int(e.maxSylCountElement.ValueAsNumber())
+	e.wordCount = int(e.wordCountElement.ValueAsNumber())
 
-	e.forbidDuplicates = e.elements.forbidDuplicatesElement.Checked()
-	e.forceWordLimit = e.elements.forceWordLimitElement.Checked()
-	e.sortOutput = e.elements.sortOutputElement.Checked()
+	e.forbidDuplicates = e.forbidDuplicatesElement.Checked()
+	e.forceWordLimit = e.forceWordLimitElement.Checked()
+	e.sortOutput = e.sortOutputElement.Checked()
+	e.applyRejections = e.applyRejectionsElement.Checked()
+	e.applyReplacements = e.applyReplacementsElement.Checked()
 
 	e.generatedCount = 0
 	e.duplicateCount = 0
@@ -266,21 +290,17 @@ func (e *Evaluator) updateAlerts() {
 	e.generatedAlertElement.SetInnerHTML(fmt.Sprintf("generated %d words", e.generatedCount))
 	e.duplicateAlertElement.SetInnerHTML(fmt.Sprintf("removed %d duplicates", e.duplicateCount))
 	e.rejectedAlertElement.SetInnerHTML(fmt.Sprintf("rejected %d words", e.rejectedCount))
-	e.replacedAlertElement.SetInnerHTML(fmt.Sprintf("rejected %d words", e.replacedCount))
+	e.replacedAlertElement.SetInnerHTML(fmt.Sprintf("replaced %d words", e.replacedCount))
 }
 
 func (e *Evaluator) removeDuplicates(words []Word, wordSyllables [][]string) (ws []Word, syls [][]string) {
 	if e.forbidDuplicates {
-		type entry struct {
-			word Word
-			syls []string
-		}
 		oldLen := len(wordSyllables)
 		wordSet := make(map[string]entry)
-		for i, word := range wordSyllables {
-			w := strings.Join(word, "")
-			if _, containsWord := wordSet[w]; !containsWord {
-				wordSet[w] = entry{words[i], wordSyllables[i]}
+		for i, syllables := range wordSyllables {
+			word := strings.Join(syllables, "")
+			if _, containsWord := wordSet[word]; !containsWord {
+				wordSet[word] = entry{words[i], wordSyllables[i]}
 			}
 		}
 		values := maps.Values(wordSet)
@@ -305,18 +325,38 @@ func (e *Evaluator) ChoiceCount(categories map[string]parts.Category) int {
 	return count
 }
 
-type elements struct {
-	inputTextElement        *dom.HTMLTextAreaElement
-	outputTextElement       *dom.HTMLTextAreaElement
-	submitButton            *dom.HTMLButtonElement
-	minSylCountElement      *dom.HTMLInputElement
-	maxSylCountElement      *dom.HTMLInputElement
-	wordCountElement        *dom.HTMLInputElement
-	forbidDuplicatesElement *dom.HTMLInputElement
-	forceWordLimitElement   *dom.HTMLInputElement
-	sortOutputElement       *dom.HTMLInputElement
-	generatedAlertElement   *dom.HTMLDivElement
-	duplicateAlertElement   *dom.HTMLDivElement
-	rejectedAlertElement    *dom.HTMLDivElement
-	replacedAlertElement    *dom.HTMLDivElement
+func (e *Evaluator) rejectWords(words []Word, wordSyllables [][]string) ([]Word, [][]string) {
+	if e.applyRejections {
+		keptWords := []Word{}
+		keptSyls := [][]string{}
+
+		for i, syllables := range wordSyllables {
+			word := strings.Join(syllables, "")
+
+			matchesWordLevel := len(e.wordRejections.String()) > 0 && e.wordRejections.MatchString(word)
+
+			matchesSyllableLevel := false
+			if len(e.syllableRejections.String()) > 0 {
+				for _, syl := range syllables {
+					if e.syllableRejections.MatchString(syl) {
+						matchesSyllableLevel = true
+						break
+					}
+				}
+			}
+
+			matchesGeneral := len(e.wordRejections.String()) > 0 && e.generalRejections.MatchString(word)
+
+			if !matchesWordLevel && !matchesSyllableLevel && !matchesGeneral {
+				keptWords = append(keptWords, words[i])
+				keptSyls = append(keptSyls, wordSyllables[i])
+			} else {
+				e.rejectedCount++
+			}
+		}
+
+		return keptWords, keptSyls
+	} else {
+		return words, wordSyllables
+	}
 }
