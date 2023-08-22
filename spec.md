@@ -108,7 +108,7 @@ rejection-element    = context-prefix? syllable-components context-suffix? ;
 ```ebnf
 replacement-definition = "replace" ":" source? ">" replacement? "/" replace-condition ("//" replace-exception)? line-ending ;
 source      = (reference | phoneme)+ ;
-replacement = phoneme ;
+replacement = phoneme+ ;
 condition   = env ;
 exception   = env ;
 env         = (context-prefix? syllable-components)? "_" (syllable-components context-suffix?)?

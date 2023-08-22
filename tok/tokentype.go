@@ -37,6 +37,7 @@ const (
 	ARROW
 	SLASH
 	DOUBLESLASH
+	UNDERSCORE
 	// keywords
 	SYLLABLE
 	LETTERS

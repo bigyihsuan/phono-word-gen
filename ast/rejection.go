@@ -20,9 +20,9 @@ func (rd *RejectionDirective) String() string {
 }
 
 type RejectionElement struct {
-	Prefix   string
-	Elements []SyllableComponent
-	Suffix   string
+	PrefixContext string
+	Elements      []SyllableComponent
+	SuffixContext string
 }
 
 func (re RejectionElement) String() string {
@@ -30,5 +30,5 @@ func (re RejectionElement) String() string {
 	for _, e := range re.Elements {
 		elements = append(elements, e.String())
 	}
-	return fmt.Sprintf("(%s%s%s)", re.Prefix, strings.Join(elements, " "), re.Suffix)
+	return fmt.Sprintf("(%s%s%s)", re.PrefixContext, strings.Join(elements, " "), re.SuffixContext)
 }

@@ -13,7 +13,7 @@ type SyllableElement interface {
 	syllableElementTag()
 }
 
-var _ Element = &Raw{}
+var _ Element = &Phoneme{}
 var _ Element = &Reference{}
 var _ Element = &Grouping{}
 var _ Element = &Selection{}

@@ -69,7 +69,7 @@ func (e *Evaluator) evalSyllable(dir *ast.SyllableDirective) *parts.Syllable {
 func (e *Evaluator) evalComponent(component ast.SyllableComponent) parts.SyllableElement {
 	switch component := component.(type) {
 	case *ast.Phoneme:
-		return parts.NewRaw(component.Value)
+		return parts.NewPhoneme(component.Value)
 	case *ast.Reference:
 		return parts.NewReference(component.Name).(parts.SyllableElement)
 	case *ast.SyllableGrouping:
@@ -143,11 +143,11 @@ func (e *Evaluator) evalRejection(dir *ast.RejectionDirective) []parts.Rejection
 func (e *Evaluator) evalRejectionElement(dir ast.RejectionElement) parts.Rejection {
 	r := parts.Rejection{}
 	switch {
-	case dir.Prefix == "^":
+	case dir.PrefixContext == "^":
 		r.Prefix = parts.WORD_START
-	case dir.Prefix == "@":
+	case dir.PrefixContext == "@":
 		r.Prefix = parts.SYL_START
-	case dir.Prefix == "!":
+	case dir.PrefixContext == "!":
 		r.Prefix = parts.NOT
 	default:
 		r.Prefix = parts.NO_PREFIX
@@ -158,9 +158,9 @@ func (e *Evaluator) evalRejectionElement(dir ast.RejectionElement) parts.Rejecti
 	}
 
 	switch {
-	case dir.Suffix == "\\":
+	case dir.SuffixContext == "\\":
 		r.Suffix = parts.WORD_END
-	case dir.Suffix == "&":
+	case dir.SuffixContext == "&":
 		r.Suffix = parts.SYL_END
 	default:
 		r.Suffix = parts.NO_SUFFIX

@@ -168,3 +168,29 @@ func TestParseRejectionDirective(t *testing.T) {
 	assert.Equal(t, expected, reject.String(),
 		"incorrect: want=%q got=%q", expected, reject.String())
 }
+
+func TestParseReplacementDirective(t *testing.T) {
+	tests := []struct{ input, expected string }{
+		{`replace: a>b/^$C_//$p_&`, `(replace (a) > (b) / (^ $C _) // ($p _ &))`},
+		{`replace: > / _`, `(replace () > () / (_) // ())`},
+		{`replace: $C $V p > / _`, `(replace ($C $V p) > () / (_) // ())`},
+		{`replace: > c / _`, `(replace () > (c) / (_) // ())`},
+		{`replace: a>b/ ^$C_`, `(replace (a) > (b) / (^ $C _) // ())`},
+	}
+
+	for i, tt := range tests {
+		l := lex.New([]rune(tt.input))
+		p := New(l)
+		directive := p.Directive()
+		checkParseErrors(t, p)
+		replace, ok := directive.(*ast.ReplacementDirective)
+		if !assert.True(t, ok, "[%d] not a ReplacementDirective: got=%T (%+v)", i, directive, directive) {
+			return
+		}
+		if !assert.NotNil(t, replace, "[%d] replace was nil", i) {
+			return
+		}
+		assert.Equal(t, tt.expected, replace.String(),
+			"[%d] incorrect: want=%q got=%q", i, tt.expected, replace.String())
+	}
+}

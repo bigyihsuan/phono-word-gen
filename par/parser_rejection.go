@@ -27,12 +27,12 @@ func (p *Parser) RejectionElement() ast.RejectionElement {
 	r := ast.RejectionElement{}
 	if p.peekIsAny(tok.CARET, tok.AT, tok.BANG) {
 		p.getNextToken()
-		r.Prefix = p.curr.Lexeme
+		r.PrefixContext = p.curr.Lexeme
 	}
 	r.Elements = p.SyllableComponents()
 	if p.peekIsAny(tok.BSLASH, tok.AMPERSAND) {
 		p.getNextToken()
-		r.Suffix = p.curr.Lexeme
+		r.SuffixContext = p.curr.Lexeme
 	}
 	return r
 }

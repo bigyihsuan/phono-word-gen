@@ -9,22 +9,22 @@ import (
 
 var categories = map[string]Category{}
 
-func TestSyllableRaw(t *testing.T) {
-	raw := NewRaw("a")
+func TestSyllablePhoneme(t *testing.T) {
+	raw := NewPhoneme("a")
 	actual, err := raw.Get(categories)
 	assert.Nil(t, err)
 	assert.Equal(t, "a", actual)
 }
 
 func TestSyllableGrouping(t *testing.T) {
-	grouping := NewGrouping(NewRaw("a"), NewRaw("b"), NewRaw("c"))
+	grouping := NewGrouping(NewPhoneme("a"), NewPhoneme("b"), NewPhoneme("c"))
 	actual, err := grouping.Get(categories)
 	assert.Nil(t, err)
 	assert.Equal(t, "abc", actual)
 }
 
 func TestSyllableOptional(t *testing.T) {
-	optional := NewOptional([]SyllableElement{NewRaw("a"), NewRaw("b"), NewRaw("c")})
+	optional := NewOptional([]SyllableElement{NewPhoneme("a"), NewPhoneme("b"), NewPhoneme("c")})
 	for i := 0; i < 10; i++ {
 		actual, err := optional.Get(categories)
 		assert.Nil(t, err)
@@ -34,8 +34,8 @@ func TestSyllableOptional(t *testing.T) {
 
 func TestSyllableSelection(t *testing.T) {
 	selection := NewSelection(
-		wr.NewChoice[SyllableElement, int](NewRaw("a"), 1),
-		wr.NewChoice[SyllableElement, int](NewRaw("b"), 1),
+		wr.NewChoice[SyllableElement, int](NewPhoneme("a"), 1),
+		wr.NewChoice[SyllableElement, int](NewPhoneme("b"), 1),
 	)
 	for i := 0; i < 10; i++ {
 		actual, err := selection.Get(categories)
@@ -47,11 +47,11 @@ func TestSyllableSelection(t *testing.T) {
 func TestSyllableGet(t *testing.T) {
 	syllable := Syllable{
 		Elements: []SyllableElement{
-			NewRaw("b"),
-			NewRaw("a"),
+			NewPhoneme("b"),
+			NewPhoneme("a"),
 			NewSelection(
-				wr.NewChoice[SyllableElement, int](NewRaw("n"), 1),
-				wr.NewChoice[SyllableElement, int](NewRaw("d"), 1),
+				wr.NewChoice[SyllableElement, int](NewPhoneme("n"), 1),
+				wr.NewChoice[SyllableElement, int](NewPhoneme("d"), 1),
 			),
 		},
 	}

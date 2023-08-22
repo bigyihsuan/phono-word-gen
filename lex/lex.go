@@ -63,6 +63,8 @@ func (l *Lexer) GetNextToken() tok.Token {
 		token = tok.New(tok.AMPERSAND, string(l.ch), l.currIdx)
 	case '|':
 		token = tok.New(tok.PIPE, string(l.ch), l.currIdx)
+	case '_':
+		token = tok.New(tok.UNDERSCORE, string(l.ch), l.currIdx)
 	case '!':
 		token = tok.New(tok.BANG, string(l.ch), l.currIdx)
 	case '/':

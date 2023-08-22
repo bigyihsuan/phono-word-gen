@@ -7,4 +7,5 @@ type Reference struct {
 func (r *Reference) node()              {}
 func (r *Reference) categoryElement()   {}
 func (r *Reference) syllableComponent() {}
+func (r *Reference) replacementSource() {}
 func (r *Reference) String() string     { return "$" + r.Name }

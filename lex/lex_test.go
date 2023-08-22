@@ -107,11 +107,13 @@ func TestGetNextToken(t *testing.T) {
 		{tok.RAW, "substitute"},
 		{tok.SLASH, "/"},
 		{tok.CARET, "^"},
+		{tok.UNDERSCORE, "_"},
 		{tok.RAW, "condition"},
 		{tok.BSLASH, "\\"},
 		{tok.DOUBLESLASH, "//"},
 		{tok.AT, "@"},
 		{tok.RAW, "optionalException"},
+		{tok.UNDERSCORE, "_"},
 		{tok.AMPERSAND, "&"},
 		{tok.LINE_ENDING, "\n"},
 		{tok.EOF, ""},
@@ -128,7 +130,7 @@ syllable: ([$C*8, $C$R])$V ($R)
 #comment
 letters:  a i j k l p r t w
 reject:   !$V$V|$C$C
-replace:  {sourceA, sourceB} > substitute / ^condition\ // @optionalException&`
+replace:  {sourceA, sourceB} > substitute / ^ _ condition\ // @optionalException _ &`
 
 	l := New([]rune(input))
 

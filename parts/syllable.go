@@ -33,19 +33,6 @@ func (s *Syllable) ChoiceCount(categories map[string]Category) int {
 	return count
 }
 
-// A raw string in a syllable
-type Raw struct {
-	Value string
-}
-
-func NewRaw(value string) *Raw                                { return &Raw{Value: value} }
-func (r *Raw) syllableElementTag()                            {}
-func (r *Raw) Get(_ map[string]Category) (string, error)      { return r.Value, nil }
-func (r *Raw) ChoiceCount(categories map[string]Category) int { return 1 }
-func (r *Raw) Regexp(_ map[string]Category) *regexp.Regexp {
-	return regexp.MustCompile("(" + regexp.QuoteMeta(r.Value) + ")")
-}
-
 type Grouping struct {
 	Elements []SyllableElement
 }
