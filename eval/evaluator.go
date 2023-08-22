@@ -138,7 +138,7 @@ func (e *Evaluator) submitMain(event dom.Event) {
 	// if on, remove duplicates
 	words, wordSyllables = e.removeDuplicates(words, wordSyllables)
 
-	// TODO: if on, apply rejections
+	// if on, apply rejections
 	// TODO: allow contexts in the middle of rejection elements
 	words, wordSyllables = e.rejectWords(words, wordSyllables)
 
@@ -152,7 +152,6 @@ func (e *Evaluator) submitMain(event dom.Event) {
 			words = append(words, e.generateWords(e.wordCount)...)
 			wordSyllables = e.syllabizeWords(words)
 			words, wordSyllables = e.removeDuplicates(words, wordSyllables)
-			// TODO: apply rejections
 			words, wordSyllables = e.rejectWords(words, wordSyllables)
 			// TODO: apply replacements
 		}
@@ -170,47 +169,8 @@ func (e *Evaluator) submitMain(event dom.Event) {
 
 	// if on, sort output
 	if e.sortOutput {
-		// letter-based sorting
-		if len(e.letters) > 0 {
-			sort.Slice(wordSyllables, func(left, right int) bool {
-				// letterize words
-				l := strings.Join(wordSyllables[left], "")
-				leftLetters := e.letterRegexp.FindAllString(l, -1)
-				leftIndexes := []int{}
-				for _, letter := range leftLetters {
-					leftIndexes = append(leftIndexes, slices.Index(e.letters, letter))
-				}
-				r := strings.Join(wordSyllables[right], "")
-				rightLetters := e.letterRegexp.FindAllString(r, -1)
-				rightIndexes := []int{}
-				for _, letter := range rightLetters {
-					rightIndexes = append(rightIndexes, slices.Index(e.letters, letter))
-				}
-				minLen := min(len(leftIndexes), len(rightIndexes))
-
-				for i := 0; i < minLen; i++ {
-					if leftIndexes[i] < rightIndexes[i] {
-						return true
-					}
-					if leftIndexes[i] > rightIndexes[i] {
-						return false
-					}
-				}
-				if len(leftIndexes) < len(rightIndexes) {
-					return true
-				}
-				if len(leftIndexes) > len(rightIndexes) {
-					return false
-				}
-				return false
-			})
-		} else {
-			sort.Slice(wordSyllables, func(i, j int) bool {
-				a, b := wordSyllables[i], wordSyllables[j]
-				as, bs := strings.Join(a, ""), strings.Join(b, "")
-				return as < bs
-			})
-		}
+		util.Log(e.letters)
+		words, wordSyllables = e.sort(words, wordSyllables)
 	}
 
 	syllableSep := ""
@@ -359,4 +319,56 @@ func (e *Evaluator) rejectWords(words []Word, wordSyllables [][]string) ([]Word,
 	} else {
 		return words, wordSyllables
 	}
+}
+
+func (e *Evaluator) sort(words []Word, wordSyllables [][]string) ([]Word, [][]string) {
+	// letter-based sorting
+	if len(e.letters) > 0 {
+		sort.Slice(wordSyllables, func(left, right int) bool {
+			// letterize words
+			// join into a single string
+			l := strings.Join(wordSyllables[left], "")
+			r := strings.Join(wordSyllables[right], "")
+			// find all (known) letters
+			leftLetters := e.letterRegexp.FindAllString(l, -1)
+			rightLetters := e.letterRegexp.FindAllString(r, -1)
+			// for each letter found, find the index of that letter in the letter directive
+			leftIndexes := []int{}
+			rightIndexes := []int{}
+			for _, letter := range leftLetters {
+				leftIndexes = append(leftIndexes, slices.Index(e.letters, letter))
+			}
+			for _, letter := range rightLetters {
+				rightIndexes = append(rightIndexes, slices.Index(e.letters, letter))
+			}
+			minLen := min(len(leftIndexes), len(rightIndexes))
+
+			for i := 0; i < minLen; i++ {
+				if leftIndexes[i] < rightIndexes[i] {
+					return true
+				}
+				if leftIndexes[i] > rightIndexes[i] {
+					return false
+				}
+			}
+			if len(leftIndexes) < len(rightIndexes) {
+				return true
+			}
+			if len(leftIndexes) > len(rightIndexes) {
+				return false
+			}
+			return false
+		})
+	} else {
+		sort.Slice(wordSyllables, func(i, j int) bool {
+			a, b := wordSyllables[i], wordSyllables[j]
+			as, bs := strings.Join(a, ""), strings.Join(b, "")
+			less := as < bs
+			if less {
+				words[i], words[j] = words[j], words[i]
+			}
+			return less
+		})
+	}
+	return words, wordSyllables
 }
