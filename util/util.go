@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/json"
 	"math/rand"
 
 	"honnef.co/go/js/dom/v2"
@@ -19,15 +20,39 @@ func RandomPercentage() int {
 }
 
 func Log(o ...any) {
-	dom.GetWindow().Console().Call("log", o...)
+	args := []any{}
+	for _, arg := range o {
+		m, err := ToMap(arg)
+		if err != nil {
+			LogError(err.Error())
+			continue
+		}
+		args = append(args, m)
+	}
+	dom.GetWindow().Console().Call("log", args...)
 }
 func LogError(o ...any) {
-	dom.GetWindow().Console().Call("error", o...)
+	args := []any{}
+	for _, arg := range o {
+		m, err := ToMap(arg)
+		if err != nil {
+			LogError(err.Error())
+			continue
+		}
+		args = append(args, m)
+	}
+	dom.GetWindow().Console().Call("error", args...)
 }
 
-func AnySlice[T any](ele []T) (o []any) {
-	for _, e := range ele {
-		o = append(o, e)
+func ToMap(x any) (map[string]any, error) {
+	data, err := json.Marshal(struct{ V any }{x})
+	if err != nil {
+		return nil, err
 	}
-	return
+	m := map[string]any{}
+	err = json.Unmarshal(data, &m)
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
 }
