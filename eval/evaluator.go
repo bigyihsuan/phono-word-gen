@@ -145,7 +145,7 @@ func (e *Evaluator) submitMain(event dom.Event) {
 	words = e.rejectWords(words)
 
 	// TODO: if on, apply replacements
-	words = e.replaceWords(words)
+	// words = e.replaceWords(words)
 
 	// if on, force generate to wordCount
 	// get number of possible syllables, and abort forced gen if possible < wanted
@@ -157,6 +157,7 @@ func (e *Evaluator) submitMain(event dom.Event) {
 			words = e.removeDuplicates(words)
 			words = e.rejectWords(words)
 			// TODO: apply replacements
+			// words = e.replaceWords(words)
 		}
 		rand.Shuffle(len(words), func(i, j int) {
 			words[i], words[j] = words[j], words[i]
