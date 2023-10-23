@@ -36,6 +36,15 @@
             height: auto;
         }
 
+        code {
+            color: black;
+            /* font-size: 1.1em; */
+            background: #ffe4e4;
+            border-radius: 4px;
+            padding: 0.05rem 0.2rem;
+            margin: 0 0.05rem;
+        }
+
         footer {
             bottom: 0px;
             width: 100%;
@@ -143,29 +152,30 @@
                 <ul>
                     <li>Category: <code>name = phoneme phoneme phoneme ...</code></li>
                     <li>Phonemes can be any character that is not whitespace or a semicolon </li>
-                    <li>Using a category in a category: <code>C = $A $B raw $D ...</code> (Note: recursive/circular usage, i.e. A in B in A, not allowed) </li>
+                    <li>Using a category in a category: <code>C = $A $B raw $D ...</code> (Note: recursive/circular usage, i.e. A in B in A, is not allowed.)
+                    </li>
                 </ul>
                 <h3>Syllable</h3>
                 <ul>
                     <li>Syllable definition: <code>syllable: components</code></li>
                     <li>Using categories in syllables: <code>syllable: $C $V $N</code></li>
                     <li>Grouping components: <code>syllable: {group}{$C$V}{}</code></li>
-                    <li>Optional: <code>syllable: (s)$C$V(n)</code></li>
+                    <li>Optional: <code>syllable: (s)$C$V(n)</code> Defaults to a 50% chance of appearing.</li>
                     <li>Selection: <code>syllable: [$P,$F]r$V</code></li>
                     <li>Optional with weight: <code>syllable: ($C)*5$V</code></li>
                     <li>Selection with weight: <code>syllable: [$P,$F*3,{$K$L}*1]r$V</code></li>
                 </ul>
                 <h3>Weighting Rules</h3>
                 <ul>
-                    <li>Weights mark how often a component or phoneme can appear</li>
-                    <li>Weights are positive integers</li>
-                    <li>Weights can be applied to phonemes, optionals, or elements in a selection</li>
+                    <li>Weights mark how often a component or phoneme can appear.</li>
+                    <li>Weights are positive integers.</li>
+                    <li>Weights can be applied to phonemes, optionals, or elements in a selection.</li>
                     <li>Phoneme weights are placed after the phoneme: <code>C = p*1 t*3 k</code></li>
                     <li>Manually-marked weights on phonemes are carried over into any categories using that phoneme (i.e. <code>P = p*4 k; C = $P t</code> will
                         have phoneme <code>p</code> have weight 4 in all categories).</li>
-                    <li>Weighted optionals define what chance for that optional to appear (i.e. a weight of 33 means that it will appear ~33% of the time).</li>
-                    <li>Weighted selection elements with multiple components must use grouping <code>{group}*3</code>.</li>
-                    <li>Selection elements and phonemes without weights are defaulted to 1</li>
+                    <li>Weighted optionals define what chance for that optional to appear (i.e. a weight of 33 means that it will appear ~33% of the time, 1
+                        means 1%, etc).</li>
+                    <li>Selection elements and phonemes without weights are defaulted to 1.</li>
                 </ul>
                 <h3>Rejections</h3>
                 <ul>
