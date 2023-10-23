@@ -10,7 +10,7 @@ See [`thoughts.md`](./thoughts.md) for my ~~list of grievances~~ pros and cons o
 
 ## Project Goals
 
-- Use TypeScript as the back-end and logic layer.
+- ~~Use TypeScript as the back-end and logic layer.~~ Use Go and WASM as the word generator.
 - Set up and host the front-facing site on GitHub Pages.
 - Implement, at minimum, the "Minimum" features in [`desired-features.md`](./desired-features.md).
 - ~~Have fun while doing so.~~
