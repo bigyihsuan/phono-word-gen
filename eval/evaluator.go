@@ -174,7 +174,7 @@ func (e *Evaluator) submitMain(event dom.Event) {
 	count := e.choiceCount(e.categories)
 	if e.forceWordLimit && count >= e.wordCount {
 		for len(words) < e.wordCount {
-			words = append(words, e.generateWords(e.wordCount)...)
+			words = e.generateWords(e.wordCount * 2)
 			words = e.syllabizeWords(words)
 			words = e.removeDuplicates(words)
 			words = e.rejectWords(words)
@@ -184,7 +184,9 @@ func (e *Evaluator) submitMain(event dom.Event) {
 		rand.Shuffle(len(words), func(i, j int) {
 			words[i], words[j] = words[j], words[i]
 		})
-		words = words[:e.wordCount]
+		if len(words) >= e.wordCount {
+			words = words[:e.wordCount]
+		}
 	} else if e.forceWordLimit && count < e.wordCount {
 		e.displayError(fmt.Errorf("not enough choices to force word count: only %d/%d choices available", count, e.wordCount))
 		return
@@ -208,7 +210,10 @@ func (e *Evaluator) submitMain(event dom.Event) {
 func (e *Evaluator) createSentences() {
 	sentences := []string{}
 	for i := 0; i < e.sentenceCount; i++ {
-		sentences = append(sentences, e.generateSentence())
+		sentence := e.generateSentence()
+		if len(sentence) > 0 {
+			sentences = append(sentences, sentence)
+		}
 	}
 	e.displaySentences(sentences)
 }
@@ -217,9 +222,24 @@ func (e *Evaluator) createSentences() {
 func (e *Evaluator) generateSentence() string {
 	wordCount := 1 + util.PeakedPowerLaw(15, 5, 50)
 	sentenceWords := []string{}
-	words := e.generateWords(wordCount)
+	words := e.generateWords(wordCount * 2)
 	words = e.syllabizeWords(words)
 	words = e.rejectWords(words)
+	for len(words) < wordCount {
+		util.Log("adding more words", len(words), wordCount)
+		words = e.generateWords(wordCount * 2)
+		words = e.syllabizeWords(words)
+		words = e.rejectWords(words)
+		rand.Shuffle(len(words), func(i, j int) {
+			words[i], words[j] = words[j], words[i]
+		})
+		if len(words) >= wordCount {
+			words = words[:wordCount]
+		}
+	}
+	if len(words) >= wordCount {
+		words = words[:wordCount]
+	}
 	// TODO: replacements
 	// words = e.replaceWords(words)
 	for i, w := range words {
