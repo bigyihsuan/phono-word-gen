@@ -16,7 +16,7 @@ func (e *Evaluator) evalDirectives(directives []ast.Directive) {
 	e.categories = make(map[string]parts.Category)
 	e.syllables = []*parts.Syllable{}
 	rejections := []parts.Rejection{}
-
+	e.replacements = []parts.Replacement{}
 	for _, dir := range directives {
 		switch dir := dir.(type) {
 		case *ast.CategoryDirective:
@@ -27,6 +27,8 @@ func (e *Evaluator) evalDirectives(directives []ast.Directive) {
 			e.letters = e.evalLetters(dir)
 		case *ast.RejectionDirective:
 			rejections = append(rejections, e.evalRejection(dir)...)
+		case *ast.ReplacementDirective:
+			e.replacements = append(e.replacements, e.evalReplacement(dir))
 		default:
 			util.LogError(fmt.Sprintf("unknown directive: %T (%+v)\n", dir, dir))
 		}
@@ -71,7 +73,7 @@ func (e *Evaluator) evalComponent(component ast.SyllableComponent) parts.Syllabl
 	case *ast.Phoneme:
 		return parts.NewPhoneme(component.Value)
 	case *ast.Reference:
-		return parts.NewReference(component.Name).(parts.SyllableElement)
+		return parts.NewReference(component.Name)
 	case *ast.SyllableGrouping:
 		return e.evalGrouping(component)
 	case *ast.SyllableOptional:
@@ -172,15 +174,18 @@ func (e *Evaluator) processRejections(rejections []parts.Rejection) {
 	wordOnlyRejections := []parts.Rejection{}
 	syllableOnlyRejections := []parts.Rejection{}
 	generalRejections := []parts.Rejection{}
+	bothRejections := []parts.Rejection{}
 	// sort out rejections
 	for _, r := range rejections {
 		switch {
+		case r.IsWordLevel() && r.IsSyllableLevel():
+			bothRejections = append(bothRejections, r)
+		case !r.IsWordLevel() && !r.IsSyllableLevel():
+			generalRejections = append(generalRejections, r)
 		case r.IsWordLevel():
 			wordOnlyRejections = append(wordOnlyRejections, r)
 		case r.IsSyllableLevel():
 			syllableOnlyRejections = append(syllableOnlyRejections, r)
-		case !r.IsWordLevel() && !r.IsSyllableLevel():
-			generalRejections = append(generalRejections, r)
 		}
 	}
 
@@ -196,4 +201,55 @@ func (e *Evaluator) mergeRejections(rejections []parts.Rejection) *regexp.Regexp
 		w = append(w, reg)
 	}
 	return regexp.MustCompile(strings.Join(w, "|"))
+}
+
+func (e *Evaluator) evalReplacement(dir *ast.ReplacementDirective) parts.Replacement {
+	r := parts.Replacement{}
+
+	for _, s := range dir.Source {
+		r.Source = append(r.Source, e.evalComponent(s.(ast.SyllableComponent)))
+	}
+
+	r.Replacement = ""
+	for _, p := range dir.Replacement {
+		r.Replacement += p.Value
+	}
+
+	r.Condition = *e.evalReplacementEnv(dir.Condition)
+	if dir.Exception != nil {
+		r.Exception = e.evalReplacementEnv(dir.Exception)
+	}
+
+	return r
+}
+
+func (e *Evaluator) evalReplacementEnv(env *ast.ReplacementEnv) *parts.ReplacementEnv {
+	r := &parts.ReplacementEnv{}
+	switch {
+	case env.PrefixContext == "^":
+		r.Prefix = parts.WORD_START
+	case env.PrefixContext == "@":
+		r.Prefix = parts.SYL_START
+	case env.PrefixContext == "!":
+		r.Prefix = parts.NOT
+	default:
+		r.Prefix = parts.NO_PREFIX
+	}
+
+	for _, element := range env.PrefixComponents {
+		r.PrefixComponents = append(r.PrefixComponents, e.evalComponent(element))
+	}
+	for _, element := range env.SuffixComponents {
+		r.SuffixComponents = append(r.SuffixComponents, e.evalComponent(element))
+	}
+
+	switch {
+	case env.SuffixContext == "\\":
+		r.Suffix = parts.WORD_END
+	case env.SuffixContext == "&":
+		r.Suffix = parts.SYL_END
+	default:
+		r.Suffix = parts.NO_SUFFIX
+	}
+	return r
 }

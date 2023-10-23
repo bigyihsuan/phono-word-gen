@@ -8,12 +8,12 @@ type Reference struct {
 	Name string
 }
 
-func NewReference(name string) Element {
+func NewReference(name string) *Reference {
 	return &Reference{Name: name}
 }
 
 func (r *Reference) syllableElementTag() {}
-func (r *Reference) Get(categories map[string]Category) (string, error) {
+func (r *Reference) Get(categories Categories) (string, error) {
 	// look for the existence for the category
 	cat, ok := categories[r.Name]
 	if ok {
@@ -23,7 +23,7 @@ func (r *Reference) Get(categories map[string]Category) (string, error) {
 		return "", UndefinedCategoryError(r.Name, r.Name)
 	}
 }
-func (r *Reference) ChoiceCount(categories map[string]Category) int {
+func (r *Reference) ChoiceCount(categories Categories) int {
 	cat, ok := categories[r.Name]
 	if ok {
 		return cat.ChoiceCount(categories)
@@ -31,7 +31,7 @@ func (r *Reference) ChoiceCount(categories map[string]Category) int {
 		return 0
 	}
 }
-func (r *Reference) Regexp(categories map[string]Category) *regexp.Regexp {
+func (r *Reference) Regexp(categories Categories) *regexp.Regexp {
 	cat, ok := categories[r.Name]
 	if ok {
 		return cat.Regexp(categories)

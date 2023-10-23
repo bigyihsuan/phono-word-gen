@@ -11,7 +11,7 @@ func TestCategoryGet(t *testing.T) {
 	cat := NewCategory(wr.NewChoice[Element, int](NewPhoneme("p"), 1))
 	for i := 0; i < 10; i++ {
 		expected := "p"
-		actual, _ := cat.Get(make(map[string]Category))
+		actual, _ := cat.Get(make(Categories))
 		assert.Equal(t, expected, actual, "[%d] incorrect: want=%q got=%q", i, expected, actual)
 	}
 }
@@ -19,7 +19,7 @@ func TestCategoryGet(t *testing.T) {
 func TestCategoryNestedGet(t *testing.T) {
 	c := NewCategory(wr.NewChoice[Element, int](NewReference("S"), 1))
 	s := NewCategory(wr.NewChoice[Element, int](NewPhoneme("p"), 1))
-	categories := map[string]Category{"C": c, "S": s}
+	categories := Categories{"C": c, "S": s}
 	cat := categories["C"]
 	for i := 0; i < 10; i++ {
 		expected := "p"

@@ -7,26 +7,26 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var categories = map[string]Category{}
+var emptyCategory = Categories{}
 
 func TestSyllablePhoneme(t *testing.T) {
 	raw := NewPhoneme("a")
-	actual, err := raw.Get(categories)
+	actual, err := raw.Get(emptyCategory)
 	assert.Nil(t, err)
 	assert.Equal(t, "a", actual)
 }
 
 func TestSyllableGrouping(t *testing.T) {
 	grouping := NewGrouping(NewPhoneme("a"), NewPhoneme("b"), NewPhoneme("c"))
-	actual, err := grouping.Get(categories)
+	actual, err := grouping.Get(emptyCategory)
 	assert.Nil(t, err)
 	assert.Equal(t, "abc", actual)
 }
 
 func TestSyllableOptional(t *testing.T) {
-	optional := NewOptional([]SyllableElement{NewPhoneme("a"), NewPhoneme("b"), NewPhoneme("c")})
+	optional := NewOptional(SyllableElements{NewPhoneme("a"), NewPhoneme("b"), NewPhoneme("c")})
 	for i := 0; i < 10; i++ {
-		actual, err := optional.Get(categories)
+		actual, err := optional.Get(emptyCategory)
 		assert.Nil(t, err)
 		assert.True(t, actual == "abc" || actual == "")
 	}
@@ -38,7 +38,7 @@ func TestSyllableSelection(t *testing.T) {
 		wr.NewChoice[SyllableElement, int](NewPhoneme("b"), 1),
 	)
 	for i := 0; i < 10; i++ {
-		actual, err := selection.Get(categories)
+		actual, err := selection.Get(emptyCategory)
 		assert.Nil(t, err)
 		assert.True(t, actual == "a" || actual == "b", "invalid output: want=%q/%q got=%q", "a", "b", actual)
 	}
@@ -46,7 +46,7 @@ func TestSyllableSelection(t *testing.T) {
 
 func TestSyllableGet(t *testing.T) {
 	syllable := Syllable{
-		Elements: []SyllableElement{
+		Elements: SyllableElements{
 			NewPhoneme("b"),
 			NewPhoneme("a"),
 			NewSelection(
@@ -56,7 +56,7 @@ func TestSyllableGet(t *testing.T) {
 		},
 	}
 	for i := 0; i < 10; i++ {
-		actual, err := syllable.Get(categories)
+		actual, err := syllable.Get(emptyCategory)
 		assert.Nil(t, err)
 		assert.True(t, actual == "ban" || actual == "bad", "invalid output: want=%q/%q got=%q", "ban", "bad", actual)
 	}

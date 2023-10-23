@@ -37,6 +37,8 @@ type Evaluator struct {
 	syllableRejections *regexp.Regexp
 	generalRejections  *regexp.Regexp
 
+	replacements []parts.Replacement
+
 	letters      []string
 	letterRegexp *regexp.Regexp
 }
@@ -133,16 +135,17 @@ func (e *Evaluator) submitMain(event dom.Event) {
 	// generate N words
 	words := e.generateWords(e.wordCount)
 	// convert the words to lists of syllables
-	wordSyllables := e.syllabizeWords(words)
+	words = e.syllabizeWords(words)
 
 	// if on, remove duplicates
-	words, wordSyllables = e.removeDuplicates(words, wordSyllables)
+	words = e.removeDuplicates(words)
 
 	// if on, apply rejections
 	// TODO: allow contexts in the middle of rejection elements
-	words, wordSyllables = e.rejectWords(words, wordSyllables)
+	words = e.rejectWords(words)
 
 	// TODO: if on, apply replacements
+	words = e.replaceWords(words)
 
 	// if on, force generate to wordCount
 	// get number of possible syllables, and abort forced gen if possible < wanted
@@ -150,18 +153,15 @@ func (e *Evaluator) submitMain(event dom.Event) {
 	if e.forceWordLimit && count >= e.wordCount {
 		for len(words) < e.wordCount {
 			words = append(words, e.generateWords(e.wordCount)...)
-			wordSyllables = e.syllabizeWords(words)
-			words, wordSyllables = e.removeDuplicates(words, wordSyllables)
-			words, wordSyllables = e.rejectWords(words, wordSyllables)
+			words = e.syllabizeWords(words)
+			words = e.removeDuplicates(words)
+			words = e.rejectWords(words)
 			// TODO: apply replacements
 		}
 		rand.Shuffle(len(words), func(i, j int) {
 			words[i], words[j] = words[j], words[i]
 		})
-		rand.Shuffle(len(wordSyllables), func(i, j int) {
-			wordSyllables[i], wordSyllables[j] = wordSyllables[j], wordSyllables[i]
-		})
-		words, wordSyllables = words[:e.wordCount], wordSyllables[:e.wordCount]
+		words = words[:e.wordCount]
 	} else if e.forceWordLimit && count < e.wordCount {
 		e.displayError(fmt.Errorf("not enough choices to force word count: only %d/%d choices available", count, e.wordCount))
 		return
@@ -169,15 +169,14 @@ func (e *Evaluator) submitMain(event dom.Event) {
 
 	// if on, sort output
 	if e.sortOutput {
-		util.Log(e.letters)
-		words, wordSyllables = e.sort(words, wordSyllables)
+		words = e.sort(words)
 	}
 
 	syllableSep := ""
 	// TODO: if on, display with syllable separators
 
 	// display to the output textbox
-	e.display(wordSyllables, syllableSep)
+	e.display(words, syllableSep)
 }
 
 // generate a `wordCount` number of words.
@@ -199,24 +198,24 @@ func (e *Evaluator) generateWord(syllableCount int) Word {
 	return NewWord(syllables...)
 }
 
-func (e *Evaluator) syllabizeWords(words []Word) (wordSyllables [][]string) {
-	for _, word := range words {
-		wordSyls, err := word.GenerateSyllables(e.categories)
+func (e *Evaluator) syllabizeWords(words []Word) []Word {
+	for i, word := range words {
+		err := word.GenerateSyllables(e.categories)
 		if err != nil {
 			util.LogError(err.Error())
 			e.elements.outputTextElement.SetValue(err.Error())
-			return
+			return words
 		}
-		wordSyllables = append(wordSyllables, wordSyls)
+		words[i] = word
 	}
-	return
+	return words
 }
 
-func (e *Evaluator) display(wordSyllables [][]string, syllableSep string) {
+func (e *Evaluator) display(words []Word, syllableSep string) {
 	wordStrings := []string{}
 	text := ""
-	for _, word := range wordSyllables {
-		wordStrings = append(wordStrings, strings.Join(word, syllableSep))
+	for _, word := range words {
+		wordStrings = append(wordStrings, strings.Join(word.Syllables, syllableSep))
 	}
 	text += strings.Join(wordStrings, "\n")
 	e.elements.outputTextElement.SetValue(text)
@@ -253,28 +252,26 @@ func (e *Evaluator) updateAlerts() {
 	e.replacedAlertElement.SetInnerHTML(fmt.Sprintf("replaced %d words", e.replacedCount))
 }
 
-func (e *Evaluator) removeDuplicates(words []Word, wordSyllables [][]string) (ws []Word, syls [][]string) {
-	if e.forbidDuplicates {
-		oldLen := len(wordSyllables)
-		wordSet := make(map[string]entry)
-		for i, syllables := range wordSyllables {
-			word := strings.Join(syllables, "")
-			if _, containsWord := wordSet[word]; !containsWord {
-				wordSet[word] = entry{words[i], wordSyllables[i]}
-			}
-		}
-		values := maps.Values(wordSet)
-		ws = []Word{}
-		syls = [][]string{}
-		for _, v := range values {
-			ws = append(ws, v.word)
-			syls = append(syls, v.syls)
-		}
-		e.duplicateCount = oldLen - len(syls)
-		return ws, syls
-	} else {
-		return words, wordSyllables
+func (e *Evaluator) removeDuplicates(words []Word) (ws []Word) {
+	if !e.forbidDuplicates {
+		return words
 	}
+
+	oldLen := len(words)
+	wordSet := make(map[string]Word)
+	for i, word := range words {
+		joined, _ := word.Join()
+		if _, containsWord := wordSet[joined]; !containsWord {
+			wordSet[joined] = words[i]
+		}
+	}
+	values := maps.Values(wordSet)
+	ws = []Word{}
+	for _, v := range values {
+		ws = append(ws, v)
+	}
+	e.duplicateCount = oldLen - len(ws)
+	return ws
 }
 
 func (e *Evaluator) ChoiceCount(categories map[string]parts.Category) int {
@@ -285,50 +282,123 @@ func (e *Evaluator) ChoiceCount(categories map[string]parts.Category) int {
 	return count
 }
 
-func (e *Evaluator) rejectWords(words []Word, wordSyllables [][]string) ([]Word, [][]string) {
-	if e.applyRejections {
-		keptWords := []Word{}
-		keptSyls := [][]string{}
+func (e *Evaluator) rejectWords(words []Word) []Word {
+	if !e.applyRejections {
+		return words
+	}
 
-		for i, syllables := range wordSyllables {
-			word := strings.Join(syllables, "")
+	keptWords := []Word{}
 
-			matchesWordLevel := len(e.wordRejections.String()) > 0 && e.wordRejections.MatchString(word)
+	for i, word := range words {
+		w, _ := word.Join()
 
-			matchesSyllableLevel := false
-			if len(e.syllableRejections.String()) > 0 {
-				for _, syl := range syllables {
-					if e.syllableRejections.MatchString(syl) {
-						matchesSyllableLevel = true
-						break
-					}
+		matchesWordLevel := len(e.wordRejections.String()) > 0 && e.wordRejections.MatchString(w)
+
+		matchesSyllableLevel := false
+		if len(e.syllableRejections.String()) > 0 {
+			for _, syl := range word.Syllables {
+				if e.syllableRejections.MatchString(syl) {
+					matchesSyllableLevel = true
+					break
 				}
-			}
-
-			matchesGeneral := len(e.wordRejections.String()) > 0 && e.generalRejections.MatchString(word)
-
-			if !matchesWordLevel && !matchesSyllableLevel && !matchesGeneral {
-				keptWords = append(keptWords, words[i])
-				keptSyls = append(keptSyls, wordSyllables[i])
-			} else {
-				e.rejectedCount++
 			}
 		}
 
-		return keptWords, keptSyls
-	} else {
-		return words, wordSyllables
+		matchesGeneral := len(e.wordRejections.String()) > 0 && e.generalRejections.MatchString(w)
+
+		if !matchesWordLevel && !matchesSyllableLevel && !matchesGeneral {
+			keptWords = append(keptWords, words[i])
+		} else {
+			e.rejectedCount++
+		}
 	}
+	return keptWords
 }
 
-func (e *Evaluator) sort(words []Word, wordSyllables [][]string) ([]Word, [][]string) {
+func (e *Evaluator) replaceWords(words []Word) []Word {
+	if !e.applyReplacements {
+		return words
+	}
+
+	replacedWords := []Word{}
+
+	// for each word...
+	for _, word := range words {
+		w, _ := word.Join()
+		// w, syllableIndexes := word.Join()
+
+		// for each possible replacement...
+		for _, r := range e.replacements {
+			matchesException := false
+
+			// check for exception; if true, don't replace
+			exception := r.ExceptionRegexp(e.categories)
+			if exception != nil {
+				if r.Exception.IsSyllableLevel() {
+					matchesException = true
+					for _, syl := range word.Syllables {
+						if !exception.MatchString(syl) {
+							matchesException = false
+							break
+						}
+					}
+				} else {
+					matchesException = exception.MatchString(w)
+				}
+			}
+			if matchesException {
+				// return early
+				replacedWords = append(replacedWords, word)
+				continue
+			}
+
+			// need to find the match indexes to replace across syllable boundaries
+			// match against the word, and get the indexes
+			// map word-indexes into syllable-letter-indexes
+			//     word[i] => syllables[j][k]
+			// this is so that the replacement can span across syllables
+			// though, there's too many parens in the generated regexp
+			// so need to figure out how to get the start and end index
+			// w/out using subgroups
+
+			condition := r.ConditionRegexp(e.categories)
+			matchIndexes := [][]int{}
+			if r.Condition.IsSyllableLevel() {
+				for _, syl := range word.Syllables {
+					match := condition.FindAllStringIndex(syl, -1)
+					if match == nil {
+						continue
+					}
+					matchIndexes = append(matchIndexes, match...)
+				}
+			} else {
+				matchIndexes = condition.FindAllStringIndex(w, -1)
+			}
+			m, _ := util.ToMap(matchIndexes)
+			util.Log(word, m)
+			util.Log(r.Source.Regexp(e.categories), r.Replacement)
+			util.Log("ConditionRegexp", r.ConditionRegexp(e.categories))
+			if matchIndexes == nil || len(matchIndexes) == 0 {
+				// return early
+				replacedWords = append(replacedWords, word)
+				continue
+			}
+			// TODO: replacement
+			// we have the indexes of the matches in either the joined word or syllables
+
+		}
+	}
+	return replacedWords
+}
+
+func (e *Evaluator) sort(words []Word) []Word {
 	// letter-based sorting
 	if len(e.letters) > 0 {
-		sort.Slice(wordSyllables, func(left, right int) bool {
+		sort.Slice(words, func(left, right int) bool {
 			// letterize words
 			// join into a single string
-			l := strings.Join(wordSyllables[left], "")
-			r := strings.Join(wordSyllables[right], "")
+			l := strings.Join(words[left].Syllables, "")
+			r := strings.Join(words[right].Syllables, "")
 			// find all (known) letters
 			leftLetters := e.letterRegexp.FindAllString(l, -1)
 			rightLetters := e.letterRegexp.FindAllString(r, -1)
@@ -360,9 +430,9 @@ func (e *Evaluator) sort(words []Word, wordSyllables [][]string) ([]Word, [][]st
 			return false
 		})
 	} else {
-		sort.Slice(wordSyllables, func(i, j int) bool {
-			a, b := wordSyllables[i], wordSyllables[j]
-			as, bs := strings.Join(a, ""), strings.Join(b, "")
+		sort.Slice(words, func(i, j int) bool {
+			a, b := words[i], words[j]
+			as, bs := strings.Join(a.Syllables, ""), strings.Join(b.Syllables, "")
 			less := as < bs
 			if less {
 				words[i], words[j] = words[j], words[i]
@@ -370,5 +440,5 @@ func (e *Evaluator) sort(words []Word, wordSyllables [][]string) ([]Word, [][]st
 			return less
 		})
 	}
-	return words, wordSyllables
+	return words
 }

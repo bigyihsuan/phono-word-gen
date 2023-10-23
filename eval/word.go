@@ -5,18 +5,30 @@ import (
 )
 
 type Word struct {
-	Syllables []*parts.Syllable
+	SylTemplates []*parts.Syllable
+	Syllables    []string
 }
 
-func NewWord(syllables ...*parts.Syllable) Word { return Word{Syllables: syllables} }
-func (w Word) GenerateSyllables(categories map[string]parts.Category) ([]string, error) {
+func NewWord(syllables ...*parts.Syllable) Word { return Word{SylTemplates: syllables} }
+func (w *Word) GenerateSyllables(categories map[string]parts.Category) error {
 	syllables := []string{}
-	for _, s := range w.Syllables {
+	for _, s := range w.SylTemplates {
 		syl, err := s.Get(categories)
 		if err != nil {
-			return syllables, err
+			return err
 		}
 		syllables = append(syllables, syl)
 	}
-	return syllables, nil
+	w.Syllables = syllables
+	return nil
+}
+
+func (w Word) Join() (word string, sylStartIndexes []int) {
+	sylStart := 0
+	for _, syl := range w.Syllables {
+		word += syl
+		sylStartIndexes = append(sylStartIndexes, sylStart)
+		sylStart += len(syl)
+	}
+	return
 }
