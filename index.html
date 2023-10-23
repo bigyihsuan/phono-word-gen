@@ -6,11 +6,17 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phonology Random Word Generator</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
-    <link href="https://pvinis.github.io/iosevka-webfont/7.2/iosevka.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+    <link href="https://pvinis.github.io/iosevka-webfont/7.0.2/iosevka.css" rel="stylesheet" />
     <!-- <script type="module" src="./script/main.js"></script> -->
     <script src="wasm_exec.js"></script>
     <script>
@@ -26,14 +32,8 @@
             font-family: 'Iosevka Web', 'Courier New', Courier, monospace;
         }
 
-        code {
-            background-color: var(--bs-gray-250);
-            opacity: 1;
-            border-radius: 25em;
-            width: auto;
+        .form-control {
             height: auto;
-            padding: 1em 25em 1em 25em;
-            color: var(--bs-red);
         }
 
         footer {
@@ -55,14 +55,11 @@
                 <label for="inputs">
                     <h3>Input</h3>
                 </label>
-                <div class="mb-auto">
+                <form>
                     <textarea id="phonology" class="form-control" rows="25" placeholder="Input code..."></textarea>
-                </div>
-                <div class="mb-auto">
-                    <div id="checkboxes" class="form-control">
+                    <div id="numberInputs" class="form-control">
                         <div class="input-group" id="syllableCountInput">
-                            <span class="input-group-text">Min/Max
-                                syllables/word</span>
+                            <span class="input-group-text">Min/Max syllables/word</span>
                             <input type="number" min="1" value="1" id="minSylCount" class="form-control">
                             <span class="input-group-text">&ndash;</span>
                             <input type="number" min="1" value="1" id="maxSylCount" class="form-control">
@@ -75,6 +72,8 @@
                             <span class="input-group-text">Number of Sentences</span>
                             <input type="number" min="1" value="5" id="sentenceCount" class="form-control" disabled>
                         </div>
+                    </div>
+                    <div id="checkboxes" class="form-control">
                         <div class="container">
                             <div class="input-group row">
                                 <div class="form-check form-check-inline col">
@@ -89,7 +88,7 @@
                                 </div>
                                 <div class="form-check form-check-inline col">
                                     <input class="form-check-input" type="checkbox" id="forceWordLimit">
-                                    <label class="form-check-label" for="forceWordLimit">Force generate to word limit</label>
+                                    <label class="form-check-label" for="forceWordLimit">Force word limit</label>
                                 </div>
                             </div>
                             <div class="input-group row">
@@ -104,8 +103,8 @@
                             </div>
                             <div class="input-group row">
                                 <div class="form-check form-check-inline col">
-                                    <input class="form-check-input" type="checkbox" id="separateSyllables">
-                                    <label class="form-check-label" for="separateSyllables">Mark syllables</label>
+                                    <input class="form-check-input" type="checkbox" id="markSyllables">
+                                    <label class="form-check-label" for="markSyllables">Mark syllables</label>
                                 </div>
                                 <div class="form-check form-check-inline col">
                                     <input class="form-check-input" type="checkbox" id="sortOutput">
@@ -119,18 +118,18 @@
                         </div>
                         <button type="button" id="submit" class="btn btn-primary">Submit</button>
                     </div>
-                </div>
+                </form>
             </div>
-            <div class="col">
+            <div class="col" id="outputs">
                 <label for="outputText">
                     <h3>Output</h3>
                 </label>
                 <textarea id="outputText" class="form-control" rows="25" readonly></textarea>
                 <button id="copyOutput" class="btn btn-danger">Copy</button>
-                <div class="alert alert-primary" style="white-space: pre-line;" id="generatedAlert"></div>
-                <div class="alert alert-info" style="white-space: pre-line;" id="duplicateAlert"></div>
-                <div class="alert alert-warning" style="white-space: pre-line;" id="rejectedAlert"></div>
-                <div class="alert alert-secondary" style="white-space: pre-line;" id="replacedAlert"></div>
+                <div class="alert alert-primary" style="white-space: pre-line;" id="generatedAlert" hidden></div>
+                <div class="alert alert-info" style="white-space: pre-line;" id="duplicateAlert" hidden></div>
+                <div class="alert alert-warning" style="white-space: pre-line;" id="rejectedAlert" hidden></div>
+                <div class="alert alert-secondary" style="white-space: pre-line;" id="replacedAlert" hidden></div>
             </div>
         </div>
         <div class="row">
@@ -138,11 +137,11 @@
                 <h2>Quick Docs</h2>
                 <h3>General</h3>
                 <ul>
-                    <li>Comments: <code># comment ends at the end of the line</code> </li>
+                    <li>Comments: <code># comment ends at the end of the line</code></li>
                 </ul>
                 <h3>Phonology</h3>
                 <ul>
-                    <li>Category: <code>name = phoneme phoneme phoneme ...</code> </li>
+                    <li>Category: <code>name = phoneme phoneme phoneme ...</code></li>
                     <li>Phonemes can be any character that is not whitespace or a semicolon </li>
                     <li>Using a category in a category: <code>C = $A $B raw $D ...</code> (Note: recursive/circular usage, i.e. A in B in A, not allowed) </li>
                 </ul>
@@ -153,7 +152,7 @@
                     <li>Grouping components: <code>syllable: {group}{$C$V}{}</code></li>
                     <li>Optional: <code>syllable: (s)$C$V(n)</code></li>
                     <li>Selection: <code>syllable: [$P,$F]r$V</code></li>
-                    <li>Optional with weight: <code>syllable: ($C)*5$V</code> </li>
+                    <li>Optional with weight: <code>syllable: ($C)*5$V</code></li>
                     <li>Selection with weight: <code>syllable: [$P,$F*3,{$K$L}*1]r$V</code></li>
                 </ul>
                 <h3>Weighting Rules</h3>
@@ -181,7 +180,7 @@
                 <!-- <h3>UNIMPLMENTED: Replacements</h3>
                 <ul>
                     <li>You can replace characters or syllable components with other <b>raw</b> characters.</li>
-                    <li>The form of a replacement rule is: <code>replace: {source} > {substitution} / condition // optionalException</code> </li>
+                    <li>The form of a replacement rule is: <code>replace: {source} > {substitution} / condition // optionalException</code></li>
                     <li>The source and substitution can be any character.</li>
                     <li>The source only can be any syllable component.</li>
                     <li>Sources and substitutions can be empty; just have
