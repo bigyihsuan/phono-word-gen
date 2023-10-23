@@ -16,11 +16,11 @@ V = $Vstrong $Vweak
 Vstrong = a e o
 Vweak = i u
 
-syllable: [$C*0.9, $Cr$R, $Cl$L,s[c,t,],] [$V*0.9,$Vstrong$Vweak,$Vweak$Vstrong,] ($son)
+syllable: [$C*9, $Cr$R, $Cl$L,s[c,t,],] [$V*9,$Vstrong$Vweak,$Vweak$Vstrong,] ($son)
 
-reject: {$R$C} | {$Vweak$Vweak} | {$Vstrong$Vstrong}
-reject: {$V$V$V} | {$N$N}
-reject: {^[ll,rr,]} | {$son$son}
+reject: $R$C | $Vweak$Vweak | $Vstrong$Vstrong
+reject: $V$V$V | $N$N
+reject: ^[ll,rr,] | $son$son
 
 Plab = p b
 Pcor = t d

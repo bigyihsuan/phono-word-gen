@@ -2,6 +2,7 @@ package lex
 
 import (
 	"phono-word-gen/tok"
+	"strings"
 	"unicode"
 )
 
@@ -85,7 +86,7 @@ func (l *Lexer) GetNextToken() tok.Token {
 	default:
 		token.Index = l.currIdx
 		if unicode.IsLetter(l.ch) {
-			token.Lexeme = l.raw()
+			token.Lexeme = l.rawOrKeyword()
 			token.Type = tok.IsKeywordOrRaw(token.Lexeme)
 			return token
 		} else if unicode.IsDigit(l.ch) {
@@ -123,10 +124,15 @@ func (l *Lexer) skipSpace() {
 	}
 }
 
-func (l *Lexer) raw() string {
+func (l *Lexer) rawOrKeyword() string {
 	startPosition := l.currIdx
-	for isLetter(l.ch) {
+	for isAllowableRaw(l.ch) {
 		l.nextRune()
+		s := string(l.src[startPosition:l.currIdx])
+		tt := tok.IsKeywordOrRaw(string(l.src[startPosition:l.currIdx]))
+		if tt != tok.RAW {
+			return s
+		}
 	}
 	return string(l.src[startPosition:l.currIdx])
 }
@@ -140,5 +146,10 @@ func (l *Lexer) number() string {
 }
 
 func isSpace(r rune) bool  { return r == ' ' }
+func isSymbol(r rune) bool { return strings.ContainsRune("\n;*#$=[](){}|,/_:>^@!\\&", r) }
 func isLetter(r rune) bool { return unicode.IsLetter(r) }
 func isDigit(r rune) bool  { return unicode.IsDigit(r) }
+
+func isAllowableRaw(r rune) bool {
+	return !isSpace(r) && !isSymbol(r)
+}
