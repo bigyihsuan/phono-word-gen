@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"unicode"
 
 	"github.com/mroth/weightedrand/v2"
 	"golang.org/x/exp/maps"
@@ -21,13 +22,9 @@ import (
 
 type Evaluator struct {
 	document dom.Document
-	elements
+	Elements
+	Options
 
-	minSylCount, maxSylCount int
-	wordCount                int
-
-	forbidDuplicates, forceWordLimit, sortOutput                 bool
-	applyRejections, applyReplacements                           bool
 	generatedCount, duplicateCount, rejectedCount, replacedCount int
 
 	categories map[string]parts.Category
@@ -50,24 +47,27 @@ func New() (*Evaluator, error) {
 	return evaluator, nil
 }
 
-func (evaluator *Evaluator) loadDocument() {
-	evaluator.document = dom.GetWindow().Document()
-	evaluator.inputTextElement = evaluator.document.QuerySelector("#phonology").(*dom.HTMLTextAreaElement)
-	evaluator.outputTextElement = evaluator.document.QuerySelector("#outputText").(*dom.HTMLTextAreaElement)
-	evaluator.submitButton = evaluator.document.QuerySelector("#submit").(*dom.HTMLButtonElement)
-	evaluator.minSylCountElement = evaluator.document.QuerySelector("#minSylCount").(*dom.HTMLInputElement)
-	evaluator.maxSylCountElement = evaluator.document.QuerySelector("#maxSylCount").(*dom.HTMLInputElement)
-	evaluator.wordCountElement = evaluator.document.QuerySelector("#wordCount").(*dom.HTMLInputElement)
-	evaluator.forbidDuplicatesElement = evaluator.document.QuerySelector("#forbidDuplicates").(*dom.HTMLInputElement)
-	evaluator.forceWordLimitElement = evaluator.document.QuerySelector("#forceWordLimit").(*dom.HTMLInputElement)
-	evaluator.sortOutputElement = evaluator.document.QuerySelector("#sortOutput").(*dom.HTMLInputElement)
-	evaluator.applyRejectionsElement = evaluator.document.QuerySelector("#applyRejections").(*dom.HTMLInputElement)
-	evaluator.applyReplacementsElement = evaluator.document.QuerySelector("#applyReplacements").(*dom.HTMLInputElement)
+func (e *Evaluator) loadDocument() {
+	e.document = dom.GetWindow().Document()
+	e.inputTextElement = e.document.QuerySelector("#phonology").(*dom.HTMLTextAreaElement)
+	e.outputTextElement = e.document.QuerySelector("#outputText").(*dom.HTMLTextAreaElement)
+	e.submitButton = e.document.QuerySelector("#submit").(*dom.HTMLButtonElement)
+	e.minSylCountElement = e.document.QuerySelector("#minSylCount").(*dom.HTMLInputElement)
+	e.maxSylCountElement = e.document.QuerySelector("#maxSylCount").(*dom.HTMLInputElement)
+	e.wordCountElement = e.document.QuerySelector("#wordCount").(*dom.HTMLInputElement)
+	e.sentenceCountElement = e.document.QuerySelector("#sentenceCount").(*dom.HTMLInputElement)
+	e.generateSentencesElement = e.document.QuerySelector("#generateSentences").(*dom.HTMLInputElement)
+	e.forbidDuplicatesElement = e.document.QuerySelector("#forbidDuplicates").(*dom.HTMLInputElement)
+	e.forceWordLimitElement = e.document.QuerySelector("#forceWordLimit").(*dom.HTMLInputElement)
+	e.sortOutputElement = e.document.QuerySelector("#sortOutput").(*dom.HTMLInputElement)
+	e.markSyllablesElement = e.document.QuerySelector("#markSyllables").(*dom.HTMLInputElement)
+	e.applyRejectionsElement = e.document.QuerySelector("#applyRejections").(*dom.HTMLInputElement)
+	e.applyReplacementsElement = e.document.QuerySelector("#applyReplacements").(*dom.HTMLInputElement)
 
-	evaluator.generatedAlertElement = evaluator.document.QuerySelector("#generatedAlert").(*dom.HTMLDivElement)
-	evaluator.duplicateAlertElement = evaluator.document.QuerySelector("#duplicateAlert").(*dom.HTMLDivElement)
-	evaluator.rejectedAlertElement = evaluator.document.QuerySelector("#rejectedAlert").(*dom.HTMLDivElement)
-	evaluator.replacedAlertElement = evaluator.document.QuerySelector("#replacedAlert").(*dom.HTMLDivElement)
+	e.generatedAlertElement = e.document.QuerySelector("#generatedAlert").(*dom.HTMLDivElement)
+	e.duplicateAlertElement = e.document.QuerySelector("#duplicateAlert").(*dom.HTMLDivElement)
+	e.rejectedAlertElement = e.document.QuerySelector("#rejectedAlert").(*dom.HTMLDivElement)
+	e.replacedAlertElement = e.document.QuerySelector("#replacedAlert").(*dom.HTMLDivElement)
 }
 
 func (evaluator *Evaluator) loadCode(src string) ([]ast.Directive, error) {
@@ -108,7 +108,26 @@ func (evaluator *Evaluator) checkCategories() (ok bool, err error) {
 }
 
 func (e *Evaluator) setEventListeners() {
-	e.elements.submitButton.AddEventListener("click", false, e.submitMain)
+	e.submitButton.AddEventListener("click", false, e.submitMain)
+	e.generateSentencesElement.AddEventListener("click", false, func(event dom.Event) {
+		if e.generateSentencesElement.Checked() {
+			e.forbidDuplicatesElement.SetDisabled(true)
+			e.forceWordLimitElement.SetDisabled(true)
+			e.markSyllablesElement.SetDisabled(true)
+			e.sortOutputElement.SetDisabled(true)
+
+			e.wordCountElement.SetDisabled(true)
+			e.sentenceCountElement.SetDisabled(false)
+		} else {
+			e.forbidDuplicatesElement.SetDisabled(false)
+			e.forceWordLimitElement.SetDisabled(false)
+			e.markSyllablesElement.SetDisabled(false)
+			e.sortOutputElement.SetDisabled(false)
+
+			e.wordCountElement.SetDisabled(false)
+			e.sentenceCountElement.SetDisabled(true)
+		}
+	})
 }
 
 func (e *Evaluator) submitMain(event dom.Event) {
@@ -116,7 +135,7 @@ func (e *Evaluator) submitMain(event dom.Event) {
 	e.getOptions()
 
 	// refesh the code input
-	directives, err := e.loadCode(e.elements.inputTextElement.Value())
+	directives, err := e.loadCode(e.inputTextElement.Value())
 	if err != nil {
 		e.displayError(err)
 		return
@@ -132,11 +151,14 @@ func (e *Evaluator) submitMain(event dom.Event) {
 		return
 	}
 
+	if e.generateSentences {
+		e.createSentences()
+		return
+	}
 	// generate N words
 	words := e.generateWords(e.wordCount)
 	// convert the words to lists of syllables
 	words = e.syllabizeWords(words)
-
 	// if on, remove duplicates
 	words = e.removeDuplicates(words)
 
@@ -149,7 +171,7 @@ func (e *Evaluator) submitMain(event dom.Event) {
 
 	// if on, force generate to wordCount
 	// get number of possible syllables, and abort forced gen if possible < wanted
-	count := e.ChoiceCount(e.categories)
+	count := e.choiceCount(e.categories)
 	if e.forceWordLimit && count >= e.wordCount {
 		for len(words) < e.wordCount {
 			words = append(words, e.generateWords(e.wordCount)...)
@@ -175,9 +197,41 @@ func (e *Evaluator) submitMain(event dom.Event) {
 
 	syllableSep := ""
 	// TODO: if on, display with syllable separators
+	if e.markSyllables {
+		syllableSep = "."
+	}
 
 	// display to the output textbox
-	e.display(words, syllableSep)
+	e.displayWords(words, syllableSep)
+}
+
+func (e *Evaluator) createSentences() {
+	sentences := []string{}
+	for i := 0; i < e.sentenceCount; i++ {
+		sentences = append(sentences, e.generateSentence())
+	}
+	e.displaySentences(sentences)
+}
+
+// generate a single sentence
+func (e *Evaluator) generateSentence() string {
+	wordCount := 1 + util.PeakedPowerLaw(15, 5, 50)
+	sentenceWords := []string{}
+	words := e.generateWords(wordCount)
+	words = e.syllabizeWords(words)
+	words = e.rejectWords(words)
+	// TODO: replacements
+	// words = e.replaceWords(words)
+	for i, w := range words {
+		word, _ := w.Join()
+		if i == 0 {
+			runes := []rune(word)
+			word = string(unicode.ToTitle(runes[0])) + string(runes[1:])
+		}
+		sentenceWords = append(sentenceWords, word)
+	}
+	sentence := strings.Join(sentenceWords, " ") + "."
+	return sentence
 }
 
 // generate a `wordCount` number of words.
@@ -204,7 +258,7 @@ func (e *Evaluator) syllabizeWords(words []Word) []Word {
 		err := word.GenerateSyllables(e.categories)
 		if err != nil {
 			util.LogError(err.Error())
-			e.elements.outputTextElement.SetValue(err.Error())
+			e.outputTextElement.SetValue(err.Error())
 			return words
 		}
 		words[i] = word
@@ -212,33 +266,41 @@ func (e *Evaluator) syllabizeWords(words []Word) []Word {
 	return words
 }
 
-func (e *Evaluator) display(words []Word, syllableSep string) {
+func (e *Evaluator) displayWords(words []Word, syllableSep string) {
 	wordStrings := []string{}
 	text := ""
 	for _, word := range words {
 		wordStrings = append(wordStrings, strings.Join(word.Syllables, syllableSep))
 	}
 	text += strings.Join(wordStrings, "\n")
-	e.elements.outputTextElement.SetValue(text)
+	e.outputTextElement.SetValue(text)
+	e.updateAlerts()
+}
 
+func (e *Evaluator) displaySentences(sentences []string) {
+	text := strings.Join(sentences, " ")
+	e.outputTextElement.SetValue(text)
 	e.updateAlerts()
 }
 
 func (e *Evaluator) displayError(err error) {
 	util.LogError(err.Error())
-	e.elements.outputTextElement.SetValue(err.Error())
+	e.outputTextElement.SetValue(err.Error())
 }
 
 func (e *Evaluator) getOptions() {
 	e.minSylCount = int(e.minSylCountElement.ValueAsNumber())
 	e.maxSylCount = int(e.maxSylCountElement.ValueAsNumber())
 	e.wordCount = int(e.wordCountElement.ValueAsNumber())
+	e.sentenceCount = int(e.sentenceCountElement.ValueAsNumber())
 
 	e.forbidDuplicates = e.forbidDuplicatesElement.Checked()
 	e.forceWordLimit = e.forceWordLimitElement.Checked()
 	e.sortOutput = e.sortOutputElement.Checked()
+	e.markSyllables = e.markSyllablesElement.Checked()
 	e.applyRejections = e.applyRejectionsElement.Checked()
 	e.applyReplacements = e.applyReplacementsElement.Checked()
+	e.generateSentences = e.generateSentencesElement.Checked()
 
 	e.generatedCount = 0
 	e.duplicateCount = 0
@@ -275,7 +337,7 @@ func (e *Evaluator) removeDuplicates(words []Word) (ws []Word) {
 	return ws
 }
 
-func (e *Evaluator) ChoiceCount(categories map[string]parts.Category) int {
+func (e *Evaluator) choiceCount(categories map[string]parts.Category) int {
 	count := len(e.syllables)
 	for _, s := range e.syllables {
 		count *= s.ChoiceCount(categories)

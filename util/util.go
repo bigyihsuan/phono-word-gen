@@ -7,6 +7,13 @@ import (
 	"honnef.co/go/js/dom/v2"
 )
 
+func PeakedPowerLaw(max, mode, prob int) int {
+	if RandomPercentage() < 50 {
+		return mode + PowerLaw(max-mode, prob)
+	}
+	return mode + PowerLaw(mode+1, prob)
+}
+
 func PowerLaw(max, percentage int) int {
 	for r := 0; ; r = (r + 1) % max {
 		if RandomPercentage() < percentage {
