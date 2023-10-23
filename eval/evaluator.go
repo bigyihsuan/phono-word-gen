@@ -304,7 +304,7 @@ func (e *Evaluator) rejectWords(words []Word) []Word {
 			}
 		}
 
-		matchesGeneral := len(e.wordRejections.String()) > 0 && e.generalRejections.MatchString(w)
+		matchesGeneral := len(e.generalRejections.String()) > 0 && e.generalRejections.MatchString(w)
 
 		if !matchesWordLevel && !matchesSyllableLevel && !matchesGeneral {
 			keptWords = append(keptWords, words[i])
