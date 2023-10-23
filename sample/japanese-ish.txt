@@ -11,4 +11,4 @@ C = $N $P $A $F $L $S
 yoonC = $P $L $N j h
 yoonV = a u o
 
-syllable: [($C)$V, {$yoonC y $yoonV},]($Q)*0.01
+syllable: [($C)$V, $yoonC y yoonV]($Q)*1

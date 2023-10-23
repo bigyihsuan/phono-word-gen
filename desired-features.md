@@ -15,7 +15,7 @@
 - `DONE` Treating categories like sets, and allowing addition of categories
 - `DONE` Word filtration (`reject:`)
   - `DONE` Start of word `^$C`, end of word `$C/`
-  - Start of syllable `@$C`, end of syllable `$C&`
+  - `DONE?` Start of syllable `@$C`, end of syllable `$C&`
   - Negation? (`!$C` = "everything but the things in `C`")
 - Word substitution/modification (Lexurgy-style rewrite rules?)
 - Cluster tables

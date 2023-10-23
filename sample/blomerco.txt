@@ -16,17 +16,17 @@ V = $Vstrong $Vweak
 Vstrong = a e o
 Vweak = i u
 
-syllable: [$C*9, $Cr$R, $Cl$L,s[c,t,],] [$V*9,$Vstrong$Vweak,$Vweak$Vstrong,] ($son)
+syllable: [$C*90, $Cr$R*3, $Cl$L*3, s[c,t]*3] [$V*90, $Vstrong$Vweak*5, $Vweak$Vstrong*5] ($son)
 
 reject: $R$C | $Vweak$Vweak | $Vstrong$Vstrong
 reject: $V$V$V | $N$N
-reject: ^[ll,rr,] | $son$son
+reject: ^[ll,rr] | $son$son
 
 Plab = p b
 Pcor = t d
 Pvel = c g
 
-replace: {c} > {qu} / _ {[$Vstrong,i,]} //  _ ($V u)
-replace: {$N} > {m} / _ {$Plab}
-replace: {$N} > {n} / _ {$Pcor}
-replace: {$N} > {ñ} / _ {$Pvel}
+replace: c > qu / _ [$Vstrong,i] //  _ $V u
+replace: $N > m / _ $Plab
+replace: $N > n / _ $Pcor
+replace: $N > ñ / _ $Pvel
