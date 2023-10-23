@@ -156,11 +156,14 @@ func (e *Evaluator) submitMain(event dom.Event) {
 		return
 	}
 	// generate N words
-	words := e.generateWords(e.wordCount)
+	words := e.generateWords(e.wordCount * 2)
 	// convert the words to lists of syllables
 	words = e.syllabizeWords(words)
 	// if on, remove duplicates
 	words = e.removeDuplicates(words)
+	if len(words) >= e.wordCount {
+		words = words[:e.wordCount]
+	}
 
 	// if on, apply rejections
 	// TODO: allow contexts in the middle of rejection elements
@@ -226,7 +229,6 @@ func (e *Evaluator) generateSentence() string {
 	words = e.syllabizeWords(words)
 	words = e.rejectWords(words)
 	for len(words) < wordCount {
-		util.Log("adding more words", len(words), wordCount)
 		words = e.generateWords(wordCount * 2)
 		words = e.syllabizeWords(words)
 		words = e.rejectWords(words)
