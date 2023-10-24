@@ -519,9 +519,9 @@ func (e *Evaluator) sort(words []Word) []Word {
 			a, b := words[i], words[j]
 			as, bs := strings.Join(a.Syllables, ""), strings.Join(b.Syllables, "")
 			less := as < bs
-			if less {
-				words[i], words[j] = words[j], words[i]
-			}
+			// if less {
+			// 	words[i], words[j] = words[j], words[i]
+			// }
 			return less
 		})
 	}
