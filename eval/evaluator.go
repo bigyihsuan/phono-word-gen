@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"syscall/js"
 	"unicode"
 
 	"github.com/mroth/weightedrand/v2"
@@ -51,7 +52,7 @@ func (e *Evaluator) loadDocument() {
 	e.document = dom.GetWindow().Document()
 	e.inputTextElement = e.document.QuerySelector("#phonology").(*dom.HTMLTextAreaElement)
 	e.outputTextElement = e.document.QuerySelector("#outputText").(*dom.HTMLTextAreaElement)
-	e.submitButton = e.document.QuerySelector("#submit").(*dom.HTMLButtonElement)
+	e.submitButtonElement = e.document.QuerySelector("#submit").(*dom.HTMLButtonElement)
 	e.minSylCountElement = e.document.QuerySelector("#minSylCount").(*dom.HTMLInputElement)
 	e.maxSylCountElement = e.document.QuerySelector("#maxSylCount").(*dom.HTMLInputElement)
 	e.wordCountElement = e.document.QuerySelector("#wordCount").(*dom.HTMLInputElement)
@@ -63,6 +64,7 @@ func (e *Evaluator) loadDocument() {
 	e.markSyllablesElement = e.document.QuerySelector("#markSyllables").(*dom.HTMLInputElement)
 	e.applyRejectionsElement = e.document.QuerySelector("#applyRejections").(*dom.HTMLInputElement)
 	e.applyReplacementsElement = e.document.QuerySelector("#applyReplacements").(*dom.HTMLInputElement)
+	e.copyButtonElement = e.document.QuerySelector("#copyButton").(*dom.HTMLButtonElement)
 
 	e.generatedAlertElement = e.document.QuerySelector("#generatedAlert").(*dom.HTMLDivElement)
 	e.duplicateAlertElement = e.document.QuerySelector("#duplicateAlert").(*dom.HTMLDivElement)
@@ -70,45 +72,8 @@ func (e *Evaluator) loadDocument() {
 	e.replacedAlertElement = e.document.QuerySelector("#replacedAlert").(*dom.HTMLDivElement)
 }
 
-func (evaluator *Evaluator) loadCode(src string) ([]ast.Directive, error) {
-	l := lex.New([]rune(src))
-	p := par.New(l)
-	directives := p.Directives()
-	if len(p.Errors()) > 0 {
-		return directives, errors.Join(p.Errors()...)
-	}
-	return directives, nil
-}
-
-func (evaluator *Evaluator) checkCategories() (ok bool, err error) {
-	// for each name/cat pair...
-	for catName, cat := range evaluator.categories {
-		// for each element in the cat's elements...
-		for _, element := range cat.Elements {
-			// if the current element is a reference...
-			reference, ok := element.Item.(*parts.Reference)
-			if !ok {
-				continue
-			}
-			// if this reference is defined...
-			reffedCat, ok := evaluator.categories[reference.Name]
-			if !ok {
-				return false, parts.UndefinedCategoryError(catName, reference.Name)
-			}
-			// does it contain the cat?
-			if slices.ContainsFunc(reffedCat.Elements, func(c weightedrand.Choice[parts.Element, int]) bool {
-				item, ok := c.Item.(*parts.Reference)
-				return ok && item.Name == catName
-			}) {
-				return false, parts.RecursiveCategoryError(catName, reference.Name)
-			}
-		}
-	}
-	return true, nil
-}
-
 func (e *Evaluator) setEventListeners() {
-	e.submitButton.AddEventListener("click", false, e.submitMain)
+	e.submitButtonElement.AddEventListener("click", false, e.submitMain)
 	e.generateSentencesElement.AddEventListener("click", false, func(event dom.Event) {
 		if e.generateSentencesElement.Checked() {
 			e.forbidDuplicatesElement.SetDisabled(true)
@@ -127,6 +92,9 @@ func (e *Evaluator) setEventListeners() {
 			e.wordCountElement.SetDisabled(false)
 			e.sentenceCountElement.SetDisabled(true)
 		}
+	})
+	e.copyButtonElement.AddEventListener("click", false, func(event dom.Event) {
+		js.Global().Get("window").Get("navigator").Get("clipboard").Call("writeText", e.outputTextElement.Value())
 	})
 }
 
@@ -208,6 +176,43 @@ func (e *Evaluator) submitMain(event dom.Event) {
 
 	// display to the output textbox
 	e.displayWords(words, syllableSep)
+}
+
+func (evaluator *Evaluator) loadCode(src string) ([]ast.Directive, error) {
+	l := lex.New([]rune(src))
+	p := par.New(l)
+	directives := p.Directives()
+	if len(p.Errors()) > 0 {
+		return directives, errors.Join(p.Errors()...)
+	}
+	return directives, nil
+}
+
+func (evaluator *Evaluator) checkCategories() (ok bool, err error) {
+	// for each name/cat pair...
+	for catName, cat := range evaluator.categories {
+		// for each element in the cat's elements...
+		for _, element := range cat.Elements {
+			// if the current element is a reference...
+			reference, ok := element.Item.(*parts.Reference)
+			if !ok {
+				continue
+			}
+			// if this reference is defined...
+			reffedCat, ok := evaluator.categories[reference.Name]
+			if !ok {
+				return false, parts.UndefinedCategoryError(catName, reference.Name)
+			}
+			// does it contain the cat?
+			if slices.ContainsFunc(reffedCat.Elements, func(c weightedrand.Choice[parts.Element, int]) bool {
+				item, ok := c.Item.(*parts.Reference)
+				return ok && item.Name == catName
+			}) {
+				return false, parts.RecursiveCategoryError(catName, reference.Name)
+			}
+		}
+	}
+	return true, nil
 }
 
 func (e *Evaluator) createSentences() {

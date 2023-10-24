@@ -5,7 +5,7 @@ import "honnef.co/go/js/dom/v2"
 type Elements struct {
 	inputTextElement         *dom.HTMLTextAreaElement
 	outputTextElement        *dom.HTMLTextAreaElement
-	submitButton             *dom.HTMLButtonElement
+	submitButtonElement      *dom.HTMLButtonElement
 	minSylCountElement       *dom.HTMLInputElement
 	maxSylCountElement       *dom.HTMLInputElement
 	wordCountElement         *dom.HTMLInputElement
@@ -21,6 +21,7 @@ type Elements struct {
 	duplicateAlertElement    *dom.HTMLDivElement
 	rejectedAlertElement     *dom.HTMLDivElement
 	replacedAlertElement     *dom.HTMLDivElement
+	copyButtonElement        *dom.HTMLButtonElement
 }
 
 type Options struct {
