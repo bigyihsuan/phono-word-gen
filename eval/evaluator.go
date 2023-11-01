@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"os"
 	"phono-word-gen/ast"
 	"phono-word-gen/lex"
 	"phono-word-gen/par"
@@ -65,6 +66,8 @@ func (e *Evaluator) loadDocument() {
 	e.applyRejectionsElement = e.document.QuerySelector("#applyRejections").(*dom.HTMLInputElement)
 	e.applyReplacementsElement = e.document.QuerySelector("#applyReplacements").(*dom.HTMLInputElement)
 	e.copyButtonElement = e.document.QuerySelector("#copyButton").(*dom.HTMLButtonElement)
+	e.loadExampleElement = e.document.QuerySelector("#loadExample").(*dom.HTMLButtonElement)
+	e.exampleListElement = e.document.QuerySelector("#exampleList").(*dom.HTMLDivElement)
 
 	e.generatedAlertElement = e.document.QuerySelector("#generatedAlert").(*dom.HTMLDivElement)
 	e.duplicateAlertElement = e.document.QuerySelector("#duplicateAlert").(*dom.HTMLDivElement)
@@ -101,6 +104,8 @@ func (e *Evaluator) setEventListeners() {
 func (e *Evaluator) submitMain(event dom.Event) {
 	// get the values of the various options
 	e.getOptions()
+
+	e.loadExamples()
 
 	// refesh the code input
 	directives, err := e.loadCode(e.inputTextElement.Value())
@@ -176,6 +181,18 @@ func (e *Evaluator) submitMain(event dom.Event) {
 
 	// display to the output textbox
 	e.displayWords(words, syllableSep)
+}
+
+func (e *Evaluator) loadExamples() {
+	examples, err := os.ReadDir("./sample/")
+	if err != nil {
+		util.LogError(err.Error())
+		return
+	}
+
+	for _, example := range examples {
+
+	}
 }
 
 func (evaluator *Evaluator) loadCode(src string) ([]ast.Directive, error) {

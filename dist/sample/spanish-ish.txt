@@ -1,0 +1,18 @@
+letters: a b c d e f g h i j k l ll m n ñ o p q r rr s t u v w x y z
+
+N = m n ñ
+P = p t c b d g
+S = f s j
+L = l
+R = r
+C = $P $S $L $R $N
+Cr = b c d g f p r t
+Cl = b c d g f p l
+
+V = $Vstrong $Vweak
+Vstrong = a e o
+Vweak = i u
+
+syllable: ([$C*80, $Cr$R*10, $Cl$L*10])*80 [$V*95,$Vstrong$Vweak*2,$Vweak$Vstrong*2] ([s,n,$R])*20
+
+reject: $R$C | $Vweak$Vweak | $Vstrong$Vstrong | $V$V$V | $C$C$V$V | $V$V$C | $N$N | ^ll

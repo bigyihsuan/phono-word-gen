@@ -22,6 +22,8 @@ type Elements struct {
 	rejectedAlertElement     *dom.HTMLDivElement
 	replacedAlertElement     *dom.HTMLDivElement
 	copyButtonElement        *dom.HTMLButtonElement
+	loadExampleElement       *dom.HTMLButtonElement
+	exampleListElement       *dom.HTMLDivElement
 }
 
 type Options struct {

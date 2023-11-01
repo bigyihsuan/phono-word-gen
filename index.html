@@ -57,7 +57,9 @@
     <div class="container">
         <div class="row">
             <h1>WIP &mdash; Random Word Generator</h1>
-            <p>see <a href="https://github.com/bigyihsuan/phono-word-gen">the github repo</a> for more information</p>
+        </div>
+        <div class="row">
+            <p>See <a href="https://github.com/bigyihsuan/phono-word-gen">the github repo</a> for more information.</p>
         </div>
         <div class="row">
             <div class="col" id="inputs">
@@ -126,6 +128,13 @@
                             </div>
                         </div>
                         <button type="button" id="submit" class="btn btn-primary">Submit</button>
+                        <div class="dropdown">
+                            <button id="loadExample" class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                                Load Example
+                            </button>
+                            <div id="exampleList" class="dropdown-menu" aria-labelledby="dropdownMenuButton"></div>
+                        </div>
                     </div>
                 </form>
             </div>
