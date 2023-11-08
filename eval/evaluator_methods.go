@@ -2,18 +2,20 @@ package eval
 
 import (
 	"fmt"
+	"regexp"
+	"slices"
+	"strings"
+
 	"phono-word-gen/ast"
 	"phono-word-gen/parts"
 	"phono-word-gen/util"
-	"regexp"
-	"strings"
 
 	"github.com/mroth/weightedrand/v2"
-	"golang.org/x/exp/slices"
 )
 
 func (e *Evaluator) evalDirectives(directives []ast.Directive) {
-	e.categories = make(map[string]parts.Category)
+	e.categories = make(parts.Categories)
+	e.components = make(parts.Components)
 	e.syllables = []*parts.Syllable{}
 	rejections := []parts.Rejection{}
 	e.replacements = []parts.Replacement{}
@@ -23,6 +25,8 @@ func (e *Evaluator) evalDirectives(directives []ast.Directive) {
 			e.categories[dir.Name] = e.evalCategory(dir)
 		case *ast.SyllableDirective:
 			e.syllables = append(e.syllables, e.evalSyllable(dir))
+		case *ast.ComponentDirective:
+			e.components[dir.Name] = e.evalComponentDirective(dir)
 		case *ast.LettersDirective:
 			e.letters = e.evalLetters(dir)
 		case *ast.RejectionDirective:
@@ -35,6 +39,7 @@ func (e *Evaluator) evalDirectives(directives []ast.Directive) {
 	}
 
 	e.processRejections(rejections)
+	// TODO: process replacements
 }
 
 func (e *Evaluator) evalCategory(dir *ast.CategoryDirective) parts.Category {
@@ -63,17 +68,27 @@ func (e *Evaluator) evalCategoryElement(element ast.CategoryElement) (ele parts.
 func (e *Evaluator) evalSyllable(dir *ast.SyllableDirective) *parts.Syllable {
 	elements := []parts.SyllableElement{}
 	for _, component := range dir.Components {
-		elements = append(elements, e.evalComponent(component))
+		elements = append(elements, e.evalSyllableComponent(component))
 	}
 	return parts.NewSyllable(elements...)
 }
 
-func (e *Evaluator) evalComponent(component ast.SyllableComponent) parts.SyllableElement {
+func (e *Evaluator) evalComponentDirective(dir *ast.ComponentDirective) parts.Component {
+	elements := []parts.SyllableElement{}
+	for _, component := range dir.Components {
+		elements = append(elements, e.evalSyllableComponent(component))
+	}
+	return *parts.NewComponent(elements...)
+}
+
+func (e *Evaluator) evalSyllableComponent(component ast.SyllableComponent) parts.SyllableElement {
 	switch component := component.(type) {
 	case *ast.Phoneme:
 		return parts.NewPhoneme(component.Value)
 	case *ast.CategoryReference:
 		return parts.NewCategoryReference(component.Name)
+	case *ast.ComponentReference:
+		return parts.NewComponentReference(component.Name)
 	case *ast.SyllableGrouping:
 		return e.evalGrouping(component)
 	case *ast.SyllableOptional:
@@ -89,7 +104,7 @@ func (e *Evaluator) evalComponent(component ast.SyllableComponent) parts.Syllabl
 func (e *Evaluator) evalGrouping(component *ast.SyllableGrouping) parts.SyllableElement {
 	components := []parts.SyllableElement{}
 	for _, c := range component.Components {
-		components = append(components, e.evalComponent(c))
+		components = append(components, e.evalSyllableComponent(c))
 	}
 	return parts.NewGrouping(components...)
 }
@@ -97,7 +112,7 @@ func (e *Evaluator) evalGrouping(component *ast.SyllableGrouping) parts.Syllable
 func (e *Evaluator) evalOptional(component *ast.SyllableOptional) parts.SyllableElement {
 	components := []parts.SyllableElement{}
 	for _, c := range component.Components {
-		components = append(components, e.evalComponent(c))
+		components = append(components, e.evalSyllableComponent(c))
 	}
 	return parts.NewOptional(components, component.Weight)
 }
@@ -115,7 +130,7 @@ func (e *Evaluator) evalSelection(component *ast.SyllableSelection) parts.Syllab
 func (e *Evaluator) evalWeightedComponent(component *ast.WeightedSyllableComponent) (parts.SyllableElement, int) {
 	components := []parts.SyllableElement{}
 	for _, c := range component.Components {
-		components = append(components, e.evalComponent(c))
+		components = append(components, e.evalSyllableComponent(c))
 	}
 	return parts.NewGrouping(components...), component.Weight
 }
@@ -156,7 +171,7 @@ func (e *Evaluator) evalRejectionElement(dir ast.RejectionElement) parts.Rejecti
 	}
 
 	for _, element := range dir.Elements {
-		r.Elements = append(r.Elements, e.evalComponent(element))
+		r.Elements = append(r.Elements, e.evalSyllableComponent(element))
 	}
 
 	switch {
@@ -207,7 +222,7 @@ func (e *Evaluator) evalReplacement(dir *ast.ReplacementDirective) parts.Replace
 	r := parts.Replacement{}
 
 	for _, s := range dir.Source {
-		r.Source = append(r.Source, e.evalComponent(s.(ast.SyllableComponent)))
+		r.Source = append(r.Source, e.evalSyllableComponent(s.(ast.SyllableComponent)))
 	}
 
 	r.Replacement = ""
@@ -237,10 +252,10 @@ func (e *Evaluator) evalReplacementEnv(env *ast.ReplacementEnv) *parts.Replaceme
 	}
 
 	for _, element := range env.PrefixComponents {
-		r.PrefixComponents = append(r.PrefixComponents, e.evalComponent(element))
+		r.PrefixComponents = append(r.PrefixComponents, e.evalSyllableComponent(element))
 	}
 	for _, element := range env.SuffixComponents {
-		r.SuffixComponents = append(r.SuffixComponents, e.evalComponent(element))
+		r.SuffixComponents = append(r.SuffixComponents, e.evalSyllableComponent(element))
 	}
 
 	switch {

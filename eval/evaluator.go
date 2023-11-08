@@ -4,20 +4,19 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"regexp"
+	"slices"
+	"strings"
+	"syscall/js"
+
 	"phono-word-gen/ast"
 	"phono-word-gen/lex"
 	"phono-word-gen/par"
 	"phono-word-gen/parts"
 	"phono-word-gen/util"
-	"regexp"
-	"sort"
-	"strings"
-	"syscall/js"
-	"unicode"
 
 	"github.com/mroth/weightedrand/v2"
 	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
 	"honnef.co/go/js/dom/v2"
 )
 
@@ -247,71 +246,6 @@ func (e *Evaluator) checkComponents() (ok bool, err error) {
 	return true, nil
 }
 
-func (e *Evaluator) createSentences() {
-	sentences := []string{}
-	for i := 0; i < e.sentenceCount; i++ {
-		sentence := e.generateSentence()
-		if len(sentence) > 0 {
-			sentences = append(sentences, sentence)
-		}
-	}
-	e.displaySentences(sentences)
-}
-
-// generate a single sentence
-func (e *Evaluator) generateSentence() string {
-	wordCount := 1 + util.PeakedPowerLaw(15, 5, 50)
-	sentenceWords := []string{}
-	words := e.generateWords(wordCount * 2)
-	words = e.syllabizeWords(words)
-	words = e.rejectWords(words)
-	for len(words) < wordCount {
-		words = e.generateWords(wordCount * 2)
-		words = e.syllabizeWords(words)
-		words = e.rejectWords(words)
-		rand.Shuffle(len(words), func(i, j int) {
-			words[i], words[j] = words[j], words[i]
-		})
-		if len(words) >= wordCount {
-			words = words[:wordCount]
-		}
-	}
-	if len(words) >= wordCount {
-		words = words[:wordCount]
-	}
-	// TODO: replacements
-	// words = e.replaceWords(words)
-	for i, w := range words {
-		word, _ := w.Join()
-		if i == 0 {
-			runes := []rune(word)
-			word = string(unicode.ToTitle(runes[0])) + string(runes[1:])
-		}
-		sentenceWords = append(sentenceWords, word)
-	}
-	sentence := strings.Join(sentenceWords, " ") + "."
-	return sentence
-}
-
-// generate a `wordCount` number of words.
-func (e *Evaluator) generateWords(wordCount int) (words []Word) {
-	for i := 0; i < wordCount; i++ {
-		syllableCount := min(e.minSylCount+util.PowerLaw(e.maxSylCount, 50), e.maxSylCount)
-		words = append(words, e.generateWord(syllableCount))
-	}
-	e.generatedCount += e.wordCount
-	return
-}
-
-func (e *Evaluator) generateWord(syllableCount int) Word {
-	syllables := []*parts.Syllable{}
-	for i := 0; i < syllableCount; i++ {
-		syllable := e.syllables[rand.Intn(min(len(e.syllables)))]
-		syllables = append(syllables, syllable)
-	}
-	return NewWord(syllables...)
-}
-
 func (e *Evaluator) syllabizeWords(words []Word) []Word {
 	for i, word := range words {
 		err := word.GenerateSyllables(e.categories, e.components)
@@ -402,165 +336,4 @@ func (e *Evaluator) choiceCount(categories parts.Categories, components parts.Co
 		count *= s.ChoiceCount(categories, components)
 	}
 	return count
-}
-
-func (e *Evaluator) rejectWords(words []Word) []Word {
-	if !e.applyRejections {
-		return words
-	}
-
-	keptWords := []Word{}
-
-	for i, word := range words {
-		w, _ := word.Join()
-
-		matchesWordLevel := len(e.wordRejections.String()) > 0 && e.wordRejections.MatchString(w)
-
-		matchesSyllableLevel := false
-		if len(e.syllableRejections.String()) > 0 {
-			for _, syl := range word.Syllables {
-				if e.syllableRejections.MatchString(syl) {
-					matchesSyllableLevel = true
-					break
-				}
-			}
-		}
-
-		matchesGeneral := len(e.generalRejections.String()) > 0 && e.generalRejections.MatchString(w)
-
-		if !matchesWordLevel && !matchesSyllableLevel && !matchesGeneral {
-			keptWords = append(keptWords, words[i])
-		} else {
-			e.rejectedCount++
-		}
-	}
-	return keptWords
-}
-
-func (e *Evaluator) replaceWords(words []Word) []Word {
-	if !e.applyReplacements {
-		return words
-	}
-
-	replacedWords := []Word{}
-
-	// for each word...
-	for _, word := range words {
-		w, _ := word.Join()
-		// w, syllableIndexes := word.Join()
-
-		// for each possible replacement...
-		for _, r := range e.replacements {
-			matchesException := false
-
-			// check for exception; if true, don't replace
-			exception := r.ExceptionRegexp(e.categories, e.components)
-			if exception != nil {
-				if r.Exception.IsSyllableLevel() {
-					matchesException = true
-					for _, syl := range word.Syllables {
-						if !exception.MatchString(syl) {
-							matchesException = false
-							break
-						}
-					}
-				} else {
-					matchesException = exception.MatchString(w)
-				}
-			}
-			if matchesException {
-				// return early
-				replacedWords = append(replacedWords, word)
-				continue
-			}
-
-			// need to find the match indexes to replace across syllable boundaries
-			// match against the word, and get the indexes
-			// map word-indexes into syllable-letter-indexes
-			//     word[i] => syllables[j][k]
-			// this is so that the replacement can span across syllables
-			// though, there's too many parens in the generated regexp
-			// so need to figure out how to get the start and end index
-			// w/out using subgroups
-
-			condition := r.ConditionRegexp(e.categories, e.components)
-			matchIndexes := [][]int{}
-			if r.Condition.IsSyllableLevel() {
-				for _, syl := range word.Syllables {
-					match := condition.FindAllStringIndex(syl, -1)
-					if match == nil {
-						continue
-					}
-					matchIndexes = append(matchIndexes, match...)
-				}
-			} else {
-				matchIndexes = condition.FindAllStringIndex(w, -1)
-			}
-			m, _ := util.ToMap(matchIndexes)
-			util.Log(word, m)
-			util.Log(r.Source.Regexp(e.categories, e.components), r.Replacement)
-			util.Log("ConditionRegexp", r.ConditionRegexp(e.categories, e.components))
-			if matchIndexes == nil || len(matchIndexes) == 0 {
-				// return early
-				replacedWords = append(replacedWords, word)
-				continue
-			}
-			// TODO: replacement
-			// we have the indexes of the matches in either the joined word or syllables
-
-		}
-	}
-	return replacedWords
-}
-
-func (e *Evaluator) sort(words []Word) []Word {
-	// letter-based sorting
-	if len(e.letters) > 0 {
-		sort.Slice(words, func(left, right int) bool {
-			// letterize words
-			// join into a single string
-			l := strings.Join(words[left].Syllables, "")
-			r := strings.Join(words[right].Syllables, "")
-			// find all (known) letters
-			leftLetters := e.letterRegexp.FindAllString(l, -1)
-			rightLetters := e.letterRegexp.FindAllString(r, -1)
-			// for each letter found, find the index of that letter in the letter directive
-			leftIndexes := []int{}
-			rightIndexes := []int{}
-			for _, letter := range leftLetters {
-				leftIndexes = append(leftIndexes, slices.Index(e.letters, letter))
-			}
-			for _, letter := range rightLetters {
-				rightIndexes = append(rightIndexes, slices.Index(e.letters, letter))
-			}
-			minLen := min(len(leftIndexes), len(rightIndexes))
-
-			for i := 0; i < minLen; i++ {
-				if leftIndexes[i] < rightIndexes[i] {
-					return true
-				}
-				if leftIndexes[i] > rightIndexes[i] {
-					return false
-				}
-			}
-			if len(leftIndexes) < len(rightIndexes) {
-				return true
-			}
-			if len(leftIndexes) > len(rightIndexes) {
-				return false
-			}
-			return false
-		})
-	} else {
-		sort.Slice(words, func(i, j int) bool {
-			a, b := words[i], words[j]
-			as, bs := strings.Join(a.Syllables, ""), strings.Join(b.Syllables, "")
-			less := as < bs
-			// if less {
-			// 	words[i], words[j] = words[j], words[i]
-			// }
-			return less
-		})
-	}
-	return words
 }
