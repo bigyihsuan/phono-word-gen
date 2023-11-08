@@ -159,13 +159,20 @@
                 </ul>
                 <h3>Syllable</h3>
                 <ul>
-                    <li>Syllable definition: <code>syllable: components</code></li>
+                    <li>Syllable definition: <code>syllable: components...</code></li>
                     <li>Using categories in syllables: <code>syllable: $C $V $N</code></li>
                     <li>Grouping components: <code>syllable: {group}{$C$V}{}</code></li>
                     <li>Optional: <code>syllable: (s)$C$V(n)</code> Defaults to a 50% chance of appearing.</li>
                     <li>Selection: <code>syllable: [$P,$F]r$V</code></li>
                     <li>Optional with weight: <code>syllable: ($C)*5$V</code></li>
                     <li>Selection with weight: <code>syllable: [$P,$F*3,{$K$L}*1]r$V</code></li>
+                </ul>
+                <h3>Named Components</h3>
+                <ul>
+                    <li>Named component definition: <code>component: name = syllableComponents...</code></li>
+                    <li>You can use any valid syllable component as a named component.</li>
+                    <li>Use a name component by using a percent sign before the name: <code>%name</code></li>
+                    <li>Named components can be used anywhere a syllable component can be used</li>
                 </ul>
                 <h3>Weighting Rules</h3>
                 <ul>
@@ -233,7 +240,7 @@
     </div>
 
     <footer>
-        <p><a href="https://github.com/bigyihsuan/phono-word-gen">phono-word-gen</a> v1.0.0</p>
+        <p><a href="https://github.com/bigyihsuan/phono-word-gen">phono-word-gen</a> v1.1.0</p>
         <p>by <a href="https://github.com/bigyihsuan">bigyihsuan</a></p>
     </footer>
 </body>
