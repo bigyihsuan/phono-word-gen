@@ -93,6 +93,8 @@ func (p *Parser) Directive() ast.Directive {
 		return p.Category()
 	case tok.SYLLABLE:
 		return p.Syllable()
+	case tok.COMPONENT:
+		return p.Component()
 	case tok.REJECT:
 		return p.Rejection()
 	case tok.REPLACE:

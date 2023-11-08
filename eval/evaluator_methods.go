@@ -51,7 +51,7 @@ func (e *Evaluator) evalCategoryElement(element ast.CategoryElement) (ele parts.
 	switch element := element.(type) {
 	case *ast.Phoneme:
 		return parts.NewPhoneme(element.Value), 1
-	case *ast.Reference:
+	case *ast.CategoryReference:
 		return parts.NewReference(element.Name), 1
 	case *ast.WeightedElement:
 		weight = element.Weight
@@ -72,7 +72,7 @@ func (e *Evaluator) evalComponent(component ast.SyllableComponent) parts.Syllabl
 	switch component := component.(type) {
 	case *ast.Phoneme:
 		return parts.NewPhoneme(component.Value)
-	case *ast.Reference:
+	case *ast.CategoryReference:
 		return parts.NewReference(component.Name)
 	case *ast.SyllableGrouping:
 		return e.evalGrouping(component)

@@ -11,7 +11,7 @@ type ReplacementSource interface {
 }
 
 var _ ReplacementSource = &Phoneme{}
-var _ ReplacementSource = &Reference{}
+var _ ReplacementSource = &CategoryReference{}
 
 type ReplacementDirective struct {
 	Source      []ReplacementSource

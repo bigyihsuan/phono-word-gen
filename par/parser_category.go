@@ -43,7 +43,7 @@ func (p *Parser) CategoryElement() ast.CategoryElement {
 	case tok.RAW:
 		return p.Phoneme()
 	case tok.DOLLAR:
-		return p.Reference()
+		return p.CategoryReference()
 	default:
 		p.errors = append(p.errors, parts.UnexpectedTokenError(p.peek, p.peek.Type))
 		return nil

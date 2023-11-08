@@ -41,7 +41,7 @@ func TestParsePhoneme(t *testing.T) {
 	}
 }
 
-func TestParseReference(t *testing.T) {
+func TestParseCategoryReference(t *testing.T) {
 	tests := []struct{ input, expected string }{
 		{"$a", "a"},
 		{"$abc", "abc"},
@@ -52,7 +52,25 @@ func TestParseReference(t *testing.T) {
 	for i, tt := range tests {
 		l := lex.New([]rune(tt.input))
 		p := New(l)
-		reference := p.Reference()
+		reference := p.CategoryReference()
+		checkParseErrors(t, p, i)
+		assert.Equal(t, tt.expected, reference.Name,
+			"[%d] incorrect: want=%q got=%q", i, tt.expected, reference.Name)
+	}
+}
+
+func TestParseComponentReference(t *testing.T) {
+	tests := []struct{ input, expected string }{
+		{"%a", "a"},
+		{"%abc", "abc"},
+		{"%ā", "ā"},
+		{"%ə", "ə"},
+	}
+
+	for i, tt := range tests {
+		l := lex.New([]rune(tt.input))
+		p := New(l)
+		reference := p.ComponentReference()
 		checkParseErrors(t, p, i)
 		assert.Equal(t, tt.expected, reference.Name,
 			"[%d] incorrect: want=%q got=%q", i, tt.expected, reference.Name)
@@ -115,6 +133,11 @@ func TestParseSyllableDirective(t *testing.T) {
 		{"syllable: ($C)*123$V", "(syllable (($C) * 123) $V)"},
 		{"syllable: ($C)$V", "(syllable (($C) * 50) $V)"},
 		{"syllable: [$C,$V]", "(syllable [($C * 1), ($V * 1)])"},
+		{"syllable: $C%V", "(syllable $C %V)"},
+		{"syllable: {$C%V}", "(syllable {$C %V})"},
+		{"syllable: ($C)*123%V", "(syllable (($C) * 123) %V)"},
+		{"syllable: ($C)%V", "(syllable (($C) * 50) %V)"},
+		{"syllable: [$C,%V]", "(syllable [($C * 1), (%V * 1)])"},
 	}
 	for i, tt := range tests {
 		l := lex.New([]rune(tt.input))
@@ -130,6 +153,33 @@ func TestParseSyllableDirective(t *testing.T) {
 		}
 		assert.Equal(t, tt.expected, syllable.String(),
 			"[%d] incorrect: want=%q got=%q", tt.expected, syllable.String())
+	}
+}
+
+func TestParseComponentDirective(t *testing.T) {
+	tests := []struct{ input, expected string }{
+		{"component: complicated = [$C*9, $Cr$R, $Cl$L, s[c,t]]", "(component complicated = [($C * 9), ($Cr $R * 1), ($Cl $L * 1), (s [(c * 1), (t * 1)] * 1)])"},
+		{"component: cv=$C$V", "(component cv = $C $V)"},
+		{"component: cv={$C$V}", "(component cv = {$C $V})"},
+		{"component: weightCv=($C)*123$V", "(component weightCv = (($C) * 123) $V)"},
+		{"component: optCv=($C)$V", "(component optCv = (($C) * 50) $V)"},
+		{"component: eitherCv=[$C,$V]", "(component eitherCv = [($C * 1), ($V * 1)])"},
+		{"component: abc=abc", "(component abc = abc)"},
+	}
+	for i, tt := range tests {
+		l := lex.New([]rune(tt.input))
+		p := New(l)
+		directive := p.Directive()
+		checkParseErrors(t, p, i)
+		component, ok := directive.(*ast.ComponentDirective)
+		if !assert.True(t, ok, "[%d] not a ComponentDirective: got=%T (%+v)", i, directive, directive) {
+			continue
+		}
+		if !assert.NotNil(t, component, "[%d] component was nil", i) {
+			continue
+		}
+		assert.Equal(t, tt.expected, component.String(),
+			"[%d] incorrect: want=%q got=%q", tt.expected, component.String())
 	}
 }
 

@@ -42,7 +42,7 @@ func (p *Parser) ReplacementSource() (source []ast.ReplacementSource) {
 		case tok.RAW:
 			source = append(source, p.Phoneme())
 		case tok.DOLLAR:
-			source = append(source, p.Reference())
+			source = append(source, p.CategoryReference())
 		}
 	}
 	return

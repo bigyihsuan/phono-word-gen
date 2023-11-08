@@ -46,7 +46,9 @@ func (p *Parser) SyllableComponent() ast.SyllableComponent {
 	case tok.RAW:
 		return p.Phoneme()
 	case tok.DOLLAR:
-		return p.Reference()
+		return p.CategoryReference()
+	case tok.PERCENT:
+		return p.ComponentReference()
 	case tok.LBRACE:
 		return p.SyllableGrouping()
 	case tok.LPAREN:

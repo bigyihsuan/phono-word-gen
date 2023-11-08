@@ -9,9 +9,14 @@ func (p *Parser) Phoneme() *ast.Phoneme {
 	return &ast.Phoneme{Value: p.curr.Lexeme}
 }
 
-func (p *Parser) Reference() *ast.Reference {
+func (p *Parser) CategoryReference() *ast.CategoryReference {
 	p.getNextToken()
-	return &ast.Reference{Name: p.curr.Lexeme}
+	return &ast.CategoryReference{Name: p.curr.Lexeme}
+}
+
+func (p *Parser) ComponentReference() *ast.ComponentReference {
+	p.getNextToken()
+	return &ast.ComponentReference{Name: p.curr.Lexeme}
 }
 
 func (p *Parser) Weight() int {
