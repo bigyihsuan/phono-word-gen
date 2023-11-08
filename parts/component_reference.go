@@ -24,7 +24,7 @@ func (r *ComponentReference) Get(categories Categories, components Components) (
 	}
 }
 func (r *ComponentReference) ChoiceCount(categories Categories, components Components) int {
-	cat, ok := categories[r.Name]
+	cat, ok := components[r.Name]
 	if ok {
 		return cat.ChoiceCount(categories, components)
 	} else {

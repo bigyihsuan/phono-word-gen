@@ -13,6 +13,9 @@ V = $Vstrong $Vweak
 Vstrong = a e o
 Vweak = i u
 
-syllable: ([$C*80, $Cr$R*10, $Cl$L*10])*80 [$V*95,$Vstrong$Vweak*2,$Vweak$Vstrong*2] ([s,n,$R])*20
+component: onset = [$C*80, $Cr$R*10, $Cl$L*10]
+component: nucleus = [$V*95,$Vstrong$Vweak*2,$Vweak$Vstrong*2]
+
+syllable: (%onset)*80 %nucleus ([s,n,$R])*20
 
 reject: $R$C | $Vweak$Vweak | $Vstrong$Vstrong | $V$V$V | $C$C$V$V | $V$V$C | $N$N | ^ll
