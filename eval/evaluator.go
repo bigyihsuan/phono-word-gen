@@ -28,7 +28,8 @@ type Evaluator struct {
 
 	generatedCount, duplicateCount, rejectedCount, replacedCount int
 
-	categories map[string]parts.Category
+	categories parts.Categories
+	components parts.Components
 	syllables  []*parts.Syllable
 
 	wordRejections     *regexp.Regexp
@@ -42,10 +43,10 @@ type Evaluator struct {
 }
 
 func New() (*Evaluator, error) {
-	evaluator := &Evaluator{}
-	evaluator.loadDocument()
-	evaluator.setEventListeners()
-	return evaluator, nil
+	e := &Evaluator{}
+	e.loadDocument()
+	e.setEventListeners()
+	return e, nil
 }
 
 func (e *Evaluator) loadDocument() {
@@ -113,6 +114,10 @@ func (e *Evaluator) submitMain(event dom.Event) {
 		e.displayError(err)
 		return
 	}
+	if ok, err := e.checkComponents(); !ok {
+		e.displayError(err)
+		return
+	}
 
 	// don't try to generate if we have no syllables
 	if len(e.syllables) < 1 {
@@ -142,7 +147,7 @@ func (e *Evaluator) submitMain(event dom.Event) {
 
 	// if on, force generate to wordCount
 	// get number of possible syllables, and abort forced gen if possible < wanted
-	count := e.choiceCount(e.categories)
+	count := e.choiceCount(e.categories, e.components)
 	if e.forceWordLimit && count >= e.wordCount {
 		for len(words) < e.wordCount {
 			words = e.generateWords(e.wordCount * 2)
@@ -178,7 +183,7 @@ func (e *Evaluator) submitMain(event dom.Event) {
 	e.displayWords(words, syllableSep)
 }
 
-func (evaluator *Evaluator) loadCode(src string) ([]ast.Directive, error) {
+func (e *Evaluator) loadCode(src string) ([]ast.Directive, error) {
 	l := lex.New([]rune(src))
 	p := par.New(l)
 	directives := p.Directives()
@@ -188,27 +193,54 @@ func (evaluator *Evaluator) loadCode(src string) ([]ast.Directive, error) {
 	return directives, nil
 }
 
-func (evaluator *Evaluator) checkCategories() (ok bool, err error) {
+func (e *Evaluator) checkCategories() (ok bool, err error) {
 	// for each name/cat pair...
-	for catName, cat := range evaluator.categories {
+	for catName, cat := range e.categories {
 		// for each element in the cat's elements...
 		for _, element := range cat.Elements {
 			// if the current element is a reference...
-			reference, ok := element.Item.(*parts.Reference)
+			reference, ok := element.Item.(*parts.CategoryReference)
 			if !ok {
 				continue
 			}
 			// if this reference is defined...
-			reffedCat, ok := evaluator.categories[reference.Name]
+			reffedCat, ok := e.categories[reference.Name]
 			if !ok {
 				return false, parts.UndefinedCategoryError(catName, reference.Name)
 			}
 			// does it contain the cat?
 			if slices.ContainsFunc(reffedCat.Elements, func(c weightedrand.Choice[parts.Element, int]) bool {
-				item, ok := c.Item.(*parts.Reference)
+				item, ok := c.Item.(*parts.CategoryReference)
 				return ok && item.Name == catName
 			}) {
 				return false, parts.RecursiveCategoryError(catName, reference.Name)
+			}
+		}
+	}
+	return true, nil
+}
+
+func (e *Evaluator) checkComponents() (ok bool, err error) {
+	// for each name/comp pair...
+	for compName, comp := range e.components {
+		// for each element in the comp's elements...
+		for _, element := range comp.Elements {
+			// if the current element is a reference...
+			reference, ok := element.(*parts.ComponentReference)
+			if !ok {
+				continue
+			}
+			// if this reference is defined...
+			reffedComp, ok := e.components[reference.Name]
+			if !ok {
+				return false, parts.UndefinedComponentError(compName, reference.Name)
+			}
+			// does it contain the comp?
+			if slices.ContainsFunc(reffedComp.Elements, func(c parts.SyllableElement) bool {
+				item, ok := c.(*parts.CategoryReference)
+				return ok && item.Name == compName
+			}) {
+				return false, parts.RecursiveComponentError(compName, reference.Name)
 			}
 		}
 	}
@@ -282,7 +314,7 @@ func (e *Evaluator) generateWord(syllableCount int) Word {
 
 func (e *Evaluator) syllabizeWords(words []Word) []Word {
 	for i, word := range words {
-		err := word.GenerateSyllables(e.categories)
+		err := word.GenerateSyllables(e.categories, e.components)
 		if err != nil {
 			util.LogError(err.Error())
 			e.outputTextElement.SetValue(err.Error())
@@ -364,10 +396,10 @@ func (e *Evaluator) removeDuplicates(words []Word) (ws []Word) {
 	return ws
 }
 
-func (e *Evaluator) choiceCount(categories map[string]parts.Category) int {
+func (e *Evaluator) choiceCount(categories parts.Categories, components parts.Components) int {
 	count := len(e.syllables)
 	for _, s := range e.syllables {
-		count *= s.ChoiceCount(categories)
+		count *= s.ChoiceCount(categories, components)
 	}
 	return count
 }
@@ -422,7 +454,7 @@ func (e *Evaluator) replaceWords(words []Word) []Word {
 			matchesException := false
 
 			// check for exception; if true, don't replace
-			exception := r.ExceptionRegexp(e.categories)
+			exception := r.ExceptionRegexp(e.categories, e.components)
 			if exception != nil {
 				if r.Exception.IsSyllableLevel() {
 					matchesException = true
@@ -451,7 +483,7 @@ func (e *Evaluator) replaceWords(words []Word) []Word {
 			// so need to figure out how to get the start and end index
 			// w/out using subgroups
 
-			condition := r.ConditionRegexp(e.categories)
+			condition := r.ConditionRegexp(e.categories, e.components)
 			matchIndexes := [][]int{}
 			if r.Condition.IsSyllableLevel() {
 				for _, syl := range word.Syllables {
@@ -466,8 +498,8 @@ func (e *Evaluator) replaceWords(words []Word) []Word {
 			}
 			m, _ := util.ToMap(matchIndexes)
 			util.Log(word, m)
-			util.Log(r.Source.Regexp(e.categories), r.Replacement)
-			util.Log("ConditionRegexp", r.ConditionRegexp(e.categories))
+			util.Log(r.Source.Regexp(e.categories, e.components), r.Replacement)
+			util.Log("ConditionRegexp", r.ConditionRegexp(e.categories, e.components))
 			if matchIndexes == nil || len(matchIndexes) == 0 {
 				// return early
 				replacedWords = append(replacedWords, word)

@@ -21,13 +21,20 @@ var (
 )
 
 var (
-	RecursiveCategoryError = func(cat, ref string) error {
-		return fmt.Errorf("recursive category: %s contains %s contains %s", cat, ref, cat)
-	}
 	UndefinedCategoryError = func(cat, ref string) error {
 		return fmt.Errorf("undefined category: %s (contained in %s)", ref, cat)
 	}
+	RecursiveCategoryError = func(cat, ref string) error {
+		return fmt.Errorf("recursive category: %s contains %s contains %s", cat, ref, cat)
+	}
+	UndefinedComponentError = func(comp, ref string) error {
+		return fmt.Errorf("undefined component: %s (contained in %s)", ref, comp)
+	}
+	RecursiveComponentError = func(comp, ref string) error {
+		return fmt.Errorf("recursive component: %s contains %s contains %s", comp, ref, comp)
+	}
 	CategoryCreationError  = errors.New("category creation error")
+	ComponentCreationError = errors.New("category creation error")
 	SelectionCreationError = errors.New("selection creation error")
 	OptionalCreationError  = errors.New("optional creation error")
 )

@@ -18,7 +18,7 @@ func (r Rejection) IsSyllableLevel() bool {
 	return r.Prefix == SYL_START || r.Suffix == SYL_END
 }
 
-func (r Rejection) Regexp(categories Categories) *regexp.Regexp {
+func (r Rejection) Regexp(categories Categories, components Components) *regexp.Regexp {
 	prefixContext, suffixContext := "", ""
 	switch r.Prefix {
 	case WORD_START, SYL_START:
@@ -28,5 +28,5 @@ func (r Rejection) Regexp(categories Categories) *regexp.Regexp {
 	case WORD_END, SYL_END:
 		suffixContext = "$"
 	}
-	return regexp.MustCompile(fmt.Sprintf("(%s%s%s)", prefixContext, r.Elements.Regexp(categories), suffixContext))
+	return regexp.MustCompile(fmt.Sprintf("(%s%s%s)", prefixContext, r.Elements.Regexp(categories, components), suffixContext))
 }

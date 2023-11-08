@@ -10,10 +10,10 @@ type Word struct {
 }
 
 func NewWord(syllables ...*parts.Syllable) Word { return Word{SylTemplates: syllables} }
-func (w *Word) GenerateSyllables(categories map[string]parts.Category) error {
+func (w *Word) GenerateSyllables(categories parts.Categories, components parts.Components) error {
 	syllables := []string{}
 	for _, s := range w.SylTemplates {
-		syl, err := s.Get(categories)
+		syl, err := s.Get(categories, components)
 		if err != nil {
 			return err
 		}

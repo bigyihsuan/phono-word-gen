@@ -52,7 +52,7 @@ func (e *Evaluator) evalCategoryElement(element ast.CategoryElement) (ele parts.
 	case *ast.Phoneme:
 		return parts.NewPhoneme(element.Value), 1
 	case *ast.CategoryReference:
-		return parts.NewReference(element.Name), 1
+		return parts.NewCategoryReference(element.Name), 1
 	case *ast.WeightedElement:
 		weight = element.Weight
 		ele, _ = e.evalCategoryElement(element.Element)
@@ -73,7 +73,7 @@ func (e *Evaluator) evalComponent(component ast.SyllableComponent) parts.Syllabl
 	case *ast.Phoneme:
 		return parts.NewPhoneme(component.Value)
 	case *ast.CategoryReference:
-		return parts.NewReference(component.Name)
+		return parts.NewCategoryReference(component.Name)
 	case *ast.SyllableGrouping:
 		return e.evalGrouping(component)
 	case *ast.SyllableOptional:
@@ -197,7 +197,7 @@ func (e *Evaluator) processRejections(rejections []parts.Rejection) {
 func (e *Evaluator) mergeRejections(rejections []parts.Rejection) *regexp.Regexp {
 	w := []string{}
 	for _, r := range rejections {
-		reg := r.Regexp(e.categories).String()
+		reg := r.Regexp(e.categories, e.components).String()
 		w = append(w, reg)
 	}
 	return regexp.MustCompile(strings.Join(w, "|"))

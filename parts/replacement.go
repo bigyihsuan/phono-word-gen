@@ -13,27 +13,27 @@ type Replacement struct {
 	Exception   *ReplacementEnv
 }
 
-func (r Replacement) ConditionRegexp(categories Categories) *regexp.Regexp {
+func (r Replacement) ConditionRegexp(categories Categories, components Components) *regexp.Regexp {
 	// PREFIX SOURCE SUFFIX
-	prefix, suffix := r.Condition.Regexp(categories)
+	prefix, suffix := r.Condition.Regexp(categories, components)
 	return regexp.MustCompile(
 		fmt.Sprintf("(%s(%s)%s)",
 			prefix,
-			r.Source.Regexp(categories),
+			r.Source.Regexp(categories, components),
 			suffix,
 		),
 	)
 }
-func (r Replacement) ExceptionRegexp(categories Categories) *regexp.Regexp {
+func (r Replacement) ExceptionRegexp(categories Categories, components Components) *regexp.Regexp {
 	// PREFIX SOURCE SUFFIX
 	if r.Exception == nil {
 		return nil
 	}
-	prefix, suffix := r.Exception.Regexp(categories)
+	prefix, suffix := r.Exception.Regexp(categories, components)
 	return regexp.MustCompile(
 		fmt.Sprintf("(%s(%s)%s)",
 			prefix,
-			r.Source.Regexp(categories),
+			r.Source.Regexp(categories, components),
 			suffix,
 		),
 	)
@@ -53,7 +53,7 @@ func (r ReplacementEnv) IsSyllableLevel() bool {
 	return r.Prefix == SYL_START || r.Suffix == SYL_END
 }
 
-func (r ReplacementEnv) Regexp(categories Categories) (prefix, suffix *regexp.Regexp) {
+func (r ReplacementEnv) Regexp(categories Categories, components Components) (prefix, suffix *regexp.Regexp) {
 	prefixContext, suffixContext := "", ""
 	switch r.Prefix {
 	case WORD_START, SYL_START:
@@ -66,11 +66,11 @@ func (r ReplacementEnv) Regexp(categories Categories) (prefix, suffix *regexp.Re
 
 	prefixElements := []string{}
 	for _, e := range r.PrefixComponents {
-		prefixElements = append(prefixElements, e.Regexp(categories).String())
+		prefixElements = append(prefixElements, e.Regexp(categories, components).String())
 	}
 	suffixElements := []string{}
 	for _, e := range r.SuffixComponents {
-		suffixElements = append(suffixElements, e.Regexp(categories).String())
+		suffixElements = append(suffixElements, e.Regexp(categories, components).String())
 	}
 	prefixStr := prefixContext
 	if len(prefixElements) > 0 {

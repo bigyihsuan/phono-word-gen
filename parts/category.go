@@ -28,21 +28,21 @@ func NewCategoryFromPhonemes(phonemes ...string) Category {
 	return c
 }
 
-func (c Category) Get(categories Categories) (string, error) {
+func (c Category) Get(categories Categories, components Components) (string, error) {
 	// just pick something from the contained elements
 	chooser, err := wr.NewChooser[Element, int](c.Elements...)
 	if err != nil {
 		return "", errors.Join(CategoryCreationError, err)
 	}
-	return chooser.Pick().Get(categories)
+	return chooser.Pick().Get(categories, components)
 }
-func (c Category) ChoiceCount(categories Categories) int {
+func (c Category) ChoiceCount(categories Categories, components Components) int {
 	return len(c.Elements)
 }
-func (c Category) Regexp(categories Categories) *regexp.Regexp {
+func (c Category) Regexp(categories Categories, components Components) *regexp.Regexp {
 	elements := []string{}
 	for _, e := range c.Elements {
-		elements = append(elements, e.Item.Regexp(categories).String())
+		elements = append(elements, e.Item.Regexp(categories, components).String())
 	}
 	return regexp.MustCompile("(" + strings.Join(elements, "|") + ")")
 }

@@ -7,10 +7,10 @@ import (
 
 type SyllableElements []SyllableElement
 
-func (se SyllableElements) Regexp(categories Categories) *regexp.Regexp {
+func (se SyllableElements) Regexp(categories Categories, components Components) *regexp.Regexp {
 	elements := []string{}
 	for _, e := range se {
-		elements = append(elements, "("+e.Regexp(categories).String()+")")
+		elements = append(elements, "("+e.Regexp(categories, components).String()+")")
 	}
 	return regexp.MustCompile(strings.Join(elements, ""))
 }
