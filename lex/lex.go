@@ -6,6 +6,8 @@ import (
 	"unicode"
 )
 
+const symbols = "\n;*#$=[](){}|,/_:>^@!\\&%"
+
 type Lexer struct {
 	src     []rune
 	ch      rune
@@ -52,6 +54,8 @@ func (l *Lexer) GetNextToken() tok.Token {
 		token = tok.New(tok.EQ, string(l.ch), l.currIdx)
 	case '$':
 		token = tok.New(tok.DOLLAR, string(l.ch), l.currIdx)
+	case '%':
+		token = tok.New(tok.PERCENT, string(l.ch), l.currIdx)
 	case '>':
 		token = tok.New(tok.ARROW, string(l.ch), l.currIdx)
 	case '^':
@@ -86,7 +90,7 @@ func (l *Lexer) GetNextToken() tok.Token {
 	default:
 		token.Index = l.currIdx
 		if unicode.IsLetter(l.ch) {
-			token.Lexeme = l.rawOrKeyword()
+			token.Lexeme = l.keywordOrRaw()
 			token.Type = tok.IsKeywordOrRaw(token.Lexeme)
 			return token
 		} else if unicode.IsDigit(l.ch) {
@@ -124,7 +128,7 @@ func (l *Lexer) skipSpace() {
 	}
 }
 
-func (l *Lexer) rawOrKeyword() string {
+func (l *Lexer) keywordOrRaw() string {
 	startPosition := l.currIdx
 	for isAllowableRaw(l.ch) {
 		l.nextRune()
@@ -146,10 +150,8 @@ func (l *Lexer) number() string {
 }
 
 func isSpace(r rune) bool  { return r == ' ' }
-func isSymbol(r rune) bool { return strings.ContainsRune("\n;*#$=[](){}|,/_:>^@!\\&", r) }
+func isSymbol(r rune) bool { return strings.ContainsRune(symbols, r) }
 func isLetter(r rune) bool { return unicode.IsLetter(r) }
 func isDigit(r rune) bool  { return unicode.IsDigit(r) }
 
-func isAllowableRaw(r rune) bool {
-	return !isSpace(r) && !isSymbol(r)
-}
+func isAllowableRaw(r rune) bool { return !isSpace(r) && !isSymbol(r) }

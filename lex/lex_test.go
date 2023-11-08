@@ -54,6 +54,15 @@ func TestGetNextToken(t *testing.T) {
 		{tok.RAW, "k͡x"},
 		{tok.RAW, "k͡xʷ"},
 		{tok.LINE_ENDING, "\n"},
+		{tok.COMPONENT, "component"},
+		{tok.COLON, ":"},
+		{tok.RAW, "cv"},
+		{tok.EQ, "="},
+		{tok.DOLLAR, "$"},
+		{tok.RAW, "C"},
+		{tok.DOLLAR, "$"},
+		{tok.RAW, "V"},
+		{tok.LINE_ENDING, "\n"},
 		{tok.SYLLABLE, "syllable"},
 		{tok.COLON, ":"},
 		{tok.LPAREN, "("},
@@ -134,6 +143,7 @@ P = p t k
 R = l r w j; C=$P $R ŋ
 V = a*123 i*456 u ə ā
 C = p͡ɸ t͡s k͡x k͡xʷ
+component: cv = $C $V
 syllable: ([$C*8, $C$R])$V ($R)
 #comment
 letters:  a i j k l p r t w

@@ -25,6 +25,8 @@ const (
 	EQ
 	DOLLAR
 	RAW
+	// compenents
+	PERCENT
 	// context sigils
 	CARET
 	BSLASH
@@ -43,13 +45,15 @@ const (
 	LETTERS
 	REJECT
 	REPLACE
+	COMPONENT
 )
 
 var keywords = map[string]TokenType{
-	"syllable": SYLLABLE,
-	"letters":  LETTERS,
-	"reject":   REJECT,
-	"replace":  REPLACE,
+	"syllable":  SYLLABLE,
+	"letters":   LETTERS,
+	"reject":    REJECT,
+	"replace":   REPLACE,
+	"component": COMPONENT,
 }
 
 func IsKeywordOrRaw(lexeme string) TokenType {
