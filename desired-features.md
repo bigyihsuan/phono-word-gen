@@ -18,6 +18,7 @@
   - `DONE?` Start of syllable `@$C`, end of syllable `$C&`
   - Negation? (`!$C` = "everything but the things in `C`")
 - Word substitution/modification (Lexurgy-style rewrite rules?)
+- Named syllable components
 - Cluster tables
   - phoneme-based only
 

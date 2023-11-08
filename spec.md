@@ -7,6 +7,7 @@
     - [Components](#components)
     - [Category Definitions](#category-definitions)
     - [Syllables](#syllables)
+      - [Named Syllable Components](#named-syllable-components)
     - [Rejections](#rejections)
     - [Replacements](#replacements)
     - [Letters](#letters)
@@ -46,7 +47,7 @@ The following grammar is in common for all rules below:
 line-ending    = "\n" | ";" ;
 with-weight    = "*" weight ;
 weight         = [1-9]+[0-9]* ; # any positive decimal integer
-comment        = "#" .* "\n" ;
+comment        = "#" .* line-ending ;
 context-prefix = "^" | "@" | "!";
 context-suffix = "\" | "&" ;
 ```
@@ -58,9 +59,9 @@ They are used in all directives (except for `letters`).
 All components can be weighted.
 
 ```ebnf
-phoneme       = "any non-space text" ;
-reference     = "$" category-name ;
-category-name = "any non-space text" ;
+phoneme             = "any non-space text" ;
+category-reference  = "$" identifier ;
+identifier          = any non-space text not in "\n;*#$=[](){}|,/_:>^@!\\&%" ;
 weighted-component  = syllable-component with-weight? ;
 weighted-components = syllable-components with-weight? ;
 ```
@@ -70,10 +71,10 @@ weighted-components = syllable-components with-weight? ;
 Defines a category. One category per line, or multiple when separated by semicolons.
 
 ```ebnf
-category-definition = category-name "=" space-separated-elements line-ending ;
-space-separated-elements = weighted-category-element (" " weighted-category-element)* ;
+category-definition       = identifier "=" space-separated-elements line-ending ;
+space-separated-elements  = weighted-category-element (" " weighted-category-element)* ;
 weighted-category-element = category-element with-weight? ;
-category-element = phoneme | reference ;
+category-element          = phoneme | category-reference ;
 ```
 
 ### Syllables
@@ -83,13 +84,22 @@ Defines all possible syllables in the language. Multiple syllable directives per
 ```ebnf
 syllable-definition = "syllable" ":" syllable-components line-ending ;
 syllable-components = syllable-component+ ;
-syllable-component  = phoneme | reference | grouping | selection | optional ;
-grouping  = "{" "}" | "{" syllable-components (" "? syllable-components)* "}" ;
-optional  = "(" syllable-components ")" with-weight? ;
-selection = "[" "]" | "[" selection-elements "]" ;
+syllable-component  = phoneme | category-reference | component-reference | grouping | selection | optional ;
+grouping            = "{" "}" | "{" syllable-components (" "? syllable-components)* "}" ;
+optional            = "(" syllable-components ")" with-weight? ;
+selection           = "[" "]" | "[" selection-elements "]" ;
+selection-elements  = selection-element ("," selection-element)*
+selection-element   = syllable-components with-weight?;
+```
 
-selection-elements = selection-element ("," selection-element)*
-selection-element  = syllable-components with-weight?;
+#### Named Syllable Components
+
+Named syllable components are syllable components with an assigned name.
+They are defined with the `component` directive, and invoked similarly to categories, using `%`.
+
+```ebnf
+component-definition = "component" ":" identifier "=" syllable-components line-ending ;
+component-reference  = "%" identifier ;
 ```
 
 ### Rejections
