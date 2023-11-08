@@ -154,8 +154,8 @@
                 <ul>
                     <li>Category: <code>name = phoneme phoneme phoneme ...</code></li>
                     <li>Phonemes can be any character that is not whitespace or a semicolon </li>
-                    <li>Using a category in a category: <code>C = $A $B raw $D ...</code> (Note: recursive/circular usage, i.e. A in B in A, is not allowed.)
-                    </li>
+                    <li>Using a category in a category: <code>C = $A $B raw $D ...</code></li>
+                    <li>Category reference loops are not allowed (e.g. <code>C = p t $K; K = a b $C</code>, <code>V = a e $V o u</code>, etc).</li>
                 </ul>
                 <h3>Syllable</h3>
                 <ul>
@@ -172,7 +172,9 @@
                     <li>Named component definition: <code>component: name = syllableComponents...</code></li>
                     <li>You can use any valid syllable component as a named component.</li>
                     <li>Use a name component by using a percent sign before the name: <code>%name</code></li>
-                    <li>Named components can be used anywhere a syllable component can be used</li>
+                    <li>Named components can be used anywhere a syllable component can be used.</li>
+                    <li>Named component reference loops are not allowed
+                        (e.g. <code>component: a = a $b; component: b = $a b</code>, <code>component: name = %name $C</code>).</li>
                 </ul>
                 <h3>Weighting Rules</h3>
                 <ul>
