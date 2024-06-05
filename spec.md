@@ -59,7 +59,7 @@ They are used in all directives (except for `letters`).
 All components can be weighted.
 
 ```ebnf
-phoneme             = "any non-space text" ;
+phoneme             = "any non-space text not in "\n;*#$=[](){}|,/_:>^@!\\&%" ;
 category-reference  = "$" identifier ;
 identifier          = any non-space text not in "\n;*#$=[](){}|,/_:>^@!\\&%" ;
 weighted-component  = syllable-component with-weight? ;
