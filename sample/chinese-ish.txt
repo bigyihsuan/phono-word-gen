@@ -1,0 +1,16 @@
+N = m n ng
+Sa = p t k
+Su = b d g
+Aa = c ch q
+Au = z zh j
+F = f s sh x h
+L = l r
+
+C = $N $Sa $Su $Aa $Au $F $L
+G = i u ü
+V = i u ü e o a
+X = n ng
+
+syllable: ($C)*90 ($G) $V ($X)
+
+reject: $G$G | ^ng
