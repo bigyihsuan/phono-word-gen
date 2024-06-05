@@ -8,15 +8,23 @@ import (
 
 const symbols = "\n;*#$=[](){}|,/_:>^@!\\&%"
 
+type LexerState int
+
+const (
+	START LexerState = iota
+	CATEGORY
+)
+
 type Lexer struct {
 	src     []rune
 	ch      rune
 	currIdx int
 	peekIdx int
+	state   LexerState
 }
 
 func New(src []rune) *Lexer {
-	l := &Lexer{src: append(src, '\n'), currIdx: 0, peekIdx: 0}
+	l := &Lexer{src: append(src, '\n'), currIdx: 0, peekIdx: 0, state: START}
 	l.nextRune()
 	return l
 }
@@ -52,6 +60,7 @@ func (l *Lexer) GetNextToken() tok.Token {
 		token = tok.New(tok.COLON, string(l.ch), l.currIdx)
 	case '=':
 		token = tok.New(tok.EQ, string(l.ch), l.currIdx)
+		l.state = CATEGORY
 	case '$':
 		token = tok.New(tok.DOLLAR, string(l.ch), l.currIdx)
 	case '%':
@@ -83,8 +92,10 @@ func (l *Lexer) GetNextToken() tok.Token {
 		}
 	case ';':
 		token = tok.New(tok.LINE_ENDING, string(l.ch), l.currIdx)
+		l.state = START
 	case '\n':
 		token = tok.New(tok.LINE_ENDING, string(l.ch), l.currIdx)
+		l.state = START
 	case 0:
 		token = tok.New(tok.EOF, "", l.currIdx)
 	default:
@@ -96,6 +107,9 @@ func (l *Lexer) GetNextToken() tok.Token {
 		} else if unicode.IsDigit(l.ch) {
 			token.Lexeme = l.number()
 			token.Type = tok.NUMBER
+			if l.state == CATEGORY {
+				token.Type = tok.RAW
+			}
 			return token
 		} else {
 			token = tok.New(tok.ILLEGAL, string(l.ch), l.currIdx)
