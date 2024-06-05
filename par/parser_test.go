@@ -29,6 +29,8 @@ func TestParsePhoneme(t *testing.T) {
 		{"abc", "abc"},
 		{"ā", "ā"},
 		{"ə", "ə"},
+		{"1234", "1234"},
+		{"˩˧˩", "˩˧˩"},
 	}
 
 	for i, tt := range tests {
@@ -107,6 +109,7 @@ func TestParseCategory(t *testing.T) {
 		{"N = m n ñ", "(N = m*1 n*1 ñ*1)"},
 		{"C = p*1 t*3", "(C = p*1 t*3)"},
 		{"C = $N t*3", "(C = $N*1 t*3)"},
+		{"T = 1 2 ˩˧˩", "(T = 1*1 2*1 ˩˧˩*1)"},
 	}
 	for i, tt := range tests {
 		l := lex.New([]rune(tt.input))

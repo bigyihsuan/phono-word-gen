@@ -40,7 +40,7 @@ func (p *Parser) WeightedCategoryElement() *ast.WeightedElement {
 
 func (p *Parser) CategoryElement() ast.CategoryElement {
 	switch p.curr.Type {
-	case tok.RAW:
+	case tok.RAW, tok.NUMBER:
 		return p.Phoneme()
 	case tok.DOLLAR:
 		return p.CategoryReference()
