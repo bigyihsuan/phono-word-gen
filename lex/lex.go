@@ -2,6 +2,7 @@ package lex
 
 import (
 	"phono-word-gen/tok"
+	"strconv"
 	"strings"
 	"unicode"
 )
@@ -89,17 +90,15 @@ func (l *Lexer) GetNextToken() tok.Token {
 		token = tok.New(tok.EOF, "", l.currIdx)
 	default:
 		token.Index = l.currIdx
-		if unicode.IsLetter(l.ch) {
-			token.Lexeme = l.keywordOrRaw()
-			token.Type = tok.IsKeywordOrRaw(token.Lexeme)
-			return token
-		} else if unicode.IsDigit(l.ch) {
-			token.Lexeme = l.number()
+		token.Lexeme = l.raw()
+		if tok.IsKeyword(token.Lexeme) {
+			token.Type = tok.Keyword(token.Lexeme)
+		} else if _, err := strconv.ParseInt(token.Lexeme, 0, 64); err == nil {
 			token.Type = tok.NUMBER
-			return token
 		} else {
-			token = tok.New(tok.ILLEGAL, string(l.ch), l.currIdx)
+			token.Type = tok.RAW
 		}
+		return token
 	}
 	l.nextRune()
 	return token
@@ -130,10 +129,10 @@ func (l *Lexer) skipSpace() {
 
 func (l *Lexer) keywordOrRaw() string {
 	startPosition := l.currIdx
-	for isAllowableRaw(l.ch) {
+	for !isRawEnder(l.ch) {
 		l.nextRune()
 		s := string(l.src[startPosition:l.currIdx])
-		tt := tok.IsKeywordOrRaw(string(l.src[startPosition:l.currIdx]))
+		tt := tok.Keyword(string(l.src[startPosition:l.currIdx]))
 		if tt != tok.RAW {
 			return s
 		}
@@ -149,9 +148,17 @@ func (l *Lexer) number() string {
 	return string(l.src[startPosition:l.currIdx])
 }
 
+func (l *Lexer) raw() string {
+	startPosition := l.currIdx
+	for !isRawEnder(l.ch) {
+		l.nextRune()
+	}
+	return string(l.src[startPosition:l.currIdx])
+}
+
 func isSpace(r rune) bool  { return r == ' ' }
 func isSymbol(r rune) bool { return strings.ContainsRune(symbols, r) }
 func isLetter(r rune) bool { return unicode.IsLetter(r) }
 func isDigit(r rune) bool  { return unicode.IsDigit(r) }
 
-func isAllowableRaw(r rune) bool { return !isSpace(r) && !isSymbol(r) }
+func isRawEnder(r rune) bool { return isSpace(r) || isSymbol(r) }

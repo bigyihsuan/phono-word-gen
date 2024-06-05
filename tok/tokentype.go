@@ -56,10 +56,14 @@ var keywords = map[string]TokenType{
 	"component": COMPONENT,
 }
 
-func IsKeywordOrRaw(lexeme string) TokenType {
+func Keyword(lexeme string) TokenType {
 	if tt, ok := keywords[lexeme]; ok {
 		return tt
 	} else {
 		return RAW
 	}
+}
+func IsKeyword(lexeme string) bool {
+	_, ok := keywords[lexeme]
+	return ok
 }
