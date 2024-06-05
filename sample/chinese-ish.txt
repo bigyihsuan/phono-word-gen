@@ -10,7 +10,8 @@ C = $N $Sa $Su $Aa $Au $F $L
 G = i u ü
 V = i u ü e o a
 X = n ng
+T = ̄ ́ ̌ ̀
 
-syllable: ($C)*90 ($G) $V ($X)
+syllable: ($C)*90 ($G) $V ($T)*90 ($X)
 
 reject: $G$G | ^ng
