@@ -171,8 +171,10 @@
                     <li>You can use any valid syllable component as a named component.</li>
                     <li>Use a name component by using a percent sign before the name: <code>%name</code></li>
                     <li>Named components can be used anywhere a syllable component can be used.</li>
-                    <li>Named component reference loops are not allowed
-                        (e.g. <code>component: a = a $b; component: b = $a b</code>, <code>component: name = %name $C</code>).</li>
+                    <li>Named component reference loops are not allowed. For example: <code>component: a = a %b; component: b = %a b</code> (two components
+                        referencing each other),
+                        <code>component: name = %name $C</code> (component referencing itself).
+                    </li>
                 </ul>
                 <h3>Weighting Rules</h3>
                 <ul>
