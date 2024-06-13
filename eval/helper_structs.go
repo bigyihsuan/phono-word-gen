@@ -36,3 +36,7 @@ type entry struct {
 	word Word
 	syls []string
 }
+
+type examplePageElements struct {
+	sampleDropdownElement *dom.HTMLSelectElement
+}

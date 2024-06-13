@@ -3,6 +3,7 @@ package eval
 import (
 	"errors"
 	"fmt"
+	"io"
 	"math/rand"
 	"regexp"
 	"slices"
@@ -13,6 +14,7 @@ import (
 	"phono-word-gen/lex"
 	"phono-word-gen/par"
 	"phono-word-gen/parts"
+	"phono-word-gen/sample"
 	"phono-word-gen/util"
 
 	"github.com/mroth/weightedrand/v2"
@@ -39,6 +41,8 @@ type Evaluator struct {
 
 	letters      []string
 	letterRegexp *regexp.Regexp
+
+	*examplePageElements
 }
 
 func New() (*Evaluator, error) {
@@ -70,6 +74,13 @@ func (e *Evaluator) loadDocument() {
 	e.duplicateAlertElement = e.document.QuerySelector("#duplicateAlert").(*dom.HTMLDivElement)
 	e.rejectedAlertElement = e.document.QuerySelector("#rejectedAlert").(*dom.HTMLDivElement)
 	e.replacedAlertElement = e.document.QuerySelector("#replacedAlert").(*dom.HTMLDivElement)
+
+	e.examplePageElements = nil
+	if sampleDropdownElement := e.document.QuerySelector("#samples"); sampleDropdownElement != nil {
+		e.examplePageElements = &examplePageElements{
+			sampleDropdownElement: sampleDropdownElement.(*dom.HTMLSelectElement),
+		}
+	}
 }
 
 func (e *Evaluator) setEventListeners() {
@@ -93,6 +104,7 @@ func (e *Evaluator) setEventListeners() {
 			e.sentenceCountElement.SetDisabled(true)
 		}
 	})
+	// set up copy-output button
 	e.copyButtonElement.AddEventListener("click", false, func(event dom.Event) {
 		js.Global().Get("window").Get("navigator").Get("clipboard").Call("writeText", e.outputTextElement.Value())
 	})
@@ -101,6 +113,38 @@ func (e *Evaluator) setEventListeners() {
 func (e *Evaluator) submitMain(event dom.Event) {
 	// get the values of the various options
 	e.getOptions()
+
+	// if this is the example page, load the selected code
+	if e.examplePageElements != nil {
+		selectedExampleValue := e.sampleDropdownElement.Value()
+		if selectedExampleValue == "nothing" {
+			util.LogError("no example selected", selectedExampleValue)
+			e.displayError(fmt.Errorf("no example selected"))
+			return
+		}
+		selectedExample, ok := sample.ExampleToFilename[selectedExampleValue]
+		if !ok {
+			util.LogError("invalid example selection", selectedExampleValue)
+			return
+		}
+
+		file, err := sample.Examples.Open(selectedExample)
+		if err != nil {
+			util.LogError("failed to open example", err)
+			e.displayError(fmt.Errorf("failed to open example: %w", err))
+			return
+		}
+		defer file.Close()
+
+		data, err := io.ReadAll(file)
+		if err != nil {
+			util.LogError("failed to read example", err)
+			e.displayError(fmt.Errorf("failed to read example: %w", err))
+			return
+		}
+
+		e.inputTextElement.SetValue(string(data))
+	}
 
 	// refesh the code input
 	directives, err := e.loadCode(e.inputTextElement.Value())
