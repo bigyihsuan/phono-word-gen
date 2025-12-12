@@ -10,4 +10,5 @@
         "GOARCH": "wasm",
         "GOOS": "js"
     },
+    "makefile.configureOnOpen": false,
 }

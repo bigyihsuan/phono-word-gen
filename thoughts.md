@@ -2,9 +2,18 @@
 
 (with some minimal formatting edits)
 
-man i have like 4 different random word generators bookmarked and all of them have features missing for my "idea" random word generator
+man i have like 4 different random word generators bookmarked and all of them have features missing for my "ideal" random word generator
 
-## gen <http://www.zompist.com/gen.html>
+- [my random word generator rant thing posted to the Conlangs Discord Network's `#tools-and-documentation`](#my-random-word-generator-rant-thing-posted-to-the-conlangs-discord-networks-tools-and-documentation)
+  - [gen](#gen)
+  - [awkwords](#awkwords)
+  - [gengo](#gengo)
+  - [lexifier](#lexifier)
+  - [MY IDEAL WORD GENERATOR](#my-ideal-word-generator)
+
+## gen
+
+<http://www.zompist.com/gen.html>
 
 liked
 
@@ -17,7 +26,9 @@ my problems
 - need to list *ALL* variants of syllables
 - can't set to no monosyllables
 
-## awkwords <http://akana.conlang.org/tools/awkwords/>
+## awkwords
+
+<http://akana.conlang.org/tools/awkwords/>
 
 liked
 
@@ -30,7 +41,9 @@ my problems
 - max of 26 categories
 - can't set syllable structure and generate words of `N` syllables, have to manually copy-paste syllable structure multiple times
 
-## gengo <https://collinbrennan.github.io/GenGo/index.html>
+## gengo
+
+<https://collinbrennan.github.io/GenGo/index.html>
 
 liked
 
@@ -45,7 +58,9 @@ my problems
 - incomplete, according to docs (and the github commit history)
 - weird comment syntax
 
-## lexifier <https://lingweenie.org/conlang/lexifer-app.html>
+## lexifier
+
+<https://lingweenie.org/conlang/lexifer-app.html>
 
 liked
 
