@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"syscall/js"
 
@@ -330,6 +331,12 @@ func (e *Evaluator) getOptions() {
 	e.maxSylCount = int(e.maxSylCountElement.ValueAsNumber())
 	e.wordCount = int(e.wordCountElement.ValueAsNumber())
 	e.sentenceCount = int(e.sentenceCountElement.ValueAsNumber())
+
+	// handle minSylCount being larger than maxSylCount
+	if e.minSylCount > e.maxSylCount {
+		e.maxSylCount = e.minSylCount
+		e.maxSylCountElement.SetValue(strconv.Itoa(e.minSylCount))
+	}
 
 	e.forbidDuplicates = e.forbidDuplicatesElement.Checked()
 	e.forceWordLimit = e.forceWordLimitElement.Checked()
