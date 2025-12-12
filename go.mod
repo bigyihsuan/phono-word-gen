@@ -1,12 +1,12 @@
 module phono-word-gen
 
-go 1.21.0
+go 1.25.3
 
 require (
 	github.com/mroth/weightedrand/v2 v2.1.0
-	github.com/stretchr/testify v1.8.4
-	golang.org/x/exp v0.0.0-20230811145659-89c5cff77bcb
-	honnef.co/go/js/dom/v2 v2.0.0-20230808055721-96db8f4d5e3b
+	github.com/stretchr/testify v1.11.1
+	golang.org/x/exp v0.0.0-20251209150349-8475f28825e9
+	honnef.co/go/js/dom/v2 v2.0.0-20250304181735-b5e52f05e89d
 )
 
 require (
