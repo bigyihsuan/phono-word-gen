@@ -1,7 +1,8 @@
 go_files=$(wildcard *.go)
 
+# https://go.dev/wiki/WebAssembly#getting-started
 get_wasm_exec:
-	cp "$$(go env GOROOT)/misc/wasm/wasm_exec.js" ./dist
+	cp "$$(go env GOROOT)/lib/wasm/wasm_exec.js" ./dist
 
 build: get_wasm_exec $(go_files) ./dist/main.wasm ./dist/index.html ./dist/docs.html
 	GOOS=js GOARCH=wasm go build -o ./dist/main.wasm
