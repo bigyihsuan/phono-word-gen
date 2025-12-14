@@ -44,6 +44,8 @@ type Evaluator struct {
 	letterRegexp *regexp.Regexp
 
 	*examplePageElements
+
+	errors []error
 }
 
 func New() (*Evaluator, error) {
@@ -112,6 +114,12 @@ func (e *Evaluator) setEventListeners() {
 }
 
 func (e *Evaluator) submitMain(event dom.Event) {
+	defer func() {
+		if len(e.errors) > 0 {
+			e.displayErrors()
+		}
+		e.clearErrors()
+	}()
 	// get the values of the various options
 	e.getOptions()
 
@@ -120,7 +128,7 @@ func (e *Evaluator) submitMain(event dom.Event) {
 		selectedExampleValue := e.sampleDropdownElement.Value()
 		if selectedExampleValue == "nothing" {
 			util.LogError("no example selected", selectedExampleValue)
-			e.displayError(fmt.Errorf("no example selected"))
+			e.addErrors(fmt.Errorf("no example selected"))
 			return
 		}
 		selectedExample, ok := sample.ExampleToFilename[selectedExampleValue]
@@ -132,7 +140,7 @@ func (e *Evaluator) submitMain(event dom.Event) {
 		file, err := sample.Examples.Open(selectedExample)
 		if err != nil {
 			util.LogError("failed to open example", err)
-			e.displayError(fmt.Errorf("failed to open example: %w", err))
+			e.addErrors(fmt.Errorf("failed to open example: %w", err))
 			return
 		}
 		defer file.Close()
@@ -140,7 +148,7 @@ func (e *Evaluator) submitMain(event dom.Event) {
 		data, err := io.ReadAll(file)
 		if err != nil {
 			util.LogError("failed to read example", err)
-			e.displayError(fmt.Errorf("failed to read example: %w", err))
+			e.addErrors(fmt.Errorf("failed to read example: %w", err))
 			return
 		}
 
@@ -150,16 +158,16 @@ func (e *Evaluator) submitMain(event dom.Event) {
 	// refesh the code input
 	directives, err := e.loadCode(e.inputTextElement.Value())
 	if err != nil {
-		e.displayError(err)
+		e.addErrors(err)
 		return
 	}
 	e.evalDirectives(directives)
 	if ok, err := e.checkCategories(); !ok {
-		e.displayError(err)
+		e.addErrors(err)
 		return
 	}
 	if ok, err := e.checkComponents(); !ok {
-		e.displayError(err)
+		e.addErrors(err)
 		return
 	}
 
@@ -208,8 +216,7 @@ func (e *Evaluator) submitMain(event dom.Event) {
 			words = words[:e.wordCount]
 		}
 	} else if e.forceWordLimit && count < e.wordCount {
-		e.displayError(fmt.Errorf("not enough choices to force word count: only %d/%d choices available", count, e.wordCount))
-		return
+		e.addErrors(fmt.Errorf("not enough choices to force word count: only %d/%d choices available", count, e.wordCount))
 	}
 
 	// if on, sort output
@@ -296,7 +303,7 @@ func (e *Evaluator) syllabizeWords(words []Word) []Word {
 		err := word.GenerateSyllables(e.categories, e.components)
 		if err != nil {
 			util.LogError(err.Error())
-			e.outputTextElement.SetValue(err.Error())
+			e.addErrors(err)
 			return words
 		}
 		words[i] = word
@@ -321,9 +328,18 @@ func (e *Evaluator) displaySentences(sentences []string) {
 	e.updateAlerts()
 }
 
-func (e *Evaluator) displayError(err error) {
-	util.LogError(err.Error())
-	e.outputTextElement.SetValue(err.Error())
+func (e *Evaluator) displayErrors() {
+	errs := errors.Join(e.errors...)
+	util.LogError(errs)
+	e.outputTextElement.SetValue(errs.Error())
+}
+
+func (e *Evaluator) addErrors(errs ...error) {
+	e.errors = append(e.errors, errs...)
+}
+
+func (e *Evaluator) clearErrors() {
+	e.errors = []error{}
 }
 
 func (e *Evaluator) getOptions() {
