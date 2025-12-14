@@ -37,7 +37,12 @@ func (c Category) Get(categories Categories, components Components) (string, err
 	return chooser.Pick().Get(categories, components)
 }
 func (c Category) ChoiceCount(categories Categories, components Components) int {
-	return len(c.Elements)
+	choices := 0
+	for _, choice := range c.Elements {
+		element := choice.Item
+		choices += element.ChoiceCount(categories, components)
+	}
+	return choices
 }
 func (c Category) Regexp(categories Categories, components Components) *regexp.Regexp {
 	elements := []string{}
