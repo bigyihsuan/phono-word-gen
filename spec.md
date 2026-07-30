@@ -33,11 +33,11 @@ The lexer should allow raw source in 2 forms:
 
 | Token                 | Description         | Multiple Allowed? |
 | --------------------- | ------------------- | :---------------: |
-| `[any category name]` | Category definition |         ✅         |
-| `syllable`            | Syllable definition |         ✅         |
-| `reject`              | Rejection rule      |         ✅         |
-| `replace`             | Replacement rule    |         ✅         |
-| `letters`             | Sorting order       |         ❌         |
+| `[any category name]` | Category definition |        ✅         |
+| `syllable`            | Syllable definition |        ✅         |
+| `reject`              | Rejection rule      |        ✅         |
+| `replace`             | Replacement rule    |        ✅         |
+| `letters`             | Sorting order       |        ❌         |
 
 ### Common Tokens
 
