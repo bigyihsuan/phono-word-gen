@@ -93,10 +93,10 @@ func (p *Parser) SyllableSelection() ast.SyllableComponent {
 	}
 	return &ast.SyllableSelection{Components: components}
 }
-func (p *Parser) SelectionElements() (components []ast.SyllableComponent) {
+func (p *Parser) SelectionElements() (components []ast.WeightedSyllableComponent) {
 	for !p.peekIs(tok.RBRACKET) {
 		c := p.SelectionElement()
-		components = append(components, c)
+		components = append(components, *c)
 		if p.peekIs(tok.RBRACKET) {
 			break
 		}

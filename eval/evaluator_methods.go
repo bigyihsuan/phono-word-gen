@@ -74,57 +74,7 @@ func (e *Evaluator) evalComponentDirective(dir *ast.ComponentDirective) parts.Co
 }
 
 func (e *Evaluator) evalSyllableComponent(component ast.SyllableComponent) parts.SyllableElement {
-	switch component := component.(type) {
-	case *ast.Phoneme:
-		return parts.NewPhoneme(component.Value)
-	case *ast.CategoryReference:
-		return parts.NewCategoryReference(component.Name)
-	case *ast.ComponentReference:
-		return parts.NewComponentReference(component.Name)
-	case *ast.SyllableGrouping:
-		return e.evalGrouping(component)
-	case *ast.SyllableOptional:
-		return e.evalOptional(component)
-	case *ast.SyllableSelection:
-		return e.evalSelection(component)
-	default:
-		fmt.Printf("unknown component: %T (%+v)\n", component, component)
-	}
-	return nil
-}
-
-func (e *Evaluator) evalGrouping(component *ast.SyllableGrouping) parts.SyllableElement {
-	components := []parts.SyllableElement{}
-	for _, c := range component.Components {
-		components = append(components, e.evalSyllableComponent(c))
-	}
-	return parts.NewGrouping(components...)
-}
-
-func (e *Evaluator) evalOptional(component *ast.SyllableOptional) parts.SyllableElement {
-	components := []parts.SyllableElement{}
-	for _, c := range component.Components {
-		components = append(components, e.evalSyllableComponent(c))
-	}
-	return parts.NewOptional(components, component.Weight)
-}
-
-func (e *Evaluator) evalSelection(component *ast.SyllableSelection) parts.SyllableElement {
-	components := []weightedrand.Choice[parts.SyllableElement, int]{}
-	for _, c := range component.Components {
-		comp, weight := e.evalWeightedComponent(c.(*ast.WeightedSyllableComponent))
-		choice := weightedrand.NewChoice(comp, weight)
-		components = append(components, choice)
-	}
-	return parts.NewSelection(components...)
-}
-
-func (e *Evaluator) evalWeightedComponent(component *ast.WeightedSyllableComponent) (parts.SyllableElement, int) {
-	components := []parts.SyllableElement{}
-	for _, c := range component.Components {
-		components = append(components, e.evalSyllableComponent(c))
-	}
-	return parts.NewGrouping(components...), component.Weight
+	return component.SyllableElement()
 }
 
 func (e *Evaluator) evalLetters(dir *ast.LettersDirective) (letters []string) {

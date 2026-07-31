@@ -35,4 +35,6 @@ type SyllableComponent interface {
 	Node
 	fmt.Stringer
 	syllableComponent()
+	// Turn this SyllableComponent into a [parts.SyllableElement] for the evaluator.
+	SyllableElement() parts.SyllableElement
 }

@@ -17,3 +17,7 @@ func (p *Phoneme) String() string     { return p.Value }
 func (p Phoneme) PartElement() (parts.Element, int) {
 	return parts.NewPhoneme(p.Value), 1
 }
+
+func (p Phoneme) SyllableElement() parts.SyllableElement {
+	return parts.NewPhoneme(p.Value)
+}

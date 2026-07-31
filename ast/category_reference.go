@@ -16,3 +16,7 @@ func (r *CategoryReference) String() string     { return "$" + r.Name }
 func (r CategoryReference) PartElement() (parts.Element, int) {
 	return parts.NewCategoryReference(r.Name), 1
 }
+
+func (r CategoryReference) SyllableElement() parts.SyllableElement {
+	return parts.NewCategoryReference(r.Name)
+}

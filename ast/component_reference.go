@@ -1,5 +1,7 @@
 package ast
 
+import "phono-word-gen/parts"
+
 type ComponentReference struct {
 	Name string
 }
@@ -9,3 +11,7 @@ func (r *ComponentReference) categoryElement()   {}
 func (r *ComponentReference) syllableComponent() {}
 func (r *ComponentReference) replacementSource() {}
 func (r *ComponentReference) String() string     { return "%" + r.Name }
+
+func (r ComponentReference) SyllableElement() parts.SyllableElement {
+	return parts.NewComponentReference(r.Name)
+}
