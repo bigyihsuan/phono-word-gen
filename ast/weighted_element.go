@@ -17,6 +17,7 @@ func (w *WeightedElement) String() string {
 	return fmt.Sprintf("%s*%d", w.Element.String(), w.Weight)
 }
 
+// [WeightedElement.PartElement] implements [CategoryElement].
 func (w WeightedElement) PartElement() (parts.Element, int) {
 	ele, _ := w.Element.PartElement()
 	return ele, w.Weight
