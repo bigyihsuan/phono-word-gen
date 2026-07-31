@@ -53,15 +53,7 @@ func (e *Evaluator) evalCategory(dir *ast.CategoryDirective) parts.Category {
 
 func (e *Evaluator) evalCategoryElement(element ast.CategoryElement) (ele parts.Element, weight int) {
 	weight = 1
-	switch element := element.(type) {
-	case *ast.Phoneme:
-		return parts.NewPhoneme(element.Value), 1
-	case *ast.CategoryReference:
-		return parts.NewCategoryReference(element.Name), 1
-	case *ast.WeightedElement:
-		weight = element.Weight
-		ele, _ = e.evalCategoryElement(element.Element)
-	}
+	ele, weight = element.PartElement()
 	return ele, weight
 }
 

@@ -67,6 +67,7 @@ func (p *Parser) expectCurr(tt tok.TokenType) bool {
 	}
 }
 
+// top level: list of directives
 func (p *Parser) Directives() (directives []ast.Directive) {
 	for p.peek.Type != tok.EOF {
 		for p.currIsAny(tok.LINE_ENDING, tok.COMMENT) {
