@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"phono-word-gen/eval"
+	"phono-word-gen/web"
 )
 
 func main() {
@@ -16,7 +16,7 @@ func main() {
 }
 
 func initialize() {
-	_, err := eval.New()
+	_, err := web.New()
 	if err != nil {
 		fmt.Println(err)
 	}

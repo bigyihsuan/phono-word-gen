@@ -3,7 +3,7 @@ package eval
 import "phono-word-gen/util"
 
 func (e *Evaluator) replaceWords(words []Word) []Word {
-	if !e.applyReplacements {
+	if !e.ApplyReplacements {
 		return words
 	}
 

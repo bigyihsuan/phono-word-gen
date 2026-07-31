@@ -3,32 +3,32 @@ package eval
 import (
 	"errors"
 	"fmt"
-	"io"
 	"math/rand"
 	"regexp"
 	"slices"
-	"strconv"
-	"strings"
-	"syscall/js"
 
 	"phono-word-gen/ast"
 	"phono-word-gen/lex"
 	"phono-word-gen/par"
 	"phono-word-gen/parts"
-	"phono-word-gen/sample"
 	"phono-word-gen/util"
 
 	"github.com/mroth/weightedrand/v2"
 	"golang.org/x/exp/maps"
-	"honnef.co/go/js/dom/v2"
 )
 
+type Options struct {
+	MinSylCount, MaxSylCount int
+	WordCount, SentenceCount int
+
+	ForbidDuplicates, ForceWordLimit, SortOutput, MarkSyllables bool
+	ApplyRejections, ApplyReplacements, GenerateSentences       bool
+}
+
 type Evaluator struct {
-	document dom.Document
-	Elements
 	Options
 
-	generatedCount, duplicateCount, rejectedCount, replacedCount int
+	GeneratedCount, DuplicateCount, RejectedCount, ReplacedCount int
 
 	categories parts.Categories
 	components parts.Components
@@ -43,131 +43,30 @@ type Evaluator struct {
 	letters      []string
 	letterRegexp *regexp.Regexp
 
-	*examplePageElements
-
-	errors []error
+	Errors []error
 }
 
-func New() (*Evaluator, error) {
-	e := &Evaluator{}
-	e.loadDocument()
-	e.setEventListeners()
-	return e, nil
+func New(opts Options) *Evaluator {
+	e := new(Evaluator)
+	e.Options = opts
+	e.resetCounters()
+	return e
 }
 
-func (e *Evaluator) loadDocument() {
-	e.document = dom.GetWindow().Document()
-	e.inputTextElement = e.document.QuerySelector("#phonology").(*dom.HTMLTextAreaElement)
-	e.outputTextElement = e.document.QuerySelector("#outputText").(*dom.HTMLTextAreaElement)
-	e.submitButtonElement = e.document.QuerySelector("#submit").(*dom.HTMLButtonElement)
-	e.minSylCountElement = e.document.QuerySelector("#minSylCount").(*dom.HTMLInputElement)
-	e.maxSylCountElement = e.document.QuerySelector("#maxSylCount").(*dom.HTMLInputElement)
-	e.wordCountElement = e.document.QuerySelector("#wordCount").(*dom.HTMLInputElement)
-	e.sentenceCountElement = e.document.QuerySelector("#sentenceCount").(*dom.HTMLInputElement)
-	e.generateSentencesElement = e.document.QuerySelector("#generateSentences").(*dom.HTMLInputElement)
-	e.forbidDuplicatesElement = e.document.QuerySelector("#forbidDuplicates").(*dom.HTMLInputElement)
-	e.forceWordLimitElement = e.document.QuerySelector("#forceWordLimit").(*dom.HTMLInputElement)
-	e.sortOutputElement = e.document.QuerySelector("#sortOutput").(*dom.HTMLInputElement)
-	e.markSyllablesElement = e.document.QuerySelector("#markSyllables").(*dom.HTMLInputElement)
-	e.applyRejectionsElement = e.document.QuerySelector("#applyRejections").(*dom.HTMLInputElement)
-	e.applyReplacementsElement = e.document.QuerySelector("#applyReplacements").(*dom.HTMLInputElement)
-	e.copyButtonElement = e.document.QuerySelector("#copyButton").(*dom.HTMLButtonElement)
-
-	e.generatedAlertElement = e.document.QuerySelector("#generatedAlert").(*dom.HTMLDivElement)
-	e.duplicateAlertElement = e.document.QuerySelector("#duplicateAlert").(*dom.HTMLDivElement)
-	e.rejectedAlertElement = e.document.QuerySelector("#rejectedAlert").(*dom.HTMLDivElement)
-	e.replacedAlertElement = e.document.QuerySelector("#replacedAlert").(*dom.HTMLDivElement)
-
-	e.examplePageElements = nil
-	if sampleDropdownElement := e.document.QuerySelector("#samples"); sampleDropdownElement != nil {
-		e.examplePageElements = &examplePageElements{
-			sampleDropdownElement: sampleDropdownElement.(*dom.HTMLSelectElement),
-		}
-	}
-}
-
-func (e *Evaluator) setEventListeners() {
-	e.submitButtonElement.AddEventListener("click", false, e.submitMain)
-	e.generateSentencesElement.AddEventListener("click", false, func(event dom.Event) {
-		if e.generateSentencesElement.Checked() {
-			e.forbidDuplicatesElement.SetDisabled(true)
-			e.forceWordLimitElement.SetDisabled(true)
-			e.markSyllablesElement.SetDisabled(true)
-			e.sortOutputElement.SetDisabled(true)
-
-			e.wordCountElement.SetDisabled(true)
-			e.sentenceCountElement.SetDisabled(false)
-		} else {
-			e.forbidDuplicatesElement.SetDisabled(false)
-			e.forceWordLimitElement.SetDisabled(false)
-			e.markSyllablesElement.SetDisabled(false)
-			e.sortOutputElement.SetDisabled(false)
-
-			e.wordCountElement.SetDisabled(false)
-			e.sentenceCountElement.SetDisabled(true)
-		}
-	})
-	// set up copy-output button
-	e.copyButtonElement.AddEventListener("click", false, func(event dom.Event) {
-		js.Global().Get("window").Get("navigator").Get("clipboard").Call("writeText", e.outputTextElement.Value())
-	})
-}
-
-func (e *Evaluator) submitMain(event dom.Event) {
-	defer func() {
-		if len(e.errors) > 0 {
-			e.displayErrors()
-		}
-		e.clearErrors()
-	}()
-	// get the values of the various options
-	e.getOptions()
-
-	// if this is the example page, load the selected code
-	if e.examplePageElements != nil {
-		selectedExampleValue := e.sampleDropdownElement.Value()
-		if selectedExampleValue == "nothing" {
-			util.LogError("no example selected", selectedExampleValue)
-			e.addErrors(fmt.Errorf("no example selected"))
-			return
-		}
-		selectedExample, ok := sample.ExampleToFilename[selectedExampleValue]
-		if !ok {
-			util.LogError("invalid example selection", selectedExampleValue)
-			return
-		}
-
-		file, err := sample.Examples.Open(selectedExample)
-		if err != nil {
-			util.LogError("failed to open example", err)
-			e.addErrors(fmt.Errorf("failed to open example: %w", err))
-			return
-		}
-		defer file.Close()
-
-		data, err := io.ReadAll(file)
-		if err != nil {
-			util.LogError("failed to read example", err)
-			e.addErrors(fmt.Errorf("failed to read example: %w", err))
-			return
-		}
-
-		e.inputTextElement.SetValue(string(data))
-	}
-
+func (e *Evaluator) Run(src string) (words []Word, syllableSep string, sentences []string) {
 	// refesh the code input
-	directives, err := e.loadCode(e.inputTextElement.Value())
+	directives, err := e.LoadCode(src)
 	if err != nil {
-		e.addErrors(err)
+		e.AddErrors(err)
 		return
 	}
 	e.evalDirectives(directives)
 	if ok, err := e.checkCategories(); !ok {
-		e.addErrors(err)
+		e.AddErrors(err)
 		return
 	}
 	if ok, err := e.checkComponents(); !ok {
-		e.addErrors(err)
+		e.AddErrors(err)
 		return
 	}
 
@@ -176,18 +75,18 @@ func (e *Evaluator) submitMain(event dom.Event) {
 		return
 	}
 
-	if e.generateSentences {
-		e.createSentences()
+	if e.GenerateSentences {
+		sentences = e.createSentences()
 		return
 	}
 	// generate N words
-	words := e.generateWords(e.wordCount * 2)
+	words = e.generateWords(e.WordCount * 2)
 	// convert the words to lists of syllables
 	words = e.syllabizeWords(words)
 	// if on, remove duplicates
 	words = e.removeDuplicates(words)
-	if len(words) >= e.wordCount {
-		words = words[:e.wordCount]
+	if len(words) >= e.WordCount {
+		words = words[:e.WordCount]
 	}
 
 	// if on, apply rejections
@@ -197,12 +96,12 @@ func (e *Evaluator) submitMain(event dom.Event) {
 	// TODO: if on, apply replacements
 	// words = e.replaceWords(words)
 
-	// if on, force generate to wordCount
+	// if on, force generate to WordCount
 	// get number of possible syllables, and abort forced gen if possible < wanted
 	count := e.choiceCount(e.categories, e.components)
-	if e.forceWordLimit && count >= e.wordCount {
-		for len(words) < e.wordCount {
-			words = e.generateWords(e.wordCount * 2)
+	if e.ForceWordLimit && count >= e.WordCount {
+		for len(words) < e.WordCount {
+			words = e.generateWords(e.WordCount * 2)
 			words = e.syllabizeWords(words)
 			words = e.removeDuplicates(words)
 			words = e.rejectWords(words)
@@ -212,29 +111,28 @@ func (e *Evaluator) submitMain(event dom.Event) {
 		rand.Shuffle(len(words), func(i, j int) {
 			words[i], words[j] = words[j], words[i]
 		})
-		if len(words) >= e.wordCount {
-			words = words[:e.wordCount]
+		if len(words) >= e.WordCount {
+			words = words[:e.WordCount]
 		}
-	} else if e.forceWordLimit && count < e.wordCount {
-		e.addErrors(fmt.Errorf("not enough choices to force word count: only %d/%d choices available", count, e.wordCount))
+	} else if e.ForceWordLimit && count < e.WordCount {
+		e.AddErrors(fmt.Errorf("not enough choices to force word count: only %d/%d choices available", count, e.WordCount))
 	}
 
 	// if on, sort output
-	if e.sortOutput {
+	if e.SortOutput {
 		words = e.sort(words)
 	}
 
-	syllableSep := ""
+	syllableSep = ""
 	// TODO: if on, display with syllable separators
-	if e.markSyllables {
+	if e.MarkSyllables {
 		syllableSep = "."
 	}
 
-	// display to the output textbox
-	e.displayWords(words, syllableSep)
+	return words, syllableSep, sentences
 }
 
-func (e *Evaluator) loadCode(src string) ([]ast.Directive, error) {
+func (e *Evaluator) LoadCode(src string) ([]ast.Directive, error) {
 	l := lex.New([]rune(src))
 	p := par.New(l)
 	directives := p.Directives()
@@ -303,7 +201,7 @@ func (e *Evaluator) syllabizeWords(words []Word) []Word {
 		err := word.GenerateSyllables(e.categories, e.components)
 		if err != nil {
 			util.LogError(err.Error())
-			e.addErrors(err)
+			e.AddErrors(err)
 			return words
 		}
 		words[i] = word
@@ -311,72 +209,15 @@ func (e *Evaluator) syllabizeWords(words []Word) []Word {
 	return words
 }
 
-func (e *Evaluator) displayWords(words []Word, syllableSep string) {
-	wordStrings := []string{}
-	text := ""
-	for _, word := range words {
-		wordStrings = append(wordStrings, strings.Join(word.Syllables, syllableSep))
-	}
-	text += strings.Join(wordStrings, "\n")
-	e.outputTextElement.SetValue(text)
-	e.updateAlerts()
+func (e *Evaluator) AddErrors(errs ...error) {
+	e.Errors = append(e.Errors, errs...)
 }
 
-func (e *Evaluator) displaySentences(sentences []string) {
-	text := strings.Join(sentences, " ")
-	e.outputTextElement.SetValue(text)
-	e.updateAlerts()
+func (e *Evaluator) ClearErrors() {
+	e.Errors = []error{}
 }
-
-func (e *Evaluator) displayErrors() {
-	errs := errors.Join(e.errors...)
-	util.LogError(errs)
-	e.outputTextElement.SetValue(errs.Error())
-}
-
-func (e *Evaluator) addErrors(errs ...error) {
-	e.errors = append(e.errors, errs...)
-}
-
-func (e *Evaluator) clearErrors() {
-	e.errors = []error{}
-}
-
-func (e *Evaluator) getOptions() {
-	e.minSylCount = int(e.minSylCountElement.ValueAsNumber())
-	e.maxSylCount = int(e.maxSylCountElement.ValueAsNumber())
-	e.wordCount = int(e.wordCountElement.ValueAsNumber())
-	e.sentenceCount = int(e.sentenceCountElement.ValueAsNumber())
-
-	// handle minSylCount being larger than maxSylCount
-	if e.minSylCount > e.maxSylCount {
-		e.maxSylCount = e.minSylCount
-		e.maxSylCountElement.SetValue(strconv.Itoa(e.minSylCount))
-	}
-
-	e.forbidDuplicates = e.forbidDuplicatesElement.Checked()
-	e.forceWordLimit = e.forceWordLimitElement.Checked()
-	e.sortOutput = e.sortOutputElement.Checked()
-	e.markSyllables = e.markSyllablesElement.Checked()
-	e.applyRejections = e.applyRejectionsElement.Checked()
-	e.applyReplacements = e.applyReplacementsElement.Checked()
-	e.generateSentences = e.generateSentencesElement.Checked()
-
-	e.generatedCount = 0
-	e.duplicateCount = 0
-	e.rejectedCount = 0
-	e.replacedCount = 0
-}
-
-func (e *Evaluator) updateAlerts() {
-	e.generatedAlertElement.SetInnerHTML(fmt.Sprintf("generated %d words", e.generatedCount))
-	e.duplicateAlertElement.SetInnerHTML(fmt.Sprintf("removed %d duplicates", e.duplicateCount))
-	e.rejectedAlertElement.SetInnerHTML(fmt.Sprintf("rejected %d words", e.rejectedCount))
-	e.replacedAlertElement.SetInnerHTML(fmt.Sprintf("replaced %d words", e.replacedCount))
-}
-
 func (e *Evaluator) removeDuplicates(words []Word) (ws []Word) {
-	if !e.forbidDuplicates {
+	if !e.ForbidDuplicates {
 		return words
 	}
 
@@ -393,7 +234,7 @@ func (e *Evaluator) removeDuplicates(words []Word) (ws []Word) {
 	for _, v := range values {
 		ws = append(ws, v)
 	}
-	e.duplicateCount = oldLen - len(ws)
+	e.DuplicateCount = oldLen - len(ws)
 	return ws
 }
 
@@ -403,4 +244,11 @@ func (e *Evaluator) choiceCount(categories parts.Categories, components parts.Co
 		count *= s.ChoiceCount(categories, components)
 	}
 	return count
+}
+
+func (e *Evaluator) resetCounters() {
+	e.GeneratedCount = 0
+	e.DuplicateCount = 0
+	e.RejectedCount = 0
+	e.ReplacedCount = 0
 }

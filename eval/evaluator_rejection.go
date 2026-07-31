@@ -1,7 +1,7 @@
 package eval
 
 func (e *Evaluator) rejectWords(words []Word) []Word {
-	if !e.applyRejections {
+	if !e.ApplyRejections {
 		return words
 	}
 
@@ -27,7 +27,7 @@ func (e *Evaluator) rejectWords(words []Word) []Word {
 		if !matchesWordLevel && !matchesSyllableLevel && !matchesGeneral {
 			keptWords = append(keptWords, words[i])
 		} else {
-			e.rejectedCount++
+			e.RejectedCount++
 		}
 	}
 	return keptWords
