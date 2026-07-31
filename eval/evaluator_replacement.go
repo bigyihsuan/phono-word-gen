@@ -65,7 +65,7 @@ func (e *Evaluator) replaceWords(words []Word) []Word {
 			util.Log(word, m)
 			util.Log(r.Source.Regexp(e.categories, e.components), r.Replacement)
 			util.Log("ConditionRegexp", r.ConditionRegexp(e.categories, e.components))
-			if matchIndexes == nil || len(matchIndexes) == 0 {
+			if len(matchIndexes) == 0 {
 				// return early
 				replacedWords = append(replacedWords, word)
 				continue
