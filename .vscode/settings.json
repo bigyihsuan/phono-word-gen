@@ -11,4 +11,6 @@
         "GOOS": "js"
     },
     "makefile.configureOnOpen": false,
+    "editor.tabSize": 4,
+    "editor.detectIndentation": false,
 }
