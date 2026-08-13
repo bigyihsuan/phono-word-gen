@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	wr "github.com/mroth/weightedrand/v2"
+	wr "github.com/mroth/weightedrand/v3"
 )
 
 type Syllable struct {

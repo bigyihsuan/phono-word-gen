@@ -5,7 +5,7 @@ import (
 	"phono-word-gen/parts"
 	"strings"
 
-	"github.com/mroth/weightedrand/v2"
+	"github.com/mroth/weightedrand/v3"
 )
 
 type SyllableDirective struct {

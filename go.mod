@@ -3,7 +3,7 @@ module phono-word-gen
 go 1.26.5
 
 require (
-	github.com/mroth/weightedrand/v2 v2.1.0
+	github.com/mroth/weightedrand/v3 v3.0.0
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/exp v0.0.0-20260727155853-b88d891fe743
 	honnef.co/go/js/dom/v2 v2.0.0-20250304181735-b5e52f05e89d

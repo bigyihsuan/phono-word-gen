@@ -10,7 +10,7 @@ import (
 	"phono-word-gen/parts"
 	"phono-word-gen/util"
 
-	"github.com/mroth/weightedrand/v2"
+	"github.com/mroth/weightedrand/v3"
 )
 
 func (e *Evaluator) evalDirectives(directives []ast.Directive) {

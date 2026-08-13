@@ -3,7 +3,7 @@ package parts
 import (
 	"testing"
 
-	wr "github.com/mroth/weightedrand/v2"
+	wr "github.com/mroth/weightedrand/v3"
 	"github.com/stretchr/testify/assert"
 )
 
