@@ -6,7 +6,7 @@ get_wasm_exec:
 	cp "$$(go env GOROOT)/lib/wasm/wasm_exec.js" ./dist
 
 build: get_wasm_exec $(go_files) ./dist/main.wasm $(pages)
-	GOOS=js GOARCH=wasm go build -o ./dist/main.wasm
+	GOOS=js GOARCH=wasm go build -C ./backend -o ./dist/main.wasm
 	cp $(pages) ./dist
 
 server:
