@@ -6,6 +6,8 @@ interface OutputProps {
     replacedCount: number;
 }
 
+const WAITING_FOR_INPUT = "Waiting for input...";
+
 export default function Output(props: OutputProps) {
     return (
         <section className="col">
@@ -17,31 +19,31 @@ export default function Output(props: OutputProps) {
                     id="outputText"
                     className="form-control"
                     rows={25}
+                    value={props.output !== "" ? props.output : WAITING_FOR_INPUT}
                     readOnly
-                    defaultValue="Waiting for input..."
                 ></textarea>
                 <button id="copyOutputButton" className="btn btn-secondary floating-bottom-right">
                     Copy
                 </button>
             </div>
-            {props.generatedCount ? (
+            {props.generatedCount > -1 ? (
                 <div className="alert alert-primary preline-whitespace" id="generatedAlert">
-                    Waiting for input...
+                    Generated {props.generatedCount} words.
                 </div>
             ) : null}
-            {props.duplicateCount ? (
+            {props.duplicateCount > -1 ? (
                 <div className="alert alert-info preline-whitespace" id="duplicateAlert">
-                    Waiting for input...
+                    Removed {props.duplicateCount} duplicates.
                 </div>
             ) : null}
-            {props.rejectedCount ? (
+            {props.rejectedCount > -1 ? (
                 <div className="alert alert-warning preline-whitespace" id="rejectedAlert">
-                    Waiting for input...
+                    Rejected {props.rejectedCount} words.
                 </div>
             ) : null}
-            {props.replacedCount ? (
+            {props.replacedCount > -1 ? (
                 <div className="alert alert-secondary preline-whitespace" id="replacedAlert">
-                    Waiting for input...
+                    Replaced {props.replacedCount} words.
                 </div>
             ) : null}
         </section>

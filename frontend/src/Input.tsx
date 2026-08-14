@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 
 enum GenerateType {
     words = "words",
@@ -18,6 +18,12 @@ syllable: $C$V($C)*25`;
         const formData = new FormData(form);
         const newGenerateType = formData.get("generateType") as string;
         setGenerateType(newGenerateType as GenerateType);
+    }
+
+    function handleSubmit() {
+        // TODO: get form data and transform for Go
+        // TODO: hook WASM into this
+        // TODO: give output to output component
     }
 
     return (
@@ -133,7 +139,7 @@ syllable: $C$V($C)*25`;
                             </div> */}
                         </div>
                     </div>
-                    <button type="button" id="submit" className="btn btn-primary col">
+                    <button type="button" id="submit" className="btn btn-primary col" onClick={handleSubmit}>
                         Generate {generateType}
                     </button>
                 </div>
