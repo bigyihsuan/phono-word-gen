@@ -4,6 +4,7 @@ interface CopiableTextAreaProps {
     id: string;
     placeholder: string;
     isReadOnly: boolean;
+    onChange?: React.ChangeEventHandler;
 }
 
 export default function CopiableTextArea(props: CopiableTextAreaProps) {
@@ -25,9 +26,11 @@ export default function CopiableTextArea(props: CopiableTextAreaProps) {
     }
 
     return (
-        <>
+        <div className="floating-container">
             <textarea
                 id={props.id}
+                name={props.id}
+                onChange={props.onChange}
                 className="form-control"
                 rows={25}
                 placeholder={props.placeholder}
@@ -36,6 +39,6 @@ export default function CopiableTextArea(props: CopiableTextAreaProps) {
             <button type="button" className="btn btn-secondary floating-bottom-right" onClick={makeCopy}>
                 Copy
             </button>
-        </>
+        </div>
     );
 }
