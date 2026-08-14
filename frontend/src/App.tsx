@@ -2,7 +2,7 @@ import Footer from "./Footer";
 import Header from "./Header";
 import Input from "./Input";
 import Output from "./Output";
-import QuickDocs from "./QuickDocs";
+import QuickReference from "./QuickDocs";
 
 export default function App() {
     return (
@@ -13,7 +13,7 @@ export default function App() {
                     <Input />
                     <Output output={""} generatedCount={0} duplicateCount={0} rejectedCount={0} replacedCount={0} />
                 </div>
-                <QuickDocs />
+                <QuickReference />
             </main>
             <Footer />
         </>

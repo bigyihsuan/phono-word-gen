@@ -29,10 +29,28 @@ body {
     padding: 2.5%;
 }
 
+h1 {
+    font-weight: 900;
+}
+h2,
+h3 {
+    font-weight: 700;
+}
+
 .preline-whitespace {
     white-space: pre-line;
 }
 
 .form-control {
     height: auto;
+}
+
+.floating-container {
+    position: relative;
+}
+
+.floating-bottom-right {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
 }

@@ -1,21 +1,16 @@
 export default function Input() {
-    const defaultInput = `C = p t k
+    const defaultInput = `# This is a simple example phonology. You can type in this box!
+C = p t k
 V = a i u
 syllable: $C$V($C)*25`;
 
     return (
         <section className="col">
             <label htmlFor="inputs">
-                <h3>Input</h3>
+                <h2>Input</h2>
             </label>
             <form id="inputs" className="input">
-                <textarea
-                    id="phonology"
-                    className="form-control"
-                    rows={25}
-                    placeholder="Input code..."
-                    defaultValue={defaultInput}
-                ></textarea>
+                <textarea id="phonology" className="form-control" rows={25} placeholder={defaultInput}></textarea>
                 <div id="numberInputs" className="form-control">
                     <div className="input-group" id="syllableCountInput">
                         <span className="input-group-text">Min/Max syllables/word</span>

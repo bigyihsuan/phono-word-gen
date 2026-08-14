@@ -1,7 +1,7 @@
-export default function QuickDocs() {
+export default function QuickReference() {
     return (
         <section className="row">
-            <h2>Quick Docs</h2>
+            <h2>Quick Reference</h2>
             <h3>General</h3>
             <ul>
                 <li>
@@ -141,11 +141,11 @@ export default function QuickDocs() {
             <h3>Letters</h3>
             <ul>
                 <li>
-                    Have a line with <code>{`letters: `}</code> to define a sort order for your words.
+                    Have a line with <code>{`letters:`}</code> to define a sort order for your words.
                 </li>
                 <li>Each "letter" can have multiple characters.</li>
                 <li>
-                    Only the last <code>{`letters: `}</code> directive will be applied.
+                    Only the last <code>{`letters:`}</code> directive will be applied.
                 </li>
             </ul>
         </section>

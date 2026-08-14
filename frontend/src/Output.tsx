@@ -10,18 +10,20 @@ export default function Output(props: OutputProps) {
     return (
         <section className="col">
             <label htmlFor="outputText">
-                <h3>Output</h3>
+                <h2>Output</h2>
             </label>
-            <textarea
-                id="outputText"
-                className="form-control"
-                rows={25}
-                readOnly
-                defaultValue="Waiting for input..."
-            ></textarea>
-            <button id="copyButton" className="btn btn-danger">
-                Copy
-            </button>
+            <div className="floating-container">
+                <textarea
+                    id="outputText"
+                    className="form-control"
+                    rows={25}
+                    readOnly
+                    defaultValue="Waiting for input..."
+                ></textarea>
+                <button id="copyButton" className="btn btn-secondary floating-bottom-right">
+                    Copy
+                </button>
+            </div>
             {props.generatedCount ? (
                 <div className="alert alert-primary preline-whitespace" id="generatedAlert">
                     Waiting for input...
