@@ -37,6 +37,10 @@ h3 {
     font-weight: 700;
 }
 
+label {
+    user-select: none;
+}
+
 .preline-whitespace {
     white-space: pre-line;
 }

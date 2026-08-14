@@ -10,7 +10,12 @@ syllable: $C$V($C)*25`;
                 <h2>Input</h2>
             </label>
             <form id="inputs" className="input">
-                <textarea id="phonology" className="form-control" rows={25} placeholder={defaultInput}></textarea>
+                <div className="floating-container">
+                    <textarea id="phonology" className="form-control" rows={25} placeholder={defaultInput}></textarea>
+                    <button id="copyInputButton" className="btn btn-secondary floating-bottom-right">
+                        Copy
+                    </button>
+                </div>
                 <div id="numberInputs" className="form-control">
                     <div className="input-group" id="syllableCountInput">
                         <span className="input-group-text">Min/Max syllables/word</span>
@@ -34,22 +39,31 @@ syllable: $C$V($C)*25`;
                         />
                     </div>
                 </div>
-                <div id="checkboxes" className="form-control">
+                <div id="checkboxes" className="form-control container row">
                     <div className="container">
                         <div className="input-group row">
-                            <div className="form-switch form-switch-inline col">
-                                <div className="d-inline-block me-1">Generate words</div>
-                                <div className="form-check form-switch d-inline-block">
-                                    <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        role="switch"
-                                        id="generateSentences"
-                                    />
-                                    <label className="form-check-label" htmlFor="generateSentences">
-                                        Generate sentences
-                                    </label>
-                                </div>
+                            <div className="form-check form-check-inline col">
+                                <input
+                                    className="form-check-input"
+                                    type="radio"
+                                    name="generateType"
+                                    id="generateWords"
+                                    defaultChecked
+                                />
+                                <label className="form-check-label" htmlFor="generateWords">
+                                    Generate words
+                                </label>
+                            </div>
+                            <div className="form-check form-check-inline col">
+                                <input
+                                    className="form-check-input"
+                                    type="radio"
+                                    name="generateType"
+                                    id="generateSentences"
+                                />
+                                <label className="form-check-label" htmlFor="generateSentences">
+                                    Generate sentences
+                                </label>
                             </div>
                         </div>
                         <div className="input-group row">
@@ -101,8 +115,8 @@ syllable: $C$V($C)*25`;
                             </div> */}
                         </div>
                     </div>
-                    <button type="button" id="submit" className="btn btn-primary">
-                        Submit
+                    <button type="button" id="submit" className="btn btn-primary col">
+                        Generate
                     </button>
                 </div>
             </form>

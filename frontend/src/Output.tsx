@@ -20,7 +20,7 @@ export default function Output(props: OutputProps) {
                     readOnly
                     defaultValue="Waiting for input..."
                 ></textarea>
-                <button id="copyButton" className="btn btn-secondary floating-bottom-right">
+                <button id="copyOutputButton" className="btn btn-secondary floating-bottom-right">
                     Copy
                 </button>
             </div>
