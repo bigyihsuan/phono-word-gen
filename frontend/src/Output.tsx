@@ -1,3 +1,5 @@
+import CopyButton from "./CopyButton";
+
 interface OutputProps {
     output: string;
     generatedCount: number;
@@ -22,9 +24,7 @@ export default function Output(props: OutputProps) {
                     value={props.output !== "" ? props.output : WAITING_FOR_INPUT}
                     readOnly
                 ></textarea>
-                <button id="copyOutputButton" className="btn btn-secondary floating-bottom-right">
-                    Copy
-                </button>
+                <CopyButton textAreaId="outputText" />
             </div>
             {props.generatedCount > -1 ? (
                 <div className="alert alert-primary preline-whitespace" id="generatedAlert">

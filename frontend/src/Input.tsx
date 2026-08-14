@@ -1,4 +1,5 @@
 import { ChangeEvent, useEffect, useState } from "react";
+import CopyButton from "./CopyButton";
 
 enum GenerateType {
     words = "words",
@@ -34,9 +35,7 @@ syllable: $C$V($C)*25`;
             <form id="inputs" className="input" onChange={handleChanges}>
                 <div className="floating-container">
                     <textarea id="phonology" className="form-control" rows={25} placeholder={defaultInput}></textarea>
-                    <button id="copyInputButton" className="btn btn-secondary floating-bottom-right">
-                        Copy
-                    </button>
+                    <CopyButton textAreaId="phonology" />
                 </div>
                 <div id="numberInputs" className="form-control">
                     <div className="input-group" id="syllableCountInput">
