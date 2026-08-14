@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useState } from "react";
-import CopyButton from "./CopyButton";
+import CopiableTextArea from "./CopiableTextArea";
 
 enum GenerateType {
     words = "words",
@@ -7,7 +7,7 @@ enum GenerateType {
 }
 
 export default function Input() {
-    const defaultInput = `# This is a simple example phonology. You can type in this box!
+    const placeholder = `# This is a simple example phonology. You can type in this box!
 C = p t k
 V = a i u
 syllable: $C$V($C)*25`;
@@ -34,8 +34,7 @@ syllable: $C$V($C)*25`;
             </label>
             <form id="inputs" className="input" onChange={handleChanges}>
                 <div className="floating-container">
-                    <textarea id="phonology" className="form-control" rows={25} placeholder={defaultInput}></textarea>
-                    <CopyButton textAreaId="phonology" />
+                    <CopiableTextArea id="phonology" placeholder={placeholder} isReadOnly={false} />
                 </div>
                 <div id="numberInputs" className="form-control">
                     <div className="input-group" id="syllableCountInput">

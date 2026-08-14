@@ -1,4 +1,4 @@
-import CopyButton from "./CopyButton";
+import CopiableTextArea from "./CopiableTextArea";
 
 interface OutputProps {
     output: string;
@@ -17,14 +17,11 @@ export default function Output(props: OutputProps) {
                 <h2>Output</h2>
             </label>
             <div className="floating-container">
-                <textarea
+                <CopiableTextArea
                     id="outputText"
-                    className="form-control"
-                    rows={25}
-                    value={props.output !== "" ? props.output : WAITING_FOR_INPUT}
-                    readOnly
-                ></textarea>
-                <CopyButton textAreaId="outputText" />
+                    placeholder={props.output !== "" ? props.output : WAITING_FOR_INPUT}
+                    isReadOnly={true}
+                />
             </div>
             {props.generatedCount > -1 ? (
                 <div className="alert alert-primary preline-whitespace" id="generatedAlert">
