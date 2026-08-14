@@ -1,6 +1,6 @@
 export default function QuickDocs() {
     return (
-        <section>
+        <section className="row">
             <h2>Quick Docs</h2>
             <h3>General</h3>
             <ul>

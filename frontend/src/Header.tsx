@@ -2,14 +2,11 @@ export default function Header() {
     return (
         <header>
             <h1>WIP — phono-word-gen</h1>
-            <div>
-                <p>
-                    see <a href="https://github.com/bigyihsuan/phono-word-gen">the github repo</a> for more information
-                </p>
-                <p>
-                    see <a href="example.html">this page</a> for code examples
-                </p>
-            </div>
+            <p className="text-body-secondary">A random word generator</p>
+            <p>
+                See <a href="https://github.com/bigyihsuan/phono-word-gen">the GitHub repository</a> for more
+                information, and see <a href="example.html">the examples page</a> for code examples
+            </p>
             <hr />
         </header>
     );

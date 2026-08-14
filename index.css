@@ -4,13 +4,8 @@
 }
 
 textarea,
-input[type="number"],
 code {
     font-family: "Iosevka Web", "Courier New", Courier, monospace;
-}
-
-.form-control {
-    height: auto;
 }
 
 code {
@@ -27,14 +22,17 @@ footer {
     text-align: center;
 }
 
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5%;
+}
+
 .preline-whitespace {
     white-space: pre-line;
 }
 
-main {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding-left: 5%;
-    padding-right: 5%;
+.form-control {
+    height: auto;
 }

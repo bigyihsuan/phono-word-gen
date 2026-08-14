@@ -8,9 +8,11 @@ export default function App() {
     return (
         <>
             <Header />
-            <main>
-                <Input />
-                <Output />
+            <main className="container">
+                <div className="row">
+                    <Input />
+                    <Output output={""} generatedCount={0} duplicateCount={0} rejectedCount={0} replacedCount={0} />
+                </div>
                 <QuickDocs />
             </main>
             <Footer />
