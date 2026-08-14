@@ -1,15 +1,31 @@
+import { ChangeEvent, useState } from "react";
+
+enum GenerateType {
+    words = "words",
+    sentences = "sentences",
+}
+
 export default function Input() {
     const defaultInput = `# This is a simple example phonology. You can type in this box!
 C = p t k
 V = a i u
 syllable: $C$V($C)*25`;
 
+    const [generateType, setGenerateType] = useState(GenerateType.words);
+
+    function handleChanges(event: ChangeEvent) {
+        const form = event.currentTarget as HTMLFormElement;
+        const formData = new FormData(form);
+        const newGenerateType = formData.get("generateType") as string;
+        setGenerateType(newGenerateType as GenerateType);
+    }
+
     return (
         <section className="col">
             <label htmlFor="inputs">
                 <h2>Input</h2>
             </label>
-            <form id="inputs" className="input">
+            <form id="inputs" className="input" onChange={handleChanges}>
                 <div className="floating-container">
                     <textarea id="phonology" className="form-control" rows={25} placeholder={defaultInput}></textarea>
                     <button id="copyInputButton" className="btn btn-secondary floating-bottom-right">
@@ -48,6 +64,7 @@ syllable: $C$V($C)*25`;
                                     type="radio"
                                     name="generateType"
                                     id="generateWords"
+                                    value={GenerateType.words}
                                     defaultChecked
                                 />
                                 <label className="form-check-label" htmlFor="generateWords">
@@ -59,6 +76,7 @@ syllable: $C$V($C)*25`;
                                     className="form-check-input"
                                     type="radio"
                                     name="generateType"
+                                    value={GenerateType.sentences}
                                     id="generateSentences"
                                 />
                                 <label className="form-check-label" htmlFor="generateSentences">
@@ -116,7 +134,7 @@ syllable: $C$V($C)*25`;
                         </div>
                     </div>
                     <button type="button" id="submit" className="btn btn-primary col">
-                        Generate
+                        Generate {generateType}
                     </button>
                 </div>
             </form>
