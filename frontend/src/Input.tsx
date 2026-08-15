@@ -44,10 +44,12 @@ syllable: $C$V($C)*25`;
         debugOutput: false,
     } as InputState);
 
-    // Ihis is unfortunately a controlled component
+    // This is unfortunately a controlled component
     // because <form action> empties out the form.
     // Then I would need to fill in the values into the form again,
     // but then at that point I might as well go all the way and make it a controlled component.
+
+    //#region onChange handlers
     function phonologyChanges(e: React.ChangeEvent) {
         setInput({
             ...input,
@@ -128,8 +130,11 @@ syllable: $C$V($C)*25`;
             debugOutput: (e.target as HTMLInputElement).value === "on",
         });
     }
+    //#endregion onChange handlers
 
     function handleSubmit(event: React.MouseEvent) {
+        event.preventDefault();
+        console.log(input);
         // TODO: hook WASM into this
         // TODO: give output to output component
     }
@@ -146,9 +151,9 @@ syllable: $C$V($C)*25`;
                     isReadOnly={false}
                     onChange={phonologyChanges}
                 />
-                <div id="numberInputs" className="form-control">
-                    <div className="input-group" id="syllableCountInput">
-                        <span className="input-group-text">Min/Max syllables/word</span>
+                <div className="form-control">
+                    <div className="input-group">
+                        <span className="input-group-text">Min Syllables:</span>
                         <input
                             type="number"
                             min={1}
@@ -158,7 +163,7 @@ syllable: $C$V($C)*25`;
                             onChange={minSylCountChanges}
                             className="form-control"
                         />
-                        <span className="input-group-text">&ndash;</span>
+                        <span className="input-group-text">Max Syllables:</span>
                         <input
                             type="number"
                             min={1}
@@ -169,33 +174,35 @@ syllable: $C$V($C)*25`;
                             className="form-control"
                         />
                     </div>
-                    <div className="input-group" id="wordCountInput">
-                        <span className="input-group-text">Number of Words</span>
-                        <input
-                            type="number"
-                            min={1}
-                            value={input.wordCount}
-                            id="wordCount"
-                            name="wordCount"
-                            onChange={wordCountChanges}
-                            className="form-control"
-                        />
-                    </div>
-                    <div className="input-group" id="sentenceCountInput">
-                        <span className="input-group-text">Number of Sentences</span>
-                        <input
-                            type="number"
-                            min={1}
-                            value={input.sentenceCount}
-                            id="sentenceCount"
-                            name="sentenceCount"
-                            onChange={sentenceCountChanges}
-                            className="form-control"
-                            disabled
-                        />
-                    </div>
+                    {input.generateType === GenerateType.words ? (
+                        <div className="input-group" id="wordCountInput">
+                            <span className="input-group-text">Number of Words</span>
+                            <input
+                                type="number"
+                                min={1}
+                                value={input.wordCount}
+                                id="wordCount"
+                                name="wordCount"
+                                onChange={wordCountChanges}
+                                className="form-control"
+                            />
+                        </div>
+                    ) : (
+                        <div className="input-group" id="sentenceCountInput">
+                            <span className="input-group-text">Number of Sentences</span>
+                            <input
+                                type="number"
+                                min={1}
+                                value={input.sentenceCount}
+                                id="sentenceCount"
+                                name="sentenceCount"
+                                onChange={sentenceCountChanges}
+                                className="form-control"
+                            />
+                        </div>
+                    )}
                 </div>
-                <div id="checkboxes" className="form-control container">
+                <div className="form-control container">
                     <div className="container">
                         <div className="input-group row">
                             <div className="form-check form-check-inline col">
@@ -318,7 +325,7 @@ syllable: $C$V($C)*25`;
                             </div>
                         </div>
                     </div>
-                    <button id="submit" className="input-group btn btn-primary" onClick={handleSubmit}>
+                    <button className="input-group btn btn-primary" onClick={handleSubmit}>
                         Generate {input.generateType}
                     </button>
                 </div>
