@@ -57,7 +57,7 @@ func New() (*Web, error) {
 	w := new(Web)
 	w.loadDocument()
 	w.setEventListeners()
-	w.Evaluator = eval.New(w.getOptions())
+	w.Evaluator = eval.New(w.getOptions(), nil)
 	return w, nil
 }
 
@@ -155,7 +155,7 @@ func (w *Web) onSubmit(event dom.Event) {
 		w.inputTextElement.SetValue(string(data))
 	}
 
-	w.Evaluator = eval.New(w.getOptions())
+	w.Evaluator = eval.New(w.getOptions(), nil)
 	words, sep, sentences := w.Evaluator.Run()
 	defer func() {
 		if len(w.Evaluator.Errors) > 0 {

@@ -2,6 +2,7 @@ package parts
 
 import (
 	"errors"
+	"math/rand/v2"
 	"regexp"
 	"strings"
 
@@ -23,18 +24,18 @@ func NewCategory(elements ...wr.Choice[Element, int]) Category {
 func NewCategoryFromPhonemes(phonemes ...string) Category {
 	c := Category{}
 	for _, s := range phonemes {
-		c.Elements = append(c.Elements, wr.NewChoice[Element, int](NewPhoneme(s), 1))
+		c.Elements = append(c.Elements, wr.NewChoice[Element](NewPhoneme(s), 1))
 	}
 	return c
 }
 
-func (c Category) Get(categories Categories, components Components) (string, error) {
+func (c Category) Get(categories Categories, components Components, rs *rand.Rand) (string, error) {
 	// just pick something from the contained elements
-	chooser, err := wr.NewChooser[Element, int](c.Elements...)
+	chooser, err := wr.NewChooser(c.Elements...)
 	if err != nil {
 		return "", errors.Join(CategoryCreationError, err)
 	}
-	return chooser.Pick().Get(categories, components)
+	return chooser.PickWith(rs).Get(categories, components, rs)
 }
 func (c Category) ChoiceCount(categories Categories, components Components) int {
 	choices := 0

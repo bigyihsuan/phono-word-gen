@@ -1,6 +1,9 @@
 package parts
 
-import "strings"
+import (
+	"math/rand/v2"
+	"strings"
+)
 
 type Components map[string]Component
 
@@ -9,10 +12,10 @@ type Component struct {
 }
 
 func NewComponent(elements ...SyllableElement) *Component { return &Component{Elements: elements} }
-func (s *Component) Get(categories Categories, components Components) (string, error) {
+func (s *Component) Get(categories Categories, components Components, rs *rand.Rand) (string, error) {
 	elements := []string{}
 	for _, e := range s.Elements {
-		ele, err := e.Get(categories, components)
+		ele, err := e.Get(categories, components, rs)
 		if err != nil {
 			return ele, err
 		}

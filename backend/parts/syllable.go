@@ -2,7 +2,7 @@ package parts
 
 import (
 	"errors"
-	"math/rand"
+	"math/rand/v2"
 	"regexp"
 	"strings"
 
@@ -14,10 +14,10 @@ type Syllable struct {
 }
 
 func NewSyllable(elements ...SyllableElement) *Syllable { return &Syllable{Elements: elements} }
-func (s *Syllable) Get(categories Categories, components Components) (string, error) {
+func (s *Syllable) Get(categories Categories, components Components, rs *rand.Rand) (string, error) {
 	elements := []string{}
 	for _, e := range s.Elements {
-		ele, err := e.Get(categories, components)
+		ele, err := e.Get(categories, components, rs)
 		if err != nil {
 			return ele, err
 		}
@@ -39,11 +39,11 @@ type Grouping struct {
 
 func NewGrouping(elements ...SyllableElement) *Grouping { return &Grouping{Elements: elements} }
 func (g *Grouping) syllableElementTag()                 {}
-func (g *Grouping) Get(categories Categories, components Components) (string, error) {
+func (g *Grouping) Get(categories Categories, components Components, rs *rand.Rand) (string, error) {
 	// evaluate all elements in the grouping
 	values := []string{}
 	for _, v := range g.Elements {
-		val, err := v.Get(categories, components)
+		val, err := v.Get(categories, components, rs)
 		if err != nil {
 			return val, err
 		}
@@ -74,13 +74,13 @@ func NewSelection(elements ...wr.Choice[SyllableElement, int]) *Selection {
 	return &Selection{Choices: elements}
 }
 func (s *Selection) syllableElementTag() {}
-func (s *Selection) Get(catgories Categories, components Components) (string, error) {
+func (s *Selection) Get(catgories Categories, components Components, rs *rand.Rand) (string, error) {
 	// pick a random choice in the selection
 	chooser, err := wr.NewChooser(s.Choices...)
 	if err != nil {
 		return "", errors.Join(SelectionCreationError, err)
 	}
-	return chooser.Pick().Get(catgories, components)
+	return chooser.PickWith(rs).Get(catgories, components, rs)
 }
 func (s *Selection) ChoiceCount(categories Categories, components Components) int {
 	count := len(s.Choices)
@@ -111,10 +111,10 @@ func NewOptional(elements SyllableElements, percentChance ...int) *Optional {
 	return &Optional{Elements: elements, weight: weight}
 }
 func (o *Optional) syllableElementTag() {}
-func (o *Optional) Get(categories Categories, components Components) (string, error) {
-	chance := rand.Intn(101)
+func (o *Optional) Get(categories Categories, components Components, rs *rand.Rand) (string, error) {
+	chance := rand.IntN(101)
 	if chance < o.weight {
-		return NewGrouping(o.Elements...).Get(categories, components)
+		return NewGrouping(o.Elements...).Get(categories, components, rs)
 	} else {
 		return "", nil
 	}

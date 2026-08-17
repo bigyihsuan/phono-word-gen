@@ -1,6 +1,7 @@
 package parts
 
 import (
+	"math/rand/v2"
 	"regexp"
 )
 
@@ -13,12 +14,12 @@ func NewComponentReference(name string) *ComponentReference {
 }
 
 func (r *ComponentReference) syllableElementTag() {}
-func (r *ComponentReference) Get(categories Categories, components Components) (string, error) {
+func (r *ComponentReference) Get(categories Categories, components Components, rs *rand.Rand) (string, error) {
 	// look for the existence for the category
 	comp, ok := components[r.Name]
 	if ok {
 		// if ok, get from the found category
-		return comp.Get(categories, components)
+		return comp.Get(categories, components, rs)
 	} else {
 		return "", UndefinedComponentError(r.Name, r.Name)
 	}

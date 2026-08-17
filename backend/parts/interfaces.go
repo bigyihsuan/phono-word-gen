@@ -1,9 +1,12 @@
 package parts
 
-import "regexp"
+import (
+	"math/rand/v2"
+	"regexp"
+)
 
 type Element interface {
-	Get(categories Categories, components Components) (string, error)
+	Get(categories Categories, components Components, rs *rand.Rand) (string, error)
 	ChoiceCount(categories Categories, components Components) int
 	Regexp(categories Categories, components Components) *regexp.Regexp
 }

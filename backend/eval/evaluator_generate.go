@@ -1,7 +1,7 @@
 package eval
 
 import (
-	"math/rand"
+	"math/rand/v2"
 	"phono-word-gen/parts"
 	"phono-word-gen/util"
 	"strings"
@@ -20,7 +20,7 @@ func (e *Evaluator) createSentences() (sentences []string) {
 
 // generate a single sentence
 func (e *Evaluator) generateSentence() string {
-	wordCount := 1 + util.PeakedPowerLaw(15, 5, 50)
+	wordCount := 1 + util.PeakedPowerLaw(15, 5, 50, e.rs)
 	sentenceWords := []string{}
 	words := e.generateWords(wordCount * 2)
 	words = e.syllabizeWords(words)
@@ -56,7 +56,7 @@ func (e *Evaluator) generateSentence() string {
 // generate a `wordCount` number of words.
 func (e *Evaluator) generateWords(wordCount int) (words []Word) {
 	for i := 0; i < wordCount; i++ {
-		syllableCount := min(e.MinSylCount+util.PowerLaw(e.MaxSylCount, 50), e.MaxSylCount)
+		syllableCount := min(e.MinSylCount+util.PowerLaw(e.MaxSylCount, 50, e.rs), e.MaxSylCount)
 		words = append(words, e.generateWord(syllableCount))
 	}
 	e.GeneratedCount += e.WordCount
@@ -66,7 +66,7 @@ func (e *Evaluator) generateWords(wordCount int) (words []Word) {
 func (e *Evaluator) generateWord(syllableCount int) Word {
 	syllables := []*parts.Syllable{}
 	for i := 0; i < syllableCount; i++ {
-		syllable := e.syllables[rand.Intn(min(len(e.syllables)))]
+		syllable := e.syllables[e.rs.IntN(min(len(e.syllables)))]
 		syllables = append(syllables, syllable)
 	}
 	return NewWord(syllables...)

@@ -2,28 +2,33 @@ package util
 
 import (
 	"encoding/json"
-	"math/rand"
+	"math/rand/v2"
 
 	"honnef.co/go/js/dom/v2"
 )
 
-func PeakedPowerLaw(max, mode, prob int) int {
-	if RandomPercentage() < 50 {
-		return mode + PowerLaw(max-mode, prob)
-	}
-	return mode + PowerLaw(mode+1, prob)
+// a fixed random source for unit tests
+func RandomSource() *rand.Rand {
+	return rand.New(rand.NewPCG(0, 0))
 }
 
-func PowerLaw(max, percentage int) int {
+func PeakedPowerLaw(max, mode, prob int, rs *rand.Rand) int {
+	if RandomPercentage(rs) < 50 {
+		return mode + PowerLaw(max-mode, prob, rs)
+	}
+	return mode + PowerLaw(mode+1, prob, rs)
+}
+
+func PowerLaw(max, percentage int, rs *rand.Rand) int {
 	for r := 0; ; r = (r + 1) % max {
-		if RandomPercentage() < percentage {
+		if RandomPercentage(rs) < percentage {
 			return r
 		}
 	}
 }
 
-func RandomPercentage() int {
-	return rand.Intn(101) + 1
+func RandomPercentage(rs *rand.Rand) int {
+	return rs.IntN(101) + 1
 }
 
 func Log(o ...any) {

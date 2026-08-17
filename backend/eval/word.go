@@ -1,6 +1,7 @@
 package eval
 
 import (
+	"math/rand/v2"
 	"phono-word-gen/parts"
 )
 
@@ -10,10 +11,10 @@ type Word struct {
 }
 
 func NewWord(syllables ...*parts.Syllable) Word { return Word{SylTemplates: syllables} }
-func (w *Word) GenerateSyllables(categories parts.Categories, components parts.Components) error {
+func (w *Word) GenerateSyllables(categories parts.Categories, components parts.Components, rs *rand.Rand) error {
 	syllables := []string{}
 	for _, s := range w.SylTemplates {
-		syl, err := s.Get(categories, components)
+		syl, err := s.Get(categories, components, rs)
 		if err != nil {
 			return err
 		}

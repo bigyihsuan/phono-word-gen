@@ -3,11 +3,12 @@ package eval
 import (
 	"errors"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"regexp"
 	"slices"
 	"strings"
 	"syscall/js"
+	"time"
 
 	"phono-word-gen/ast"
 	"phono-word-gen/lex"
@@ -38,13 +39,14 @@ type Evaluator struct {
 	letterRegexp *regexp.Regexp
 
 	Errors []error
+
+	rs *rand.Rand // global random source
 }
 
 func Generate(this js.Value, inputs []js.Value) any {
 	input := inputs[0]
 	opts := OptionsFromJsValue(input)
-
-	e := New(opts)
+	e := New(opts, nil)
 	words, sep, sentences := e.Run()
 
 	wordText := ""
@@ -69,9 +71,16 @@ func Generate(this js.Value, inputs []js.Value) any {
 	})
 }
 
-func New(opts Options) *Evaluator {
+func New(opts Options, rs *rand.Rand) *Evaluator {
 	e := new(Evaluator)
 	e.Options = opts
+	if rs == nil {
+		// default random to current unix nano timestamp x2
+		e.rs = rand.New(rand.NewPCG(uint64(time.Now().UnixNano()), uint64(time.Now().UnixNano())))
+	} else {
+		// use provided random
+		e.rs = rs
+	}
 	e.resetCounters()
 	return e
 }
@@ -239,7 +248,7 @@ func (e *Evaluator) checkComponents() (ok bool, err error) {
 
 func (e *Evaluator) syllabizeWords(words []Word) []Word {
 	for i, word := range words {
-		err := word.GenerateSyllables(e.categories, e.components)
+		err := word.GenerateSyllables(e.categories, e.components, e.rs)
 		if err != nil {
 			util.LogError(err.Error())
 			e.AddErrors(err)

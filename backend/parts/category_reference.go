@@ -1,6 +1,7 @@
 package parts
 
 import (
+	"math/rand/v2"
 	"regexp"
 )
 
@@ -13,12 +14,12 @@ func NewCategoryReference(name string) *CategoryReference {
 }
 
 func (r *CategoryReference) syllableElementTag() {}
-func (r *CategoryReference) Get(categories Categories, components Components) (string, error) {
+func (r *CategoryReference) Get(categories Categories, components Components, rs *rand.Rand) (string, error) {
 	// look for the existence for the category
 	cat, ok := categories[r.Name]
 	if ok {
 		// if ok, get from the found category
-		return cat.Get(categories, components)
+		return cat.Get(categories, components, rs)
 	} else {
 		return "", UndefinedCategoryError(r.Name, r.Name)
 	}

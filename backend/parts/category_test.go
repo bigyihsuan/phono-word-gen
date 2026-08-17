@@ -8,22 +8,22 @@ import (
 )
 
 func TestCategoryGet(t *testing.T) {
-	cat := NewCategory(wr.NewChoice[Element, int](NewPhoneme("p"), 1))
+	cat := NewCategory(wr.NewChoice[Element](NewPhoneme("p"), 1))
 	for i := 0; i < 10; i++ {
 		expected := "p"
-		actual, _ := cat.Get(make(Categories), make(Components))
+		actual, _ := cat.Get(make(Categories), make(Components), nil)
 		assert.Equal(t, expected, actual, "[%d] incorrect: want=%q got=%q", i, expected, actual)
 	}
 }
 
 func TestCategoryNestedGet(t *testing.T) {
-	c := NewCategory(wr.NewChoice[Element, int](NewCategoryReference("S"), 1))
-	s := NewCategory(wr.NewChoice[Element, int](NewPhoneme("p"), 1))
+	c := NewCategory(wr.NewChoice[Element](NewCategoryReference("S"), 1))
+	s := NewCategory(wr.NewChoice[Element](NewPhoneme("p"), 1))
 	categories := Categories{"C": c, "S": s}
 	cat := categories["C"]
 	for i := 0; i < 10; i++ {
 		expected := "p"
-		actual, _ := cat.Get(categories, make(Components))
+		actual, _ := cat.Get(categories, make(Components), nil)
 		assert.Equal(t, expected, actual, "[%d] incorrect: want=%q got=%q", i, expected, actual)
 	}
 }
