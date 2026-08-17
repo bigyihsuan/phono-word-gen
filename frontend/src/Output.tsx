@@ -21,22 +21,22 @@ export default function Output(props: OutputProps) {
                 placeholder={props.output !== "" ? props.output : WAITING_FOR_INPUT}
                 isReadOnly={true}
             />
-            {props.generatedCount > -1 ? (
+            {props.generatedCount > 0 ? (
                 <div className="alert alert-primary preline-whitespace" id="generatedAlert">
                     Generated {props.generatedCount} words.
                 </div>
             ) : null}
-            {props.duplicateCount > -1 ? (
+            {props.duplicateCount > 0 ? (
                 <div className="alert alert-info preline-whitespace" id="duplicateAlert">
                     Removed {props.duplicateCount} duplicates.
                 </div>
             ) : null}
-            {props.rejectedCount > -1 ? (
+            {props.rejectedCount > 0 ? (
                 <div className="alert alert-warning preline-whitespace" id="rejectedAlert">
                     Rejected {props.rejectedCount} words.
                 </div>
             ) : null}
-            {props.replacedCount > -1 ? (
+            {props.replacedCount > 0 ? (
                 <div className="alert alert-secondary preline-whitespace" id="replacedAlert">
                     Replaced {props.replacedCount} words.
                 </div>

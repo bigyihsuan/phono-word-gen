@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"regexp"
 	"slices"
+	"strings"
+	"syscall/js"
 
 	"phono-word-gen/ast"
 	"phono-word-gen/lex"
@@ -16,14 +18,6 @@ import (
 	"github.com/mroth/weightedrand/v3"
 	"golang.org/x/exp/maps"
 )
-
-type Options struct {
-	MinSylCount, MaxSylCount int
-	WordCount, SentenceCount int
-
-	ForbidDuplicates, ForceWordLimit, SortOutput, MarkSyllables bool
-	ApplyRejections, ApplyReplacements, GenerateSentences       bool
-}
 
 type Evaluator struct {
 	Options
@@ -46,6 +40,36 @@ type Evaluator struct {
 	Errors []error
 }
 
+func Generate(this js.Value, inputs []js.Value) any {
+	input := inputs[0]
+	opts := OptionsFromJsValue(input)
+
+	e := New(opts)
+	words, sep, sentences := e.Run()
+
+	wordText := ""
+	if len(words) > 0 {
+		wordText = e.reifyWords(words, sep)
+	}
+	sentenceText := ""
+	sentenceText = strings.Join(sentences, " ")
+	errorText := ""
+	fmt.Printf("len(e.Errors): %v\n", len(e.Errors))
+	if len(e.Errors) > 0 {
+		errorText = e.reifyErrors(e.Errors)
+	}
+
+	return js.ValueOf(map[string]any{
+		"words":          wordText,
+		"sentences":      sentenceText,
+		"errors":         errorText,
+		"generatedCount": e.GeneratedCount,
+		"duplicateCount": e.DuplicateCount,
+		"rejectedCount":  e.RejectedCount,
+		"replacedCount":  e.ReplacedCount,
+	})
+}
+
 func New(opts Options) *Evaluator {
 	e := new(Evaluator)
 	e.Options = opts
@@ -53,9 +77,9 @@ func New(opts Options) *Evaluator {
 	return e
 }
 
-func (e *Evaluator) Run(src string) (words []Word, syllableSep string, sentences []string) {
+func (e *Evaluator) Run() (words []Word, syllableSep string, sentences []string) {
 	// refesh the code input
-	directives, err := e.LoadCode(src)
+	directives, err := e.LoadCode(e.Phonology)
 	if err != nil {
 		e.AddErrors(err)
 		return
@@ -251,4 +275,17 @@ func (e *Evaluator) resetCounters() {
 	e.DuplicateCount = 0
 	e.RejectedCount = 0
 	e.ReplacedCount = 0
+}
+
+func (e Evaluator) reifyWords(wds []Word, sylSep string) string {
+	var b strings.Builder
+	for _, word := range wds {
+		b.WriteString(strings.Join(word.Syllables, sylSep) + "\n")
+	}
+	return b.String()
+}
+
+func (e Evaluator) reifyErrors(es []error) string {
+	errs := errors.Join(es...)
+	return errs.Error()
 }

@@ -120,12 +120,6 @@ func (w *Web) setEventListeners() {
 }
 
 func (w *Web) onSubmit(event dom.Event) {
-	defer func() {
-		if len(w.Evaluator.Errors) > 0 {
-			w.displayErrors()
-		}
-		w.Evaluator.ClearErrors()
-	}()
 	// get the values of the various options
 	w.getOptions()
 
@@ -162,7 +156,14 @@ func (w *Web) onSubmit(event dom.Event) {
 	}
 
 	w.Evaluator = eval.New(w.getOptions())
-	words, sep, sentences := w.Evaluator.Run(w.inputTextElement.Value())
+	words, sep, sentences := w.Evaluator.Run()
+	defer func() {
+		if len(w.Evaluator.Errors) > 0 {
+			w.displayErrors(w.Evaluator.Errors)
+		}
+		w.Evaluator.ClearErrors()
+	}()
+
 	if w.Evaluator.Options.GenerateSentences {
 		w.displaySentences(sentences)
 	} else {
@@ -210,8 +211,8 @@ func (w *Web) displaySentences(sentences []string) {
 	w.updateAlerts()
 }
 
-func (w *Web) displayErrors() {
-	errs := errors.Join(w.Evaluator.Errors...)
+func (w *Web) displayErrors(es []error) {
+	errs := errors.Join(es...)
 	util.LogError(errs)
 	w.outputTextElement.SetValue(errs.Error())
 }
