@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/frontend/public/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
@@ -20,10 +20,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz@0,14..32;1,14..32&display=swap" rel="stylesheet">
 
-    <script src="/frontend/public/wasm_exec.js"></script>
+    <script src="/wasm_exec.js"></script>
     <script>
         const go = new Go();
-        WebAssembly.instantiateStreaming(fetch("/frontend/public/main.wasm"), go.importObject).then((result) => {
+        WebAssembly.instantiateStreaming(fetch("/main.wasm"), go.importObject).then((result) => {
             go.run(result.instance);
         });
     </script>
@@ -31,7 +31,7 @@
 
 <body>
     <div id="root"></div>
-    <script type="module" src="/frontend/src/index.tsx"></script>
+    <script type="module" src="index.tsx"></script>
 </body>
 
 </html>

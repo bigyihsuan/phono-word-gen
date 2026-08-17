@@ -1,5 +1,4 @@
 import CopiableTextArea from "./CopiableTextArea";
-import "../public/wasm_exec";
 import type { InputProps } from "./props";
 
 export default function Input(props: InputProps) {

@@ -4,9 +4,10 @@
     "version": "0.0.0",
     "type": "module",
     "scripts": {
+        "cd": "cd ./frontend",
         "make": "make build",
-        "dev": "npm run make && vite",
-        "build": "tsc -b && vite build",
+        "dev": "npm run cd && vite",
+        "build": "tsc -b && vite build && make build",
         "lint": "eslint .",
         "preview": "vite preview"
     },
