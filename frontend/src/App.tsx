@@ -47,11 +47,13 @@ export default function App() {
 
     function handleSubmit(event: React.MouseEvent) {
         event.preventDefault();
-        console.log(inputState);
+        // console.log(inputState);
+
         // call WASM function
         const obj = globalThis.generate(inputState);
-        console.log(obj);
-        // TODO: give output to output component
+        // console.log(obj);
+
+        // give output to output component
         setOutputState({
             generatedCount: obj.generatedCount,
             duplicateCount: obj.duplicateCount,

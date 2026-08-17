@@ -16,11 +16,7 @@ export default function Output(props: OutputProps) {
             <label htmlFor="outputText">
                 <h2>Output</h2>
             </label>
-            <CopiableTextArea
-                id="outputText"
-                placeholder={props.output !== "" ? props.output : WAITING_FOR_INPUT}
-                isReadOnly={true}
-            />
+            <CopiableTextArea id="outputText" placeholder={WAITING_FOR_INPUT} value={props.output} isReadOnly={true} />
             {props.generatedCount > 0 ? (
                 <div className="alert alert-primary preline-whitespace" id="generatedAlert">
                     Generated {props.generatedCount} words.
