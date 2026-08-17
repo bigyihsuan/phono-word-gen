@@ -7,7 +7,7 @@
         "cd": "cd ./frontend",
         "make": "make build",
         "dev": "npm run cd && vite",
-        "build": "tsc -b && vite build && make build",
+        "build": "tsc -b && vite build ./frontend --outDir=./../dist --emptyOutDir && make build",
         "lint": "eslint .",
         "preview": "vite preview"
     },
