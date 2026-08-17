@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"phono-word-gen/eval"
 	"syscall/js"
 )
@@ -26,8 +25,6 @@ import (
 // }
 
 func main() {
-	fmt.Println("before global set")
 	js.Global().Set("generate", js.FuncOf(eval.Generate))
-	fmt.Println("after global set")
 	select {}
 }

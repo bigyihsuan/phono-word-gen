@@ -54,7 +54,6 @@ func Generate(this js.Value, inputs []js.Value) any {
 	sentenceText := ""
 	sentenceText = strings.Join(sentences, " ")
 	errorText := ""
-	fmt.Printf("len(e.Errors): %v\n", len(e.Errors))
 	if len(e.Errors) > 0 {
 		errorText = e.reifyErrors(e.Errors)
 	}
@@ -81,16 +80,21 @@ func (e *Evaluator) Run() (words []Word, syllableSep string, sentences []string)
 	// refesh the code input
 	directives, err := e.LoadCode(e.Phonology)
 	if err != nil {
-		e.AddErrors(err)
+		e.AddErrors(fmt.Errorf("parse error: %w", err))
 		return
 	}
+	if !e.hasSyllableDirective(directives) {
+		e.AddErrors(errors.New("missing syllable directive: syllable directive is required"))
+		return
+	}
+
 	e.evalDirectives(directives)
 	if ok, err := e.checkCategories(); !ok {
-		e.AddErrors(err)
+		e.AddErrors(fmt.Errorf("category check error: %w", err))
 		return
 	}
 	if ok, err := e.checkComponents(); !ok {
-		e.AddErrors(err)
+		e.AddErrors(fmt.Errorf("component check error: %w", err))
 		return
 	}
 
@@ -154,6 +158,19 @@ func (e *Evaluator) Run() (words []Word, syllableSep string, sentences []string)
 	}
 
 	return words, syllableSep, sentences
+}
+
+func (e *Evaluator) hasSyllableDirective(directives []ast.Directive) bool {
+	hasSylDir := false
+	for _, dir := range directives {
+		switch dir.(type) {
+		case *ast.SyllableDirective:
+			hasSylDir = true
+		default:
+			continue
+		}
+	}
+	return hasSylDir
 }
 
 func (e *Evaluator) LoadCode(src string) ([]ast.Directive, error) {
@@ -282,10 +299,10 @@ func (e Evaluator) reifyWords(wds []Word, sylSep string) string {
 	for _, word := range wds {
 		b.WriteString(strings.Join(word.Syllables, sylSep) + "\n")
 	}
-	return b.String()
+	return strings.TrimSpace(b.String())
 }
 
 func (e Evaluator) reifyErrors(es []error) string {
 	errs := errors.Join(es...)
-	return errs.Error()
+	return fmt.Errorf("ERROR: execution failed due to:\n%w", errs).Error()
 }
