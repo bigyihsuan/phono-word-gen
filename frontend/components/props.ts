@@ -13,7 +13,7 @@ export interface InputProps {
     applyReplacementsChanges: (event: React.ChangeEvent) => void;
     markSyllablesChanges: (event: React.ChangeEvent) => void;
     sortOutputChanges: (event: React.ChangeEvent) => void;
-    debugOutputChanges: (event: React.ChangeEvent) => void;
+    loadExample: (event: React.MouseEvent) => void;
 }
 
 export interface InputState {
@@ -29,13 +29,13 @@ export interface InputState {
     applyReplacements: boolean;
     markSyllables: boolean;
     sortOutput: boolean;
-    debugOutput: boolean;
 }
 
-export interface OutputState {
+export interface OutputData {
     output: string;
     generatedCount: number;
     duplicateCount: number;
     rejectedCount: number;
     replacedCount: number;
+    hasError: boolean;
 }

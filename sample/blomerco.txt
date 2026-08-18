@@ -26,7 +26,7 @@ Plab = p b
 Pcor = t d
 Pvel = c g
 
-replace: c > qu / _ [$Vstrong,i] //  _ $V u
-replace: $N > m / _ $Plab
-replace: $N > n / _ $Pcor
-replace: $N > ñ / _ $Pvel
+# replace: c > qu / _ [$Vstrong,i] //  _ $V u
+# replace: $N > m / _ $Plab
+# replace: $N > n / _ $Pcor
+# replace: $N > ñ / _ $Pvel

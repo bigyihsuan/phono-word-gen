@@ -9,5 +9,4 @@ export default defineConfig({
             usePolling: true,
         },
     },
-    assetsInclude: ["frontend"],
 });

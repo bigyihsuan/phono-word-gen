@@ -58,3 +58,16 @@ label {
     bottom: 0.5rem;
     right: 0.5rem;
 }
+
+#inputHeader {
+    display: flex;
+    align-content: space-between;
+}
+
+#inputHeader > select {
+    max-width: max-content;
+}
+
+#inputHeader > .input-group {
+    padding-bottom: 0.3rem;
+}

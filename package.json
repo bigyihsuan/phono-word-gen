@@ -4,12 +4,11 @@
     "version": "0.0.0",
     "type": "module",
     "scripts": {
-        "cd": "cd ./frontend",
         "make": "make build",
-        "dev": "npm run cd && vite",
-        "build": "tsc -b && vite build ./frontend --outDir=./../dist --emptyOutDir && make build",
+        "dev": "npm run make && vite",
+        "build": "tsc -b && vite build ./frontend --outDir=./../dist --emptyOutDir && npm run make",
         "lint": "eslint .",
-        "preview": "vite preview"
+        "preview": "npm run build && vite preview"
     },
     "dependencies": {
         "react": "^19.2.8",

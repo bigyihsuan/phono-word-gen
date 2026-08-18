@@ -4,6 +4,7 @@ interface CopiableTextAreaProps {
     value?: string;
     isReadOnly: boolean;
     onChange?: React.ChangeEventHandler;
+    className?: string;
 }
 
 export default function CopiableTextArea(props: CopiableTextAreaProps) {
@@ -18,7 +19,7 @@ export default function CopiableTextArea(props: CopiableTextAreaProps) {
                 id={props.id}
                 name={props.id}
                 onChange={props.onChange}
-                className="form-control"
+                className={props.className !== undefined ? `form-control ${props.className}` : "form-control"}
                 rows={25}
                 placeholder={props.placeholder}
                 value={props.value}

@@ -4,7 +4,7 @@ import Header from "./Header";
 import Input from "./Input";
 import Output from "./Output";
 import QuickReference from "./QuickDocs";
-import type { InputState, OutputState } from "./props";
+import type { InputState, OutputData } from "./props";
 
 declare namespace globalThis {
     function generate(input: InputState): GenerateOutput;
@@ -21,14 +21,6 @@ interface GenerateOutput {
 }
 
 export default function App() {
-    const [outputState, setOutputState] = useState<OutputState>({
-        output: "",
-        generatedCount: -1,
-        duplicateCount: -1,
-        rejectedCount: -1,
-        replacedCount: -1,
-    });
-
     const [inputState, setInputState] = useState<InputState>({
         phonology: "",
         minSylCount: 1,
@@ -42,23 +34,30 @@ export default function App() {
         applyReplacements: false,
         markSyllables: false,
         sortOutput: false,
-        debugOutput: false,
     });
+
+    const outputStart = {
+        output: "",
+        generatedCount: -1,
+        duplicateCount: -1,
+        rejectedCount: -1,
+        replacedCount: -1,
+        hasError: false,
+    };
+
+    const [outputState, setOutputState] = useState<OutputData>({ ...outputStart });
 
     function handleSubmit(event: React.MouseEvent) {
         event.preventDefault();
-        // console.log(inputState);
-
         // call WASM function
         const obj = globalThis.generate(inputState);
-        // console.log(obj);
-
         // give output to output component
         setOutputState({
             generatedCount: obj.generatedCount,
             duplicateCount: obj.duplicateCount,
             rejectedCount: obj.rejectedCount,
             replacedCount: obj.replacedCount,
+            hasError: obj.errors !== "",
             output: obj.errors !== "" ? obj.errors : inputState.generateType === "words" ? obj.words : obj.sentences,
         });
     }
@@ -72,86 +71,70 @@ export default function App() {
 
     //#region onChange handlers
     function phonologyChanges(e: React.ChangeEvent) {
-        setInputState({
-            ...inputState,
-            phonology: (e.target as HTMLTextAreaElement).value,
-        });
+        setInputState({ ...inputState, phonology: (e.target as HTMLTextAreaElement).value });
     }
 
     function minSylCountChanges(e: React.ChangeEvent) {
-        setInputState({
-            ...inputState,
-            minSylCount: Number.parseInt((e.target as HTMLInputElement).value),
-        });
+        setInputState({ ...inputState, minSylCount: Number.parseInt((e.target as HTMLInputElement).value) });
     }
     function maxSylCountChanges(e: React.ChangeEvent) {
-        setInputState({
-            ...inputState,
-            maxSylCount: Number.parseInt((e.target as HTMLInputElement).value),
-        });
+        setInputState({ ...inputState, maxSylCount: Number.parseInt((e.target as HTMLInputElement).value) });
     }
     function wordCountChanges(e: React.ChangeEvent) {
-        setInputState({
-            ...inputState,
-            wordCount: Number.parseInt((e.target as HTMLInputElement).value),
-        });
+        setInputState({ ...inputState, wordCount: Number.parseInt((e.target as HTMLInputElement).value) });
     }
     function sentenceCountChanges(e: React.ChangeEvent) {
-        setInputState({
-            ...inputState,
-            sentenceCount: Number.parseInt((e.target as HTMLInputElement).value),
-        });
+        setInputState({ ...inputState, sentenceCount: Number.parseInt((e.target as HTMLInputElement).value) });
     }
 
     function generateTypeChanges(e: React.ChangeEvent) {
-        setInputState({
-            ...inputState,
-            generateType: (e.target as HTMLInputElement).value as "words" | "sentences",
-        });
+        setInputState({ ...inputState, generateType: (e.target as HTMLInputElement).value as "words" | "sentences" });
     }
     function forbidDuplicatesChanges(e: React.ChangeEvent) {
-        setInputState({
-            ...inputState,
-            forbidDuplicates: (e.target as HTMLInputElement).value === "on",
-        });
+        setInputState({ ...inputState, forbidDuplicates: (e.target as HTMLInputElement).value === "on" });
     }
     function forceWordLimitChanges(e: React.ChangeEvent) {
-        setInputState({
-            ...inputState,
-            forceWordLimit: (e.target as HTMLInputElement).value === "on",
-        });
+        setInputState({ ...inputState, forceWordLimit: (e.target as HTMLInputElement).value === "on" });
     }
     function applyRejectionsChanges(e: React.ChangeEvent) {
-        setInputState({
-            ...inputState,
-            applyRejections: (e.target as HTMLInputElement).value === "on",
-        });
+        setInputState({ ...inputState, applyRejections: (e.target as HTMLInputElement).value === "on" });
     }
     function applyReplacementsChanges(e: React.ChangeEvent) {
-        setInputState({
-            ...inputState,
-            applyReplacements: (e.target as HTMLInputElement).value === "on",
-        });
+        setInputState({ ...inputState, applyReplacements: (e.target as HTMLInputElement).value === "on" });
     }
     function markSyllablesChanges(e: React.ChangeEvent) {
-        setInputState({
-            ...inputState,
-            markSyllables: (e.target as HTMLInputElement).value === "on",
-        });
+        setInputState({ ...inputState, markSyllables: (e.target as HTMLInputElement).value === "on" });
     }
     function sortOutputChanges(e: React.ChangeEvent) {
-        setInputState({
-            ...inputState,
-            sortOutput: (e.target as HTMLInputElement).value === "on",
-        });
-    }
-    function debugOutputChanges(e: React.ChangeEvent) {
-        setInputState({
-            ...inputState,
-            debugOutput: (e.target as HTMLInputElement).value === "on",
-        });
+        setInputState({ ...inputState, sortOutput: (e.target as HTMLInputElement).value === "on" });
     }
     //#endregion onChange handlers
+
+    function loadExample(event: React.MouseEvent) {
+        event.preventDefault();
+        const exampleSelect = document.querySelector("#exampleSelect")! as HTMLSelectElement;
+        const exampleName = exampleSelect.value;
+        if (exampleName === "") {
+            return;
+        }
+        console.log(exampleName);
+        const fileName = `sample/${exampleName}.txt`;
+        fetch(fileName)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then((exampleStr) => {
+                setInputState((prev) => ({ ...prev, phonology: exampleStr })); // required trailing space
+                clearOutput();
+            });
+    }
+
+    function clearOutput() {
+        setOutputState({ ...outputStart });
+    }
 
     return (
         <>
@@ -173,7 +156,7 @@ export default function App() {
                         applyReplacementsChanges={applyReplacementsChanges}
                         markSyllablesChanges={markSyllablesChanges}
                         sortOutputChanges={sortOutputChanges}
-                        debugOutputChanges={debugOutputChanges}
+                        loadExample={loadExample}
                     />
                     <Output
                         output={outputState.output}
@@ -181,6 +164,7 @@ export default function App() {
                         duplicateCount={outputState.duplicateCount}
                         rejectedCount={outputState.rejectedCount}
                         replacedCount={outputState.replacedCount}
+                        hasError={outputState.hasError}
                     />
                 </div>
                 <hr></hr>

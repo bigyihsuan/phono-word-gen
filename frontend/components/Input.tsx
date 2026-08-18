@@ -9,14 +9,30 @@ syllable: $C$V($C)*25`;
 
     return (
         <section className="col">
-            <label htmlFor="inputs">
-                <h2>Input</h2>
-            </label>
             <form id="inputs" className="input">
+                <section id="inputHeader" className="row">
+                    <label htmlFor="inputs" className="col">
+                        <h2>Input</h2>
+                    </label>
+                    <div className="col input-group">
+                        <select id="exampleSelect" className="form-select" defaultValue="">
+                            <option value="">— Example —</option>
+                            <option value="blomerco">blomerco</option>
+                            <option value="chinese-ish">chinese-ish</option>
+                            <option value="example-ish">example-ish</option>
+                            <option value="japanese-ish">japanese-ish</option>
+                            <option value="spanish-ish">spanish-ish</option>
+                        </select>
+                        <button type="button" className="btn btn-primary" onClick={props.loadExample}>
+                            Load
+                        </button>
+                    </div>
+                </section>
                 <CopiableTextArea
                     id="phonology"
                     placeholder={placeholder}
                     isReadOnly={false}
+                    value={props.inputState.phonology}
                     onChange={props.phonologyChanges}
                 />
                 <div className="form-control">
@@ -177,18 +193,6 @@ syllable: $C$V($C)*25`;
                                 />
                                 <label className="form-check-label" htmlFor="sortOutput">
                                     Sort output
-                                </label>
-                            </div>
-                            <div className="form-check form-check-inline">
-                                <input
-                                    className="form-check-input"
-                                    type="checkbox"
-                                    id="debugOutput"
-                                    name="debugOutput"
-                                    onChange={props.debugOutputChanges}
-                                />
-                                <label className="form-check-label" htmlFor="debugOutput">
-                                    Include debug output
                                 </label>
                             </div>
                         </div>
