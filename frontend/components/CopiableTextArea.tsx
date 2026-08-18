@@ -24,6 +24,9 @@ export default function CopiableTextArea(props: CopiableTextAreaProps) {
                 placeholder={props.placeholder}
                 value={props.value}
                 readOnly={props.isReadOnly}
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck="false"
             ></textarea>
             <button type="button" className="btn btn-secondary floating-bottom-right" onClick={makeCopy}>
                 Copy
