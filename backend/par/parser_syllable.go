@@ -30,6 +30,7 @@ func (p *Parser) SyllableComponents() (sc []ast.SyllableComponent) {
 		tok.UNDERSCORE,
 		tok.BSLASH,
 		tok.AMPERSAND,
+		tok.DOUBLESLASH,
 	) {
 		p.getNextToken()
 		component := p.SyllableComponent()
