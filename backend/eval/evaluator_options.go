@@ -1,6 +1,9 @@
 package eval
 
-import "syscall/js"
+import (
+	"strings"
+	"syscall/js"
+)
 
 type Options struct {
 	Phonology     string `json:"phonology"`
@@ -23,7 +26,7 @@ const GENERATE_SENTENCES = "sentences"
 
 func OptionsFromJsValue(v js.Value) Options {
 	o := Options{}
-	o.Phonology = v.Get("phonology").String()
+	o.Phonology = strings.ReplaceAll(strings.ReplaceAll(v.Get("phonology").String(), "\r\n", "\n"), "\r", "\n") // normalize linefeeds to "\n" only
 	o.MinSylCount = v.Get("minSylCount").Int()
 	o.MaxSylCount = v.Get("maxSylCount").Int()
 	o.WordCount = v.Get("wordCount").Int()
