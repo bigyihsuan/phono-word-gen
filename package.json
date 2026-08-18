@@ -6,7 +6,7 @@
     "scripts": {
         "make": "make build",
         "dev": "npm run make && vite",
-        "build": "tsc -b && vite build ./frontend --outDir=./../dist --emptyOutDir && npm run make",
+        "build": "tsc -b && vite build --outDir=./dist --emptyOutDir && npm run make",
         "lint": "eslint .",
         "preview": "npm run build && vite preview"
     },
