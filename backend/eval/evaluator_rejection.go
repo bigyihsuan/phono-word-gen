@@ -1,5 +1,7 @@
 package eval
 
+import "slices"
+
 func (e *Evaluator) rejectWords(words []Word) []Word {
 	if !e.ApplyRejections {
 		return words
@@ -14,11 +16,8 @@ func (e *Evaluator) rejectWords(words []Word) []Word {
 
 		matchesSyllableLevel := false
 		if len(e.syllableRejections.String()) > 0 {
-			for _, syl := range word.Syllables {
-				if e.syllableRejections.MatchString(syl) {
-					matchesSyllableLevel = true
-					break
-				}
+			if slices.ContainsFunc(word.Syllables, e.syllableRejections.MatchString) {
+				matchesSyllableLevel = true
 			}
 		}
 

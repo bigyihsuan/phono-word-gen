@@ -26,7 +26,7 @@ func TestSyllableGrouping(t *testing.T) {
 
 func TestSyllableOptional(t *testing.T) {
 	optional := NewOptional(SyllableElements{NewPhoneme("a"), NewPhoneme("b"), NewPhoneme("c")})
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		actual, err := optional.Get(emptyCategory, emptyComponents, nil)
 		assert.Nil(t, err)
 		assert.True(t, actual == "abc" || actual == "")
@@ -38,7 +38,7 @@ func TestSyllableSelection(t *testing.T) {
 		wr.NewChoice[SyllableElement](NewPhoneme("a"), 1),
 		wr.NewChoice[SyllableElement](NewPhoneme("b"), 1),
 	)
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		actual, err := selection.Get(emptyCategory, emptyComponents, nil)
 		assert.Nil(t, err)
 		assert.True(t, actual == "a" || actual == "b", "invalid output: want=%q/%q got=%q", "a", "b", actual)
@@ -56,7 +56,7 @@ func TestSyllableGet(t *testing.T) {
 			),
 		},
 	}
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		actual, err := syllable.Get(emptyCategory, emptyComponents, nil)
 		assert.Nil(t, err)
 		assert.True(t, actual == "ban" || actual == "bad", "invalid output: want=%q/%q got=%q", "ban", "bad", actual)

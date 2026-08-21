@@ -9,7 +9,7 @@ import (
 
 func TestCategoryGet(t *testing.T) {
 	cat := NewCategory(wr.NewChoice[Element](NewPhoneme("p"), 1))
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		expected := "p"
 		actual, _ := cat.Get(make(Categories), make(Components), nil)
 		assert.Equal(t, expected, actual, "[%d] incorrect: want=%q got=%q", i, expected, actual)
@@ -21,7 +21,7 @@ func TestCategoryNestedGet(t *testing.T) {
 	s := NewCategory(wr.NewChoice[Element](NewPhoneme("p"), 1))
 	categories := Categories{"C": c, "S": s}
 	cat := categories["C"]
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		expected := "p"
 		actual, _ := cat.Get(categories, make(Components), nil)
 		assert.Equal(t, expected, actual, "[%d] incorrect: want=%q got=%q", i, expected, actual)

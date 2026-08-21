@@ -9,7 +9,7 @@ import (
 )
 
 func (e *Evaluator) createSentences() (sentences []string) {
-	for i := 0; i < e.SentenceCount; i++ {
+	for range e.SentenceCount {
 		sentence := e.generateSentence()
 		if len(sentence) > 0 {
 			sentences = append(sentences, sentence)
@@ -55,7 +55,7 @@ func (e *Evaluator) generateSentence() string {
 
 // generate a `wordCount` number of words.
 func (e *Evaluator) generateWords(wordCount int) (words []Word) {
-	for i := 0; i < wordCount; i++ {
+	for range wordCount {
 		syllableCount := min(e.MinSylCount+util.PowerLaw(e.MaxSylCount, 50, e.rs), e.MaxSylCount)
 		words = append(words, e.generateWord(syllableCount))
 	}
@@ -65,8 +65,8 @@ func (e *Evaluator) generateWords(wordCount int) (words []Word) {
 
 func (e *Evaluator) generateWord(syllableCount int) Word {
 	syllables := []*parts.Syllable{}
-	for i := 0; i < syllableCount; i++ {
-		syllable := e.syllables[e.rs.IntN(min(len(e.syllables)))]
+	for range syllableCount {
+		syllable := e.syllables[e.rs.IntN(len(e.syllables))]
 		syllables = append(syllables, syllable)
 	}
 	return NewWord(syllables...)

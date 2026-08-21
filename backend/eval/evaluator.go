@@ -93,7 +93,7 @@ func (e *Evaluator) Run() (words []Word, syllableSep string, sentences []string)
 		return
 	}
 	if !e.hasSyllableDirective(directives) {
-		e.AddErrors(errors.New("missing syllable directive: syllable directive is required"))
+		e.AddErrors(errors.New("at least one syllable directive is required"))
 		return
 	}
 
@@ -104,11 +104,6 @@ func (e *Evaluator) Run() (words []Word, syllableSep string, sentences []string)
 	}
 	if ok, err := e.checkComponents(); !ok {
 		e.AddErrors(fmt.Errorf("component check error: %w", err))
-		return
-	}
-
-	// don't try to generate if we have no syllables
-	if len(e.syllables) < 1 {
 		return
 	}
 

@@ -28,7 +28,7 @@ func (e *Evaluator) sort(words []Word) []Word {
 			}
 			minLen := min(len(leftIndexes), len(rightIndexes))
 
-			for i := 0; i < minLen; i++ {
+			for i := range minLen {
 				if leftIndexes[i] < rightIndexes[i] {
 					return true
 				}

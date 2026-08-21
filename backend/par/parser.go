@@ -5,6 +5,7 @@ import (
 	"phono-word-gen/lex"
 	"phono-word-gen/parts"
 	"phono-word-gen/tok"
+	"slices"
 )
 
 type Parser struct {
@@ -32,21 +33,11 @@ func (p *Parser) getNextToken() {
 
 func (p *Parser) currIs(tt tok.TokenType) bool { return p.curr.Type == tt }
 func (p *Parser) currIsAny(tts ...tok.TokenType) bool {
-	for _, tt := range tts {
-		if tt == p.curr.Type {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(tts, p.curr.Type)
 }
 func (p *Parser) peekIs(tt tok.TokenType) bool { return p.peek.Type == tt }
 func (p *Parser) peekIsAny(tts ...tok.TokenType) bool {
-	for _, tt := range tts {
-		if tt == p.peek.Type {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(tts, p.peek.Type)
 }
 func (p *Parser) expectPeek(tt tok.TokenType) bool {
 	if p.peekIs(tt) {
