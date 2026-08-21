@@ -1,10 +1,10 @@
 import { useState } from "react";
-import Footer from "./Footer";
-import Header from "./Header";
-import Input from "./Input";
-import Output from "./Output";
-import QuickReference from "./QuickDocs";
-import type { InputState, OutputData } from "./props";
+import Footer from "./components/Footer";
+import Header from "./components/Header";
+import Input from "./components/Input";
+import Output from "./components/Output";
+import QuickReference from "./components/QuickDocs";
+import type { InputState, OutputData } from "./components/props";
 
 declare namespace globalThis {
     function generate(input: InputState): GenerateOutput;
@@ -86,7 +86,6 @@ export default function App() {
     function sentenceCountChanges(e: React.ChangeEvent) {
         setInputState({ ...inputState, sentenceCount: Number.parseInt((e.target as HTMLInputElement).value) });
     }
-
     function generateTypeChanges(e: React.ChangeEvent) {
         setInputState({ ...inputState, generateType: (e.target as HTMLInputElement).value as "words" | "sentences" });
     }
@@ -117,7 +116,6 @@ export default function App() {
         if (exampleName === "") {
             return;
         }
-        console.log(exampleName);
         const fileName = `sample/${exampleName}.txt`;
         fetch(fileName)
             .then((response) => {
