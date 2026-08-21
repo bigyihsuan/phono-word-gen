@@ -8,25 +8,6 @@ export default function QuickReference() {
                     Comments: <code>{`# comment ends at the end of the line`}</code>
                 </li>
             </ul>
-            <h3>Weighting Rules</h3>
-            <ul>
-                <li>Weights mark how often a component or phoneme can appear.</li>
-                <li>Weights are positive integers.</li>
-                <li>Weights can be applied to phonemes, optionals, or elements in a selection.</li>
-                <li>
-                    Phoneme weights are placed after the phoneme: <code>{`C = p*1 t*3 k`}</code>
-                </li>
-                <li>
-                    Manually-marked weights on phonemes are carried over into any categories using that phoneme (i.e.{" "}
-                    <code>{`P = p*4 k; C = $P t`}</code> will have phoneme <code>{`p`}</code> have weight 4 in all
-                    categories).
-                </li>
-                <li>
-                    Weighted optionals define what chance for that optional to appear (i.e. a weight of 33 means that it
-                    will appear ~33% of the time, 1 means 1%, etc).
-                </li>
-                <li>Selection elements and phonemes without weights are defaulted to 1.</li>
-            </ul>
             <h3>Phonology</h3>
             <ul>
                 <li>
@@ -69,6 +50,9 @@ export default function QuickReference() {
                 <li>
                     Selection with weight: <code>{`syllable: [$P,$F*3,{$K$L}*1]r$V`}</code>
                 </li>
+                <li>
+                    You may have multiple <code>{`syllable:`}</code> directives, each defining a possible syllable.
+                </li>
             </ul>
             <h3>Named Components</h3>
             <ul>
@@ -85,6 +69,28 @@ export default function QuickReference() {
                     <code>{`component: a = a %b; component: b = %a b`}</code> (two components referencing each other),
                     <code>{`component: name = %name $C`}</code> (component referencing itself).
                 </li>
+            </ul>
+            <h3>Weighting Rules</h3>
+            <ul>
+                <li>Weights mark how often a component or phoneme can appear.</li>
+                <li>Weights are positive integers. The value it represents depends on what it is being applied to.</li>
+                <li>Weights can be applied to phonemes, optionals, or elements in a selection.</li>
+                <li>
+                    Phoneme weights are placed after the phoneme: <code>{`C = p*1 t*3 k`}</code>. When a weight is
+                    applied to a phoneme, it represents how often that phoneme appears compared to all other phonemes in
+                    its category.
+                </li>
+                <li>
+                    Manually-marked weights on phonemes are carried over into any categories using that phoneme (i.e.{" "}
+                    <code>{`P = p*4 k; C = $P t`}</code> will have phoneme <code>{`p`}</code> have weight 4 in all
+                    categories).
+                </li>
+                <li>
+                    Weighted optionals define what percent chance that optional will appear (i.e. a weight of 33 means
+                    that it will appear ~33% of the time, 1 means 1%, etc. An optional with weight 50 functions the same
+                    as with weight not specified).
+                </li>
+                <li>Selection elements and phonemes without weights are defaulted to 1.</li>
             </ul>
             <h3>Rejections</h3>
             <ul>
