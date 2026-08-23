@@ -44,7 +44,9 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v6
       - name: Build with Vite and make
-        run: npm run tsc && npm run vbuild -- --base "${{ steps.pages.outputs.base_path }}" && npm run make
+        run: npm run tsc && npm run vbuild && npm run make
+      - name: Check dist folder
+        run: ls -l ./dist
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:
