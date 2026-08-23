@@ -10,4 +10,5 @@ export default defineConfig({
         },
     },
     base: "/phono-word-gen/",
+    assetsInclude: ["wasm_exec.js"],
 });
