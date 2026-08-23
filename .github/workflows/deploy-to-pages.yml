@@ -46,7 +46,7 @@ jobs:
       - name: Build with Vite and make
         run: npm run tsc && npm run vbuild && npm run make
       - name: Check dist folder
-        run: ls -lR ./dist
+        run: ls -lR ./dist; cat ./dist/index.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:
