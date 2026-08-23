@@ -5,6 +5,7 @@ import Input from "./components/Input";
 import Output from "./components/Output";
 import QuickReference from "./components/QuickDocs";
 import type { InputState, OutputData } from "./components/props";
+import Changelog from "./components/Changelog";
 
 declare namespace globalThis {
     function generate(input: InputState): GenerateOutput;
@@ -167,6 +168,7 @@ export default function App() {
                 </div>
                 <hr></hr>
                 <QuickReference />
+                <Changelog />
             </main>
             <Footer />
         </>
