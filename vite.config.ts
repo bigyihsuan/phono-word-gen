@@ -9,4 +9,5 @@ export default defineConfig({
             usePolling: true,
         },
     },
+    base: "/phono-word-gen/",
 });
