@@ -24,7 +24,7 @@ jobs:
   deploy:
     environment:
       name: github-pages-beta
-      url: '${{ steps.deployment.outputs.page_url }}beta'
+      url: '${{ steps.deployment.outputs.page_url }}beta/'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
