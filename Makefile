@@ -10,7 +10,6 @@ compile $(go_files):
 build: get_wasm_exec compile
 	cp ./main.wasm ./wasm_exec.js ./dist
 	cp -r ./sample ./dist
-	head ./dist/wasm_exec.js
 
 server:
 	python3 -m http.server --directory build
