@@ -4,10 +4,12 @@
     "version": "0.0.0",
     "type": "module",
     "scripts": {
-        "make": "make build",
         "dev": "npm run make && vite",
-        "build": "tsc -b && vite build --outDir=./dist --emptyOutDir && npm run make",
+        "tsc": "tsc -b",
+        "vbuild": "vite build --outDir=./dist --emptyOutDir",
+        "make": "make build",
         "lint": "eslint .",
+        "build": "npm run tsc && npm run vbuild && npm run make",
         "preview": "npm run build && vite preview"
     },
     "dependencies": {
